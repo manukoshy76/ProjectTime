@@ -189,6 +189,7 @@ const exportJSON = () => {
   const data = {
     projects,
     timeEntries,
+    tasks, // ← ADD THIS LINE
     exportedAt: new Date().toISOString()
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -207,14 +208,17 @@ const handleImportFile = (e) => {
   reader.onload = (ev) => {
     try {
       const parsed = JSON.parse(ev.target.result);
-      // basic validation
+      // Updated validation to include tasks
       if (!Array.isArray(parsed.projects) || !Array.isArray(parsed.timeEntries)) {
         throw new Error('File does not look like a valid timesheet backup.');
       }
-      if (window.confirm('This will overwrite your current projects and time entries. Continue?')) {
+      if (window.confirm('This will overwrite your current projects, time entries, AND tasks. Continue?')) {
         setProjects(parsed.projects);
         setTimeEntries(parsed.timeEntries);
-        // localStorage will be updated by your existing useEffect hooks
+        // ADD THIS LINE to handle tasks import
+        if (Array.isArray(parsed.tasks)) {
+          setTasks(parsed.tasks);
+        }
         alert('Import successful.');
       }
     } catch (err) {
@@ -222,7 +226,6 @@ const handleImportFile = (e) => {
     }
   };
   reader.readAsText(file);
-  // reset input so same file can be re-used if needed
   e.target.value = '';
 };
           const [newProject, setNewProject] = useState({
