@@ -655,6 +655,15 @@ const handleImportFile = (e) => {
       <DownloadCloud size={18} />
       Load from Cloud
     </button>
+{/* ADD THE SET GIST ID BUTTON HERE */}
+  <button
+    onClick={setGistIdManually}
+    className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 flex items-center gap-2 shadow-md"
+    title="Set Gist ID manually"
+  >
+    <Key size={18} />
+    Set Gist ID
+  </button>
 
     <input
       type="file"
@@ -1331,14 +1340,7 @@ const handleImportFile = (e) => {
                           <Save size={18} />
                           {editingProject ? 'Update Project' : 'Create Project'}
                         </button>
-						  <button
-  onClick={setGistIdManually}
-  className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 flex items-center gap-2 shadow-md"
-  title="Set Gist ID manually"
->
-  <Key size={18} />
-  Set Gist ID
-</button>
+						  
                       </div>
                     </div>
                   </div>
