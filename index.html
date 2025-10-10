@@ -164,7 +164,7 @@ const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_
           const [editingProject, setEditingProject] = useState(null);
           const [showEntryModal, setShowEntryModal] = useState(false);
           const [editingEntry, setEditingEntry] = useState(null);
-          
+          const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_id') || null);
           const [projects, setProjects] = useState(() => {
             const saved = localStorage.getItem('timesheet_projects');
             return saved ? JSON.parse(saved) : [
