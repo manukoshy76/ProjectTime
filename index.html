@@ -137,7 +137,10 @@ const CheckSquare = ({size = 24, className = ""}) => (
     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
   </svg>
 );
-
+// Add these constants at the top of your TimesheetApp component
+const GIST_TOKEN = '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'; // You'll need to create this
+const GIST_ID = null; // Will be set after first save
+		
         const TimesheetApp = () => {
           const [activeTab, setActiveTab] = useState('timesheet');
           const [filterProject, setFilterProject] = useState('all');
@@ -179,7 +182,86 @@ const [tasks, setTasks] = useState(() => {
   const saved = localStorage.getItem('todo_tasks');
   return saved ? JSON.parse(saved) : [];
 });
+const saveToGist = async () => {
+  const data = {
+    projects,
+    timeEntries,
+    tasks,
+    updatedAt: new Date().toISOString()
+  };
 
+  const gistData = {
+    files: {
+      'timesheet-data.json': {
+        content: JSON.stringify(data, null, 2)
+      }
+    },
+    description: 'Timesheet Manager Data',
+    public: false
+  };
+
+  try {
+    const url = GIST_ID 
+      ? `https://api.github.com/gists/${GIST_ID}` 
+      : 'https://api.github.com/gists';
+    
+    const method = GIST_ID ? 'PATCH' : 'POST';
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Authorization': `token ${GIST_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(gistData)
+    });
+
+    if (!response.ok) throw new Error('Failed to save to Gist');
+    
+    const result = await response.json();
+    alert('Data saved to cloud successfully!');
+    console.log('Gist saved:', result.id);
+    
+    // Store the Gist ID for future updates
+    if (!GIST_ID) {
+      localStorage.setItem('timesheet_gist_id', result.id);
+    }
+    
+  } catch (error) {
+    alert('Failed to save to cloud: ' + error.message);
+  }
+};
+
+const loadFromGist = async () => {
+  if (!GIST_ID) {
+    alert('No cloud data found. Save data first.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      headers: {
+        'Authorization': `token ${GIST_TOKEN}`
+      }
+    });
+
+    if (!response.ok) throw new Error('Failed to load from Gist');
+    
+    const gist = await response.json();
+    const content = gist.files['timesheet-data.json'].content;
+    const data = JSON.parse(content);
+
+    if (window.confirm('Load cloud data? This will replace your current data.')) {
+      setProjects(data.projects || []);
+      setTimeEntries(data.timeEntries || []);
+      setTasks(data.tasks || []);
+      alert('Data loaded from cloud!');
+    }
+    
+  } catch (error) {
+    alert('Failed to load from cloud: ' + error.message);
+  }
+};
 useEffect(() => {
   localStorage.setItem('todo_tasks', JSON.stringify(tasks));
 }, [tasks]);
@@ -454,7 +536,24 @@ const handleImportFile = (e) => {
     <Download size={18} />
     Import JSON
   </button>
+<button
+    onClick={saveToGist}
+    className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 flex items-center gap-2 shadow-md"
+    title="Save to cloud (GitHub Gist)"
+  >
+    <Cloud size={18} />
+    Save to Cloud
+  </button>
 
+  {/* Cloud Load Button */}
+  <button
+    onClick={loadFromGist}
+    className="px-4 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:from-teal-600 hover:to-teal-700 flex items-center gap-2 shadow-md"
+    title="Load from cloud"
+  >
+    <DownloadCloud size={18} />
+    Load from Cloud
+  </button>
   {/* Hidden file input for JSON import */}
   <input
     type="file"
