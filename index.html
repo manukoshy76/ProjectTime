@@ -37,6 +37,10 @@
         .fade-in {
             animation: fadeIn 0.5s ease-out;
         }
+        .message-bubble {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -214,6 +218,63 @@
             </svg>
         );
 
+        const ExternalLink = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+        );
+
+        const MessageCircle = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+            </svg>
+        );
+
+        const Paperclip = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+            </svg>
+        );
+
+        const Image = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+        );
+
+        const Users = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        );
+
+        const Folder = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+        );
+
+        const Mail = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+        );
+
+        const Link = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+        );
+
         const TimesheetApp = () => {
             // Cloud sync states
             const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
@@ -229,15 +290,82 @@
             const [editingProject, setEditingProject] = useState(null);
             const [showEntryModal, setShowEntryModal] = useState(false);
             const [editingEntry, setEditingEntry] = useState(null);
+            const [showProjectDashboard, setShowProjectDashboard] = useState(false);
+            const [selectedProject, setSelectedProject] = useState(null);
             
             // Data states
             const [projects, setProjects] = useState(() => {
                 const saved = localStorage.getItem('timesheet_projects');
-                return saved ? JSON.parse(saved) : [
-                    { id: 1, name: 'Palmer Square', status: 'Active', owner: 'Manu Koshy', counterparties: 18, estimatedHours: 120, notes: '18+ counterparties. Transaction recon setup in progress along with training Kavoosh', secondaryOwner: 'Tom Hantzarides', isManagedOps: false },
-                    { id: 2, name: 'Reckoner', status: 'Active', owner: 'Manu Koshy', counterparties: 2, estimatedHours: 40, notes: 'US bank Dailies and Month end recon setup', secondaryOwner: '', isManagedOps: true },
-                    { id: 3, name: 'ADP', status: 'Active', owner: 'Manu Koshy', counterparties: 1, estimatedHours: 30, notes: 'Files yet to be confirmed that needs mapping', secondaryOwner: 'Tom Hantzarides', isManagedOps: true }
+                let projectsData = saved ? JSON.parse(saved) : [
+                    { 
+                        id: 1, 
+                        name: 'Palmer Square', 
+                        status: 'Active', 
+                        owner: 'Manu Koshy', 
+                        counterparties: 18, 
+                        estimatedHours: 120, 
+                        notes: '18+ counterparties. Transaction recon setup in progress along with training Kavoosh', 
+                        secondaryOwner: 'Tom Hantzarides', 
+                        isManagedOps: false,
+                        // New fields for enhanced project details
+                        communications: [
+                            { id: 1, type: 'email', subject: 'Transaction Reconciliation Setup', sender: 'client@example.com', date: '2025-10-15', body: 'Looking forward to completing the transaction reconciliation setup by next week.', attachments: [] },
+                            { id: 2, type: 'meeting', subject: 'Weekly Sync', sender: 'team@company.com', date: '2025-10-14', body: 'Discussed progress and next steps for the Palmer Square implementation.', attachments: [] }
+                        ],
+                        files: [
+                            { id: 1, name: 'Project Scope.pdf', type: 'pdf', size: '2.4 MB', uploaded: '2025-10-10' },
+                            { id: 2, name: 'Architecture Diagram.png', type: 'image', size: '1.2 MB', uploaded: '2025-10-12' }
+                        ],
+                        links: [
+                            { id: 1, title: 'Project Repository', url: 'https://github.com/company/palmer-square', description: 'Main code repository' },
+                            { id: 2, title: 'Documentation', url: 'https://docs.company.com/palmer-square', description: 'Project documentation' }
+                        ],
+                        team: [
+                            { id: 1, name: 'Manu Koshy', role: 'Project Lead', email: 'manu@company.com' },
+                            { id: 2, name: 'Tom Hantzarides', role: 'Secondary Owner', email: 'tom@company.com' },
+                            { id: 3, name: 'Kavoosh Team', role: 'Implementation Team', email: 'kavoosh@company.com' }
+                        ]
+                    },
+                    { 
+                        id: 2, 
+                        name: 'Reckoner', 
+                        status: 'Active', 
+                        owner: 'Manu Koshy', 
+                        counterparties: 2, 
+                        estimatedHours: 40, 
+                        notes: 'US bank Dailies and Month end recon setup', 
+                        secondaryOwner: '', 
+                        isManagedOps: true,
+                        communications: [],
+                        files: [],
+                        links: [],
+                        team: []
+                    },
+                    { 
+                        id: 3, 
+                        name: 'ADP', 
+                        status: 'Active', 
+                        owner: 'Manu Koshy', 
+                        counterparties: 1, 
+                        estimatedHours: 30, 
+                        notes: 'Files yet to be confirmed that needs mapping', 
+                        secondaryOwner: 'Tom Hantzarides', 
+                        isManagedOps: true,
+                        communications: [],
+                        files: [],
+                        links: [],
+                        team: []
+                    }
                 ];
+                
+                // Ensure all projects have the new fields
+                return projectsData.map(project => ({
+                    communications: [],
+                    files: [],
+                    links: [],
+                    team: [],
+                    ...project
+                }));
             });
 
             const [timeEntries, setTimeEntries] = useState(() => {
@@ -264,6 +392,12 @@
                 project: '', hours: '', task: '', notes: ''
             });
 
+            // Project Dashboard states
+            const [newCommunication, setNewCommunication] = useState({ type: 'email', subject: '', body: '' });
+            const [newFile, setNewFile] = useState({ name: '', type: 'document' });
+            const [newLink, setNewLink] = useState({ title: '', url: '', description: '' });
+            const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', email: '' });
+
             // Refs
             const fileInputRef = useRef(null);
 
@@ -280,7 +414,7 @@
                 localStorage.setItem('todo_tasks', JSON.stringify(tasks));
             }, [tasks]);
 
-            // Cloud sync functions
+            // Cloud sync functions (same as before)
             const setupGistToken = () => {
                 if (!GIST_TOKEN) {
                     const token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
@@ -481,8 +615,8 @@
                             throw new Error('File does not look like a valid timesheet backup.');
                         }
                         if (window.confirm('This will overwrite your current projects, time entries, AND tasks. Continue?')) {
-                            setProjects(parsed.projects);
-                            setTimeEntries(parsed.timeEntries);
+                            setProjects(parsed.projects || []);
+                            setTimeEntries(parsed.timeEntries || []);
                             if (Array.isArray(parsed.tasks)) {
                                 setTasks(parsed.tasks);
                             }
@@ -636,6 +770,140 @@
                 setNewEntry(entry);
                 setEditingEntry(entry);
                 setShowEntryModal(true);
+            };
+
+            const openProjectDashboard = (project) => {
+                setSelectedProject(project);
+                setShowProjectDashboard(true);
+            };
+
+            // Project Dashboard operations
+            const addCommunication = () => {
+                if (!newCommunication.subject || !newCommunication.body) return;
+                
+                const updatedProject = {
+                    ...selectedProject,
+                    communications: [
+                        ...selectedProject.communications,
+                        {
+                            id: Date.now(),
+                            type: newCommunication.type,
+                            subject: newCommunication.subject,
+                            sender: 'You',
+                            date: new Date().toISOString().split('T')[0],
+                            body: newCommunication.body,
+                            attachments: []
+                        }
+                    ]
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+                setNewCommunication({ type: 'email', subject: '', body: '' });
+            };
+
+            const addFile = () => {
+                if (!newFile.name) return;
+                
+                const updatedProject = {
+                    ...selectedProject,
+                    files: [
+                        ...selectedProject.files,
+                        {
+                            id: Date.now(),
+                            name: newFile.name,
+                            type: newFile.type,
+                            size: '0.5 MB',
+                            uploaded: new Date().toISOString().split('T')[0]
+                        }
+                    ]
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+                setNewFile({ name: '', type: 'document' });
+            };
+
+            const addLink = () => {
+                if (!newLink.title || !newLink.url) return;
+                
+                const updatedProject = {
+                    ...selectedProject,
+                    links: [
+                        ...selectedProject.links,
+                        {
+                            id: Date.now(),
+                            title: newLink.title,
+                            url: newLink.url,
+                            description: newLink.description
+                        }
+                    ]
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+                setNewLink({ title: '', url: '', description: '' });
+            };
+
+            const addTeamMember = () => {
+                if (!newTeamMember.name || !newTeamMember.role) return;
+                
+                const updatedProject = {
+                    ...selectedProject,
+                    team: [
+                        ...selectedProject.team,
+                        {
+                            id: Date.now(),
+                            name: newTeamMember.name,
+                            role: newTeamMember.role,
+                            email: newTeamMember.email
+                        }
+                    ]
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+                setNewTeamMember({ name: '', role: '', email: '' });
+            };
+
+            const deleteCommunication = (id) => {
+                const updatedProject = {
+                    ...selectedProject,
+                    communications: selectedProject.communications.filter(c => c.id !== id)
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+            };
+
+            const deleteFile = (id) => {
+                const updatedProject = {
+                    ...selectedProject,
+                    files: selectedProject.files.filter(f => f.id !== id)
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+            };
+
+            const deleteLink = (id) => {
+                const updatedProject = {
+                    ...selectedProject,
+                    links: selectedProject.links.filter(l => l.id !== id)
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
+            };
+
+            const deleteTeamMember = (id) => {
+                const updatedProject = {
+                    ...selectedProject,
+                    team: selectedProject.team.filter(t => t.id !== id)
+                };
+                
+                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
+                setSelectedProject(updatedProject);
             };
 
             const getStatusColor = (status) => {
@@ -850,6 +1118,577 @@
                                     ))}
                                 </div>
                             )}
+                        </div>
+                    </div>
+                );
+            };
+
+            // Project Dashboard Component
+            const ProjectDashboard = ({ project, onClose, onUpdate }) => {
+                const stats = projectStats[project.name];
+                const [activeSection, setActiveSection] = useState('overview');
+
+                if (!project) return null;
+
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+                            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
+                                <div className="flex items-center gap-4">
+                                    <button
+                                        onClick={onClose}
+                                        className="p-2 hover:bg-white rounded-lg transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-800">{project.name}</h2>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(project.status)}`}>
+                                                {project.status}
+                                            </span>
+                                            <span className="text-sm text-gray-600">Owner: {project.owner}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => editProject(project)}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                                    >
+                                        <Edit2 size={16} />
+                                        Edit Project
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Navigation Tabs */}
+                            <div className="border-b border-gray-200">
+                                <div className="flex overflow-x-auto">
+                                    {[
+                                        { id: 'overview', label: 'Overview', icon: BarChart3 },
+                                        { id: 'communications', label: 'Communications', icon: MessageCircle },
+                                        { id: 'files', label: 'Files', icon: Folder },
+                                        { id: 'links', label: 'Links', icon: Link },
+                                        { id: 'team', label: 'Team', icon: Users },
+                                        { id: 'time', label: 'Time Tracking', icon: Clock }
+                                    ].map(tab => {
+                                        const Icon = tab.icon;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveSection(tab.id)}
+                                                className={`px-6 py-3 font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+                                                    activeSection === tab.id
+                                                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
+                                                        : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                <Icon size={18} />
+                                                {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto p-6">
+                                {/* Overview Section */}
+                                {activeSection === 'overview' && (
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-blue-100 text-sm font-medium">Hours Logged</p>
+                                                        <p className="text-3xl font-bold mt-1">{stats.actual.toFixed(1)}</p>
+                                                        <p className="text-xs text-blue-200 mt-1">of {project.estimatedHours}h estimated</p>
+                                                    </div>
+                                                    <Clock size={40} className="text-blue-200" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-green-100 text-sm font-medium">Progress</p>
+                                                        <p className="text-3xl font-bold mt-1">{stats.progress.toFixed(0)}%</p>
+                                                        <p className="text-xs text-green-200 mt-1">{stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h remaining` : 'Over budget'}</p>
+                                                    </div>
+                                                    <TrendingUp size={40} className="text-green-200" />
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-purple-100 text-sm font-medium">Counterparties</p>
+                                                        <p className="text-3xl font-bold mt-1">{project.counterparties}</p>
+                                                        <p className="text-xs text-purple-200 mt-1">External parties</p>
+                                                    </div>
+                                                    <Users size={40} className="text-purple-200" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                                <h3 className="text-lg font-bold text-gray-800 mb-4">Project Details</h3>
+                                                <div className="space-y-3">
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Primary Owner:</span>
+                                                        <span className="font-semibold">{project.owner}</span>
+                                                    </div>
+                                                    {project.secondaryOwner && (
+                                                        <div className="flex justify-between">
+                                                            <span className="text-gray-600">Secondary Owner:</span>
+                                                            <span className="font-semibold">{project.secondaryOwner}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Managed Ops:</span>
+                                                        <span className={`font-semibold ${project.isManagedOps ? 'text-green-600' : 'text-gray-400'}`}>
+                                                            {project.isManagedOps ? 'Yes' : 'No'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-600">Status:</span>
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                                                            {project.status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                                <h3 className="text-lg font-bold text-gray-800 mb-4">Progress</h3>
+                                                <div className="mb-4">
+                                                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                                                        <span>Completion</span>
+                                                        <span className="font-semibold">{stats.progress.toFixed(1)}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                                        <div
+                                                            className={`progress-bar h-4 rounded-full transition-all ${
+                                                                stats.progress > 100 ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+                                                                stats.progress > 80 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
+                                                                'bg-gradient-to-r from-indigo-500 to-blue-600'
+                                                            }`}
+                                                            style={{ width: `${Math.min(stats.progress, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="text-sm text-gray-600">
+                                                    <div className="flex justify-between">
+                                                        <span>Hours Logged:</span>
+                                                        <span className="font-semibold">{stats.actual.toFixed(1)}h</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Estimated Total:</span>
+                                                        <span className="font-semibold">{project.estimatedHours}h</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Remaining:</span>
+                                                        <span className={`font-semibold ${stats.remaining < 0 ? 'text-red-600' : ''}`}>
+                                                            {stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h` : `${Math.abs(stats.remaining).toFixed(1)}h over`}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {project.notes && (
+                                            <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                                <h3 className="text-lg font-bold text-gray-800 mb-4">Project Notes</h3>
+                                                <p className="text-gray-700">{project.notes}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Communications Section */}
+                                {activeSection === 'communications' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <MessageCircle size={20} className="text-indigo-600" />
+                                                Add Communication
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                                                        <select
+                                                            value={newCommunication.type}
+                                                            onChange={(e) => setNewCommunication({...newCommunication, type: e.target.value})}
+                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        >
+                                                            <option value="email">Email</option>
+                                                            <option value="meeting">Meeting</option>
+                                                            <option value="call">Phone Call</option>
+                                                            <option value="note">Note</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                                        <input
+                                                            type="text"
+                                                            value={newCommunication.subject}
+                                                            onChange={(e) => setNewCommunication({...newCommunication, subject: e.target.value})}
+                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            placeholder="Communication subject"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                                    <textarea
+                                                        value={newCommunication.body}
+                                                        onChange={(e) => setNewCommunication({...newCommunication, body: e.target.value})}
+                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        rows="4"
+                                                        placeholder="Enter communication details..."
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={addCommunication}
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                                                >
+                                                    <Plus size={16} />
+                                                    Add Communication
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Communication History</h3>
+                                            {project.communications.length === 0 ? (
+                                                <p className="text-gray-500 text-center py-4">No communications yet.</p>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {project.communications
+                                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                                        .map(comm => (
+                                                            <div key={comm.id} className="border border-gray-200 rounded-lg p-4">
+                                                                <div className="flex justify-between items-start mb-2">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                                            comm.type === 'email' ? 'bg-blue-100 text-blue-800' :
+                                                                            comm.type === 'meeting' ? 'bg-green-100 text-green-800' :
+                                                                            comm.type === 'call' ? 'bg-purple-100 text-purple-800' :
+                                                                            'bg-gray-100 text-gray-800'
+                                                                        }`}>
+                                                                            {comm.type}
+                                                                        </span>
+                                                                        <span className="font-semibold text-gray-800">{comm.subject}</span>
+                                                                    </div>
+                                                                    <button
+                                                                        onClick={() => deleteCommunication(comm.id)}
+                                                                        className="p-1 text-red-500 hover:text-red-700"
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </div>
+                                                                <div className="flex justify-between text-sm text-gray-500 mb-3">
+                                                                    <span>From: {comm.sender}</span>
+                                                                    <span>Date: {comm.date}</span>
+                                                                </div>
+                                                                <p className="text-gray-700">{comm.body}</p>
+                                                            </div>
+                                                        ))
+                                                    }
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Files Section */}
+                                {activeSection === 'files' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <Folder size={20} className="text-indigo-600" />
+                                                Add File Reference
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">File Name</label>
+                                                        <input
+                                                            type="text"
+                                                            value={newFile.name}
+                                                            onChange={(e) => setNewFile({...newFile, name: e.target.value})}
+                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            placeholder="File name"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                                                        <select
+                                                            value={newFile.type}
+                                                            onChange={(e) => setNewFile({...newFile, type: e.target.value})}
+                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        >
+                                                            <option value="document">Document</option>
+                                                            <option value="spreadsheet">Spreadsheet</option>
+                                                            <option value="presentation">Presentation</option>
+                                                            <option value="image">Image</option>
+                                                            <option value="other">Other</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={addFile}
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                                                >
+                                                    <Plus size={16} />
+                                                    Add File Reference
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Project Files</h3>
+                                            {project.files.length === 0 ? (
+                                                <p className="text-gray-500 text-center py-4">No files added yet.</p>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    {project.files.map(file => (
+                                                        <div key={file.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <FileText size={20} className="text-indigo-600" />
+                                                                <div className="flex-1">
+                                                                    <div className="font-semibold text-gray-800 truncate">{file.name}</div>
+                                                                    <div className="text-sm text-gray-500">{file.type} • {file.size}</div>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => deleteFile(file.id)}
+                                                                    className="p-1 text-red-500 hover:text-red-700"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">Uploaded: {file.uploaded}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Links Section */}
+                                {activeSection === 'links' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <Link size={20} className="text-indigo-600" />
+                                                Add Link
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={newLink.title}
+                                                        onChange={(e) => setNewLink({...newLink, title: e.target.value})}
+                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        placeholder="Link title"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">URL</label>
+                                                    <input
+                                                        type="url"
+                                                        value={newLink.url}
+                                                        onChange={(e) => setNewLink({...newLink, url: e.target.value})}
+                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        placeholder="https://example.com"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                                    <input
+                                                        type="text"
+                                                        value={newLink.description}
+                                                        onChange={(e) => setNewLink({...newLink, description: e.target.value})}
+                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        placeholder="Brief description"
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={addLink}
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                                                >
+                                                    <Plus size={16} />
+                                                    Add Link
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Project Links</h3>
+                                            {project.links.length === 0 ? (
+                                                <p className="text-gray-500 text-center py-4">No links added yet.</p>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {project.links.map(link => (
+                                                        <div key={link.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <div>
+                                                                    <div className="font-semibold text-gray-800">{link.title}</div>
+                                                                    {link.description && (
+                                                                        <div className="text-sm text-gray-600 mt-1">{link.description}</div>
+                                                                    )}
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => deleteLink(link.id)}
+                                                                    className="p-1 text-red-500 hover:text-red-700"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                            <a 
+                                                                href={link.url} 
+                                                                target="_blank" 
+                                                                rel="noopener noreferrer"
+                                                                className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                                                            >
+                                                                {link.url}
+                                                                <ExternalLink size={14} />
+                                                            </a>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Team Section */}
+                                {activeSection === 'team' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                                <Users size={20} className="text-indigo-600" />
+                                                Add Team Member
+                                            </h3>
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                                                        <input
+                                                            type="text"
+                                                            value={newTeamMember.name}
+                                                            onChange={(e) => setNewTeamMember({...newTeamMember, name: e.target.value})}
+                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            placeholder="Team member name"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                                                        <input
+                                                            type="text"
+                                                            value={newTeamMember.role}
+                                                            onChange={(e) => setNewTeamMember({...newTeamMember, role: e.target.value})}
+                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                            placeholder="Team role"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                                    <input
+                                                        type="email"
+                                                        value={newTeamMember.email}
+                                                        onChange={(e) => setNewTeamMember({...newTeamMember, email: e.target.value})}
+                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                        placeholder="email@example.com"
+                                                    />
+                                                </div>
+                                                <button
+                                                    onClick={addTeamMember}
+                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+                                                >
+                                                    <Plus size={16} />
+                                                    Add Team Member
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Project Team</h3>
+                                            {project.team.length === 0 ? (
+                                                <p className="text-gray-500 text-center py-4">No team members added yet.</p>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    {project.team.map(member => (
+                                                        <div key={member.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <div>
+                                                                    <div className="font-semibold text-gray-800">{member.name}</div>
+                                                                    <div className="text-sm text-gray-600 mt-1">{member.role}</div>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => deleteTeamMember(member.id)}
+                                                                    className="p-1 text-red-500 hover:text-red-700"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                            {member.email && (
+                                                                <div className="text-sm text-indigo-600 flex items-center gap-1">
+                                                                    <Mail size={14} />
+                                                                    {member.email}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Time Tracking Section */}
+                                {activeSection === 'time' && (
+                                    <div className="space-y-6">
+                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Time Entries for {project.name}</h3>
+                                            {filteredTimeEntries.filter(entry => entry.project === project.name).length === 0 ? (
+                                                <p className="text-gray-500 text-center py-4">No time entries for this project yet.</p>
+                                            ) : (
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full">
+                                                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                                                            <tr>
+                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Date</th>
+                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Hours</th>
+                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Task</th>
+                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Notes</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-200">
+                                                            {filteredTimeEntries
+                                                                .filter(entry => entry.project === project.name)
+                                                                .map(entry => (
+                                                                    <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
+                                                                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">{entry.date}</td>
+                                                                        <td className="px-4 py-3 text-sm font-bold text-indigo-600">{entry.hours}h</td>
+                                                                        <td className="px-4 py-3 text-sm text-gray-700">{entry.task}</td>
+                                                                        <td className="px-4 py-3 text-sm text-gray-500 italic">{entry.notes || '-'}</td>
+                                                                    </tr>
+                                                                ))
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 );
@@ -1240,6 +2079,13 @@
                                                     </div>
                                                     <div className="flex gap-1">
                                                         <button
+                                                            onClick={() => openProjectDashboard(project)}
+                                                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                            title="View Project Details"
+                                                        >
+                                                            <ExternalLink size={18} />
+                                                        </button>
+                                                        <button
                                                             onClick={() => editProject(project)}
                                                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                         >
@@ -1477,7 +2323,19 @@
                             <ToDoTab projects={projects} tasks={tasks} setTasks={setTasks} />
                         )}
 
-                        {/* Modals */}
+                        {/* Project Dashboard Modal */}
+                        {showProjectDashboard && selectedProject && (
+                            <ProjectDashboard 
+                                project={selectedProject} 
+                                onClose={() => setShowProjectDashboard(false)}
+                                onUpdate={(updatedProject) => {
+                                    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+                                    setSelectedProject(updatedProject);
+                                }}
+                            />
+                        )}
+
+                        {/* Existing Modals for Project and Entry forms */}
                         {showProjectModal && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                                 <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
