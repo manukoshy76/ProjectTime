@@ -15,6 +15,28 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
     </style>
 </head>
 <body>
@@ -130,1432 +152,1582 @@
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
             </svg>
         );
-const CheckSquare = ({size = 24, className = ""}) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-       strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <polyline points="9 11 12 14 22 4"></polyline>
-    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-  </svg>
-);
-		const Cloud = ({size = 24, className = ""}) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
-  </svg>
-);
 
-const DownloadCloud = ({size = 24, className = ""}) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <polyline points="8 17 12 21 16 17"></polyline>
-    <line x1="12" y1="12" x2="12" y2="21"></line>
-    <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
-  </svg>
-);
-// Add these constants at the top of your TimesheetApp component
+        const CheckSquare = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+        );
 
+        const Cloud = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+            </svg>
+        );
 
-		
+        const DownloadCloud = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="8 17 12 21 16 17"></polyline>
+                <line x1="12" y1="12" x2="12" y2="21"></line>
+                <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path>
+            </svg>
+        );
+
+        const Key = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+            </svg>
+        );
+
+        const CheckCircle = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        );
+
+        const Calendar = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        );
+
+        const ListCheck = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <line x1="10" y1="6" x2="21" y2="6"></line>
+                <line x1="10" y1="12" x2="21" y2="12"></line>
+                <line x1="10" y1="18" x2="21" y2="18"></line>
+                <polyline points="3 6 4 7 6 5"></polyline>
+                <polyline points="3 12 4 13 6 11"></polyline>
+                <polyline points="3 18 4 19 6 17"></polyline>
+            </svg>
+        );
+
+        const Inbox = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+        );
+
         const TimesheetApp = () => {
-			const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
-			const setupGistToken = () => {
-  if (!GIST_TOKEN) {
-    const token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
-    if (token) {
-      setGistToken(token);
-      localStorage.setItem('timesheet_gist_token', token);
-      return token;
-    } else {
-      alert('Cloud features disabled. Please refresh and enter token to enable cloud sync.');
-      return null;
-    }
-  }
-  return GIST_TOKEN;
-};
-			const setGistIdManually = () => {
-  const gistId = prompt('Enter your Gist ID (you can find this in the URL of your Gist):');
-  if (gistId) {
-    setGistId(gistId);
-    localStorage.setItem('timesheet_gist_id', gistId);
-    alert('Gist ID saved! You can now load from cloud.');
-  }
-};
-          const [activeTab, setActiveTab] = useState('timesheet');
-          const [filterProject, setFilterProject] = useState('all');
-          const [filterStatus, setFilterStatus] = useState('all');
-          const [dateFilter, setDateFilter] = useState('all');
-          const [searchTerm, setSearchTerm] = useState('');
-          const [showProjectModal, setShowProjectModal] = useState(false);
-          const [editingProject, setEditingProject] = useState(null);
-          const [showEntryModal, setShowEntryModal] = useState(false);
-          const [editingEntry, setEditingEntry] = useState(null);
-          const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_id') || null);
-          const [projects, setProjects] = useState(() => {
-            const saved = localStorage.getItem('timesheet_projects');
-            return saved ? JSON.parse(saved) : [
-              { id: 1, name: 'Palmer Square', status: 'Active', owner: 'Manu Koshy', counterparties: 18, estimatedHours: 120, notes: '18+ counterparties. Transaction recon setup in progress along with training Kavoosh', secondaryOwner: 'Tom Hantzarides', isManagedOps: false },
-              { id: 2, name: 'Reckoner', status: 'Active', owner: 'Manu Koshy', counterparties: 2, estimatedHours: 40, notes: 'US bank Dailies and Month end recon setup', secondaryOwner: '', isManagedOps: true },
-              { id: 3, name: 'ADP', status: 'Active', owner: 'Manu Koshy', counterparties: 1, estimatedHours: 30, notes: 'Files yet to be confirmed that needs mapping', secondaryOwner: 'Tom Hantzarides', isManagedOps: true }
-            ];
-          });
-
-          const [timeEntries, setTimeEntries] = useState(() => {
-            const saved = localStorage.getItem('timesheet_entries');
-            return saved ? JSON.parse(saved) : [
-              { id: 1, date: '2025-10-06', project: 'Palmer Square', hours: 2.5, task: 'Transaction recon training', notes: 'Good progress made' },
-              { id: 2, date: '2025-10-07', project: 'Reckoner', hours: 5, task: 'US bank dailies setup', notes: 'Complex configuration completed' }
-            ];
-          });
-
-          useEffect(() => {
-            localStorage.setItem('timesheet_projects', JSON.stringify(projects));
-          }, [projects]);
-
-          useEffect(() => {
-            localStorage.setItem('timesheet_entries', JSON.stringify(timeEntries));
-          }, [timeEntries]);
-// --- Add this inside TimesheetApp (after your localStorage useEffect hooks) ---
-// === To-Do state ===
-const [tasks, setTasks] = useState(() => {
-  const saved = localStorage.getItem('todo_tasks');
-  return saved ? JSON.parse(saved) : [];
-});
-const saveToGist = async () => {
-  // First, prompt for token if not set
-  let token = GIST_TOKEN;
-  if (!token) {
-    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
-    if (!token) {
-      alert('Cloud sync cancelled. Please enter token to enable cloud features.');
-      return;
-    }
-  }
-
-  const data = {
-    projects,
-    timeEntries,
-    tasks,
-    updatedAt: new Date().toISOString()
-  };
-
-  const gistData = {
-    files: {
-      'timesheet-data.json': {
-        content: JSON.stringify(data, null, 2)
-      }
-    },
-    description: 'Timesheet Manager Data',
-    public: false
-  };
-
-  try {
-    // If we have a gistId, try to update existing gist
-    if (gistId) {
-      const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `token ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(gistData)
-      });
-
-      if (!response.ok) {
-        // If update fails (maybe gist was deleted), create new one
-        throw new Error('Gist not found, creating new one...');
-      }
-      
-      const result = await response.json();
-      alert('Data updated in cloud successfully!');
-      console.log('Gist updated:', result.id);
-      
-    } else {
-      // Create new gist
-      const response = await fetch('https://api.github.com/gists', {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(gistData)
-      });
-
-      if (!response.ok) throw new Error('Failed to create Gist');
-      
-      const result = await response.json();
-      alert('Data saved to cloud successfully!');
-      console.log('Gist created:', result.id);
-      
-      // Store the Gist ID for future updates
-      setGistId(result.id);
-      localStorage.setItem('timesheet_gist_id', result.id);
-    }
-    
-  } catch (error) {
-    if (error.message.includes('creating new one')) {
-      // If update failed, try to create new gist
-      try {
-        const response = await fetch('https://api.github.com/gists', {
-          method: 'POST',
-          headers: {
-            'Authorization': `token ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(gistData)
-        });
-
-        if (!response.ok) throw new Error('Failed to create new Gist');
-        
-        const result = await response.json();
-        alert('Data saved to new cloud location successfully!');
-        
-        // Store the new Gist ID
-        setGistId(result.id);
-        localStorage.setItem('timesheet_gist_id', result.id);
-        
-      } catch (createError) {
-        alert('Failed to save to cloud: ' + createError.message);
-      }
-    } else {
-      alert('Failed to save to cloud: ' + error.message);
-    }
-  }
-};
-const loadFromGist = async () => {
-  // First, prompt for token if not set
-  let token = GIST_TOKEN;
-  if (!token) {
-    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
-    if (!token) {
-      alert('Cloud sync cancelled. Please enter token to enable cloud features.');
-      return;
-    }
-  }
-
-  if (!gistId) {
-    alert('No cloud data found. Please save data to cloud first.');
-    return;
-  }
-
-  try {
-    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers: {
-        'Authorization': `token ${token}`
-      }
-    });
-
-    if (!response.ok) throw new Error('Failed to load from Gist');
-    
-    const gist = await response.json();
-    const content = gist.files['timesheet-data.json'].content;
-    const data = JSON.parse(content);
-
-    if (window.confirm('Load cloud data? This will replace your current data.')) {
-      setProjects(data.projects || []);
-      setTimeEntries(data.timeEntries || []);
-      setTasks(data.tasks || []);
-      alert('Data loaded from cloud!');
-    }
-    
-  } catch (error) {
-    alert('Failed to load from cloud: ' + error.message);
-  }
-};			
-useEffect(() => {
-  localStorage.setItem('todo_tasks', JSON.stringify(tasks));
-}, [tasks]);
-const fileInputRef = useRef(null);
-
-const exportJSON = () => {
-  const data = {
-    projects,
-    timeEntries,
-    tasks, // ← ADD THIS LINE
-    exportedAt: new Date().toISOString()
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `timesheet_backup_${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-};
-
-const handleImportFile = (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    try {
-      const parsed = JSON.parse(ev.target.result);
-      // Updated validation to include tasks
-      if (!Array.isArray(parsed.projects) || !Array.isArray(parsed.timeEntries)) {
-        throw new Error('File does not look like a valid timesheet backup.');
-      }
-      if (window.confirm('This will overwrite your current projects, time entries, AND tasks. Continue?')) {
-        setProjects(parsed.projects);
-        setTimeEntries(parsed.timeEntries);
-        // ADD THIS LINE to handle tasks import
-        if (Array.isArray(parsed.tasks)) {
-          setTasks(parsed.tasks);
-        }
-        alert('Import successful.');
-      }
-    } catch (err) {
-      alert('Import failed: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-};
-			const Key = ({size = 24, className = ""}) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-  </svg>
-);
-          const [newProject, setNewProject] = useState({
-            name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0,
-            estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true
-          });
-
-          const [newEntry, setNewEntry] = useState({
-            date: new Date().toISOString().split('T')[0],
-            project: '', hours: '', task: '', notes: ''
-          });
-
-          const getDateRange = (filter) => {
-            const today = new Date();
-            const ranges = {
-              today: [today, today],
-              yesterday: [new Date(today.getTime() - 86400000), new Date(today.getTime() - 86400000)],
-              thisWeek: [new Date(today.setDate(today.getDate() - today.getDay())), new Date()],
-              lastWeek: [
-                new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 7)),
-                new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 1))
-              ],
-              thisMonth: [new Date(today.getFullYear(), today.getMonth(), 1), new Date()],
-              lastMonth: [
-                new Date(today.getFullYear(), today.getMonth() - 1, 1),
-                new Date(today.getFullYear(), today.getMonth(), 0)
-              ],
-              last7Days: [new Date(new Date().getTime() - 7 * 86400000), new Date()],
-              last30Days: [new Date(new Date().getTime() - 30 * 86400000), new Date()]
-            };
-            return ranges[filter] || null;
-          };
-
-          const filteredTimeEntries = useMemo(() => {
-            let filtered = timeEntries;
-
-            if (filterProject !== 'all') {
-              filtered = filtered.filter(e => e.project === filterProject);
-            }
-
-            if (searchTerm) {
-              filtered = filtered.filter(e =>
-                e.task.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                e.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                e.project.toLowerCase().includes(searchTerm.toLowerCase())
-              );
-            }
-
-            if (dateFilter !== 'all') {
-              const range = getDateRange(dateFilter);
-              if (range) {
-                filtered = filtered.filter(e => {
-                  const entryDate = new Date(e.date);
-                  return entryDate >= range[0] && entryDate <= range[1];
-                });
-              }
-            }
-
-            return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-          }, [timeEntries, filterProject, searchTerm, dateFilter]);
-
-          const filteredProjects = useMemo(() => {
-            let filtered = projects;
+            // Cloud sync states
+            const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
+            const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_id') || null);
             
-            if (filterStatus !== 'all') {
-              filtered = filtered.filter(p => p.status === filterStatus);
-            }
+            // Main state
+            const [activeTab, setActiveTab] = useState('timesheet');
+            const [filterProject, setFilterProject] = useState('all');
+            const [filterStatus, setFilterStatus] = useState('all');
+            const [dateFilter, setDateFilter] = useState('all');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [showProjectModal, setShowProjectModal] = useState(false);
+            const [editingProject, setEditingProject] = useState(null);
+            const [showEntryModal, setShowEntryModal] = useState(false);
+            const [editingEntry, setEditingEntry] = useState(null);
             
-            if (searchTerm) {
-              filtered = filtered.filter(p =>
-                p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.owner.toLowerCase().includes(searchTerm.toLowerCase())
-              );
-            }
-            
-            return filtered;
-          }, [projects, filterStatus, searchTerm]);
-
-          const totalHours = useMemo(() => {
-            return filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0);
-          }, [filteredTimeEntries]);
-
-          const projectStats = useMemo(() => {
-            const stats = {};
-            projects.forEach(project => {
-              const entries = timeEntries.filter(e => e.project === project.name);
-              const actualHours = entries.reduce((sum, e) => sum + e.hours, 0);
-              stats[project.name] = {
-                actual: actualHours,
-                estimated: project.estimatedHours,
-                remaining: project.estimatedHours - actualHours,
-                progress: project.estimatedHours > 0 ? (actualHours / project.estimatedHours) * 100 : 0
-              };
+            // Data states
+            const [projects, setProjects] = useState(() => {
+                const saved = localStorage.getItem('timesheet_projects');
+                return saved ? JSON.parse(saved) : [
+                    { id: 1, name: 'Palmer Square', status: 'Active', owner: 'Manu Koshy', counterparties: 18, estimatedHours: 120, notes: '18+ counterparties. Transaction recon setup in progress along with training Kavoosh', secondaryOwner: 'Tom Hantzarides', isManagedOps: false },
+                    { id: 2, name: 'Reckoner', status: 'Active', owner: 'Manu Koshy', counterparties: 2, estimatedHours: 40, notes: 'US bank Dailies and Month end recon setup', secondaryOwner: '', isManagedOps: true },
+                    { id: 3, name: 'ADP', status: 'Active', owner: 'Manu Koshy', counterparties: 1, estimatedHours: 30, notes: 'Files yet to be confirmed that needs mapping', secondaryOwner: 'Tom Hantzarides', isManagedOps: true }
+                ];
             });
-            return stats;
-          }, [projects, timeEntries]);
 
-          const addOrUpdateProject = () => {
-            if (editingProject) {
-              setProjects(projects.map(p => p.id === editingProject.id ? { ...newProject, id: editingProject.id } : p));
-              setEditingProject(null);
-            } else {
-              const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
-              setProjects([...projects, { ...newProject, id: newId }]);
-            }
-            setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
-            setShowProjectModal(false);
-          };
+            const [timeEntries, setTimeEntries] = useState(() => {
+                const saved = localStorage.getItem('timesheet_entries');
+                return saved ? JSON.parse(saved) : [
+                    { id: 1, date: '2025-10-06', project: 'Palmer Square', hours: 2.5, task: 'Transaction recon training', notes: 'Good progress made' },
+                    { id: 2, date: '2025-10-07', project: 'Reckoner', hours: 5, task: 'US bank dailies setup', notes: 'Complex configuration completed' }
+                ];
+            });
 
-          const deleteProject = (id) => {
-            if (window.confirm('Are you sure you want to delete this project?')) {
-              setProjects(projects.filter(p => p.id !== id));
-            }
-          };
+            const [tasks, setTasks] = useState(() => {
+                const saved = localStorage.getItem('todo_tasks');
+                return saved ? JSON.parse(saved) : [];
+            });
 
-          const addOrUpdateEntry = () => {
-            if (editingEntry) {
-              setTimeEntries(timeEntries.map(e => e.id === editingEntry.id ? { ...newEntry, id: editingEntry.id, hours: parseFloat(newEntry.hours) } : e));
-              setEditingEntry(null);
-            } else {
-              if (newEntry.project && newEntry.hours && newEntry.task) {
-                const newId = timeEntries.length > 0 ? Math.max(...timeEntries.map(e => e.id)) + 1 : 1;
-                setTimeEntries([...timeEntries, {
-                  id: newId,
-                  ...newEntry,
-                  hours: parseFloat(newEntry.hours)
-                }]);
-              }
-            }
-            setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
-            setShowEntryModal(false);
-          };
+            // Form states
+            const [newProject, setNewProject] = useState({
+                name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0,
+                estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true
+            });
 
-          const deleteEntry = (id) => {
-            if (window.confirm('Are you sure you want to delete this entry?')) {
-              setTimeEntries(timeEntries.filter(e => e.id !== id));
-            }
-          };
+            const [newEntry, setNewEntry] = useState({
+                date: new Date().toISOString().split('T')[0],
+                project: '', hours: '', task: '', notes: ''
+            });
 
-          const editProject = (project) => {
-            setNewProject(project);
-            setEditingProject(project);
-            setShowProjectModal(true);
-          };
+            // Refs
+            const fileInputRef = useRef(null);
 
-          const editEntry = (entry) => {
-            setNewEntry(entry);
-            setEditingEntry(entry);
-            setShowEntryModal(true);
-          };
+            // Local storage effects
+            useEffect(() => {
+                localStorage.setItem('timesheet_projects', JSON.stringify(projects));
+            }, [projects]);
 
-          const getStatusColor = (status) => {
-            const colors = {
-              'Active': 'bg-blue-100 text-blue-800 border-blue-300',
-              'Completed': 'bg-green-100 text-green-800 border-green-300',
-              'Initial Phase': 'bg-purple-100 text-purple-800 border-purple-300',
-              'On Hold': 'bg-red-100 text-red-800 border-red-300'
+            useEffect(() => {
+                localStorage.setItem('timesheet_entries', JSON.stringify(timeEntries));
+            }, [timeEntries]);
+
+            useEffect(() => {
+                localStorage.setItem('todo_tasks', JSON.stringify(tasks));
+            }, [tasks]);
+
+            // Cloud sync functions
+            const setupGistToken = () => {
+                if (!GIST_TOKEN) {
+                    const token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
+                    if (token) {
+                        setGistToken(token);
+                        localStorage.setItem('timesheet_gist_token', token);
+                        return token;
+                    } else {
+                        alert('Cloud features disabled. Please refresh and enter token to enable cloud sync.');
+                        return null;
+                    }
+                }
+                return GIST_TOKEN;
             };
-            return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
-          };
 
-          const exportToCSV = () => {
-            const headers = ['Date', 'Project', 'Hours', 'Task', 'Notes'];
-            const csv = [
-              headers.join(','),
-              ...filteredTimeEntries.map(e => [e.date, e.project, e.hours, `"${e.task}"`, `"${e.notes}"`].join(','))
-            ].join('\n');
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `timesheet_${dateFilter}_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-          };
+            const saveToGist = async () => {
+                let token = GIST_TOKEN;
+                if (!token) {
+                    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
+                    if (!token) {
+                        alert('Cloud sync cancelled. Please enter token to enable cloud features.');
+                        return;
+                    }
+                }
 
-          return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
-              <div className="max-w-7xl mx-auto">
-                <div className="bg-white rounded-xl shadow-xl p-6 mb-6 border border-gray-200">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <div>
-                      <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
-                        Professional Timesheet Manager
-                      </h1>
-                      <p className="text-gray-600 mt-2">Complete project and time tracking solution</p>
-                    </div>
+                const data = {
+                    projects,
+                    timeEntries,
+                    tasks,
+                    updatedAt: new Date().toISOString()
+                };
+
+                const gistData = {
+                    files: {
+                        'timesheet-data.json': {
+                            content: JSON.stringify(data, null, 2)
+                        }
+                    },
+                    description: 'Timesheet Manager Data',
+                    public: false
+                };
+
+                try {
+                    if (gistId) {
+                        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `token ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(gistData)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Gist not found, creating new one...');
+                        }
+                        
+                        const result = await response.json();
+                        alert('Data updated in cloud successfully!');
+                        
+                    } else {
+                        const response = await fetch('https://api.github.com/gists', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `token ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(gistData)
+                        });
+
+                        if (!response.ok) throw new Error('Failed to create Gist');
+                        
+                        const result = await response.json();
+                        alert('Data saved to cloud successfully!');
+                        
+                        setGistId(result.id);
+                        localStorage.setItem('timesheet_gist_id', result.id);
+                    }
                     
-  <button
-    onClick={() => {
-      setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
-      setEditingProject(null);
-      setShowProjectModal(true);
-    }}
-    className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 flex items-center gap-2 shadow-md"
-  >
-    <Plus size={18} />
-    New Project
-  </button>
+                } catch (error) {
+                    if (error.message.includes('creating new one')) {
+                        try {
+                            const response = await fetch('https://api.github.com/gists', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `token ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(gistData)
+                            });
 
-  <button
-    onClick={exportToCSV}
-    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 flex items-center gap-2 shadow-md"
-  >
-    <Download size={18} />
-    Export CSV
-  </button>
+                            if (!response.ok) throw new Error('Failed to create new Gist');
+                            
+                            const result = await response.json();
+                            alert('Data saved to new cloud location successfully!');
+                            
+                            setGistId(result.id);
+                            localStorage.setItem('timesheet_gist_id', result.id);
+                            
+                        } catch (createError) {
+                            alert('Failed to save to cloud: ' + createError.message);
+                        }
+                    } else {
+                        alert('Failed to save to cloud: ' + error.message);
+                    }
+                }
+            };
 
-  {/* NEW: Export JSON */}
-  <button
-    onClick={exportJSON}
-    className="px-4 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg hover:from-sky-600 hover:to-sky-700 flex items-center gap-2 shadow-md"
-    title="Download a JSON backup of projects and entries"
-  >
-    <Download size={18} />
-    Export JSON
-  </button>
+            const loadFromGist = async () => {
+                let token = GIST_TOKEN;
+                if (!token) {
+                    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
+                    if (!token) {
+                        alert('Cloud sync cancelled. Please enter token to enable cloud features.');
+                        return;
+                    }
+                }
 
-  {/* NEW: Import JSON (triggers hidden file input) */}
-  <button
-    onClick={() => fileInputRef.current && fileInputRef.current.click()}
-    className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 flex items-center gap-2 shadow-md"
-    title="Load a previously-exported JSON backup"
-  >
-    <Download size={18} />
-    Import JSON
-  </button>
- <button
-      onClick={saveToGist}
-      className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 flex items-center gap-2 shadow-md"
-      title="Save to cloud (GitHub Gist)"
-    >
-      <Cloud size={18} />
-      Save to Cloud
-    </button>
+                if (!gistId) {
+                    alert('No cloud data found. Please save data to cloud first.');
+                    return;
+                }
 
-    <button
-      onClick={loadFromGist}
-      className="px-4 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:from-teal-600 hover:to-teal-700 flex items-center gap-2 shadow-md"
-      title="Load from cloud"
-    >
-      <DownloadCloud size={18} />
-      Load from Cloud
-    </button>
-{/* ADD THE SET GIST ID BUTTON HERE */}
-  <button
-    onClick={setGistIdManually}
-    className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 flex items-center gap-2 shadow-md"
-    title="Set Gist ID manually"
-  >
-    <Key size={18} />
-    Set Gist ID
-  </button>
+                try {
+                    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        headers: {
+                            'Authorization': `token ${token}`
+                        }
+                    });
 
-    <input
-      type="file"
-      ref={fileInputRef}
-      accept="application/json,application/*+json"
-      onChange={handleImportFile}
-      style={{ display: 'none' }}
-    />
-  </div>
-</div>
+                    if (!response.ok) throw new Error('Failed to load from Gist');
+                    
+                    const gist = await response.json();
+                    const content = gist.files['timesheet-data.json'].content;
+                    const data = JSON.parse(content);
 
-                  <div className="flex gap-2 border-b overflow-x-auto">
-                    {[
-                      { id: 'timesheet', label: 'Timesheet', icon: Clock },
-                      { id: 'projects', label: 'Projects', icon: Target },
-                      { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-					   { id: 'todo', label: 'To-Do', icon: CheckSquare } // ← NEW
-                    ].map(tab => {
-                      const Icon = tab.icon;
-                      return (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveTab(tab.id)}
-                          className={`px-6 py-3 font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
-                            activeTab === tab.id
-                              ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
-                              : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
-                          }`}
-                        >
-                          <Icon size={18} />
-                          {tab.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                    if (window.confirm('Load cloud data? This will replace your current data.')) {
+                        setProjects(data.projects || []);
+                        setTimeEntries(data.timeEntries || []);
+                        setTasks(data.tasks || []);
+                        alert('Data loaded from cloud!');
+                    }
+                    
+                } catch (error) {
+                    alert('Failed to load from cloud: ' + error.message);
+                }
+            };
 
-                {activeTab === 'timesheet' && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-indigo-100 text-sm font-medium">Total Hours</p>
-                            <p className="text-4xl font-bold mt-1">{totalHours.toFixed(1)}</p>
-                            <p className="text-xs text-indigo-200 mt-1">{dateFilter === 'all' ? 'All Time' : dateFilter.replace(/([A-Z])/g, ' $1').trim()}</p>
-                          </div>
-                          <Clock size={40} className="text-indigo-200" />
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-green-100 text-sm font-medium">Active Projects</p>
-                            <p className="text-4xl font-bold mt-1">
-                              {projects.filter(p => p.status === 'Active').length}
-                            </p>
-                            <p className="text-xs text-green-200 mt-1">In Progress</p>
-                          </div>
-                          <Target size={40} className="text-green-200" />
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-purple-100 text-sm font-medium">Total Projects</p>
-                            <p className="text-4xl font-bold mt-1">{projects.length}</p>
-                            <p className="text-xs text-purple-200 mt-1">All Statuses</p>
-                          </div>
-                          <BarChart3 size={40} className="text-purple-200" />
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-orange-100 text-sm font-medium">Entries</p>
-                            <p className="text-4xl font-bold mt-1">{filteredTimeEntries.length}</p>
-                            <p className="text-xs text-orange-200 mt-1">Time Entries</p>
-                          </div>
-                          <FileText size={40} className="text-orange-200" />
-                        </div>
-                      </div>
-                    </div>
+            const setGistIdManually = () => {
+                const id = prompt('Enter your Gist ID (you can find this in the URL of your Gist):');
+                if (id) {
+                    setGistId(id);
+                    localStorage.setItem('timesheet_gist_id', id);
+                    alert('Gist ID saved! You can now load from cloud.');
+                }
+            };
 
-                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Filter size={20} className="text-indigo-600" />
-                        <h3 className="font-bold text-gray-800">Filters</h3>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-                          <select
-                            value={dateFilter}
-                            onChange={(e) => setDateFilter(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          >
-                            <option value="all">All Time</option>
-                            <option value="today">Today</option>
-                            <option value="yesterday">Yesterday</option>
-                            <option value="thisWeek">This Week</option>
-                            <option value="lastWeek">Last Week</option>
-                            <option value="last7Days">Last 7 Days</option>
-                            <option value="thisMonth">This Month</option>
-                            <option value="lastMonth">Last Month</option>
-                            <option value="last30Days">Last 30 Days</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Project</label>
-                          <select
-                            value={filterProject}
-                            onChange={(e) => setFilterProject(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          >
-                            <option value="all">All Projects</option>
-                            {projects.map(p => (
-                              <option key={p.id} value={p.name}>{p.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                          <div className="relative">
-                            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="text"
-                              placeholder="Search tasks, notes..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+            // Export/Import functions
+            const exportToCSV = () => {
+                const headers = ['Date', 'Project', 'Hours', 'Task', 'Notes'];
+                const csv = [
+                    headers.join(','),
+                    ...timeEntries.map(e => [e.date, e.project, e.hours, `"${e.task}"`, `"${e.notes}"`].join(','))
+                ].join('\n');
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `timesheet_${dateFilter}_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+            };
 
-                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <Plus size={20} className="text-indigo-600" />
-                          <h3 className="font-bold text-gray-800">Quick Add Time Entry</h3>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
-                            setEditingEntry(null);
-                            setShowEntryModal(true);
-                          }}
-                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm flex items-center gap-2"
-                        >
-                          <Plus size={16} />
-                          Detailed Entry
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-                        <input
-                          type="date"
-                          value={newEntry.date}
-                          onChange={(e) => setNewEntry({...newEntry, date: e.target.value})}
-                          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
-                        <select
-                          value={newEntry.project}
-                          onChange={(e) => setNewEntry({...newEntry, project: e.target.value})}
-                          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        >
-                          <option value="">Select Project</option>
-                          {projects.map(p => (
-                            <option key={p.id} value={p.name}>{p.name}</option>
-                          ))}
-                        </select>
-                        <input
-                          type="number"
-                          step="0.25"
-                          placeholder="Hours"
-                          value={newEntry.hours}
-                          onChange={(e) => setNewEntry({...newEntry, hours: e.target.value})}
-                          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Task description"
-                          value={newEntry.task}
-                          onChange={(e) => setNewEntry({...newEntry, task: e.target.value})}
-                          className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent col-span-1 md:col-span-2"
-                        />
-                      </div>
-                      <button
-                        onClick={addOrUpdateEntry}
-                        className="mt-3 px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 shadow-md"
-                      >
-                        <Plus size={18} />
-                        Add Entry
-                      </button>
-                    </div>
+            const exportJSON = () => {
+                const data = {
+                    projects,
+                    timeEntries,
+                    tasks,
+                    exportedAt: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `timesheet_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
 
-                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                      <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <FileText size={20} className="text-indigo-600" />
-                        Time Entries ({filteredTimeEntries.length})
-                      </h3>
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                            <tr>
-                              <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Date</th>
-                              <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Project</th>
-                              <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Hours</th>
-                              <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Task</th>
-                              <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Notes</th>
-                              <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-200">
-                            {filteredTimeEntries.map(entry => (
-                              <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
-                                <td className="px-4 py-3 text-sm text-gray-900 font-medium">{entry.date}</td>
-                                <td className="px-4 py-3 text-sm">
-                                  <span className="px-3 py-1 bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 rounded-full text-xs font-semibold border border-indigo-200">
-                                    {entry.project}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-3 text-sm font-bold text-indigo-600">{entry.hours}h</td>
-                                <td className="px-4 py-3 text-sm text-gray-700">{entry.task}</td>
-                                <td className="px-4 py-3 text-sm text-gray-500 italic">{entry.notes || '-'}</td>
-                                <td className="px-4 py-3 text-sm">
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={() => editEntry(entry)}
-                                      className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                    >
-                                      <Edit2 size={16} />
-                                    </button>
-                                    <button
-                                      onClick={() => deleteEntry(entry.id)}
-                                      className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                )}
+            const handleImportFile = (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const parsed = JSON.parse(ev.target.result);
+                        if (!Array.isArray(parsed.projects) || !Array.isArray(parsed.timeEntries)) {
+                            throw new Error('File does not look like a valid timesheet backup.');
+                        }
+                        if (window.confirm('This will overwrite your current projects, time entries, AND tasks. Continue?')) {
+                            setProjects(parsed.projects);
+                            setTimeEntries(parsed.timeEntries);
+                            if (Array.isArray(parsed.tasks)) {
+                                setTasks(parsed.tasks);
+                            }
+                            alert('Import successful.');
+                        }
+                    } catch (err) {
+                        alert('Import failed: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = '';
+            };
 
-                {activeTab === 'projects' && (
-                  <div className="space-y-6">
-                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
-                          <select
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          >
-                            <option value="all">All Statuses</option>
-                            <option value="Active">Active</option>
-                            <option value="Completed">Completed</option>
-                            <option value="Initial Phase">Initial Phase</option>
-                            <option value="On Hold">On Hold</option>
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Search Projects</label>
-                          <div className="relative">
-                            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <input
-                              type="text"
-                              placeholder="Search by name, owner, notes..."
-                              value={searchTerm}
-                              onChange={(e) => setSearchTerm(e.target.value)}
-                              className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+            // Utility functions
+            const getDateRange = (filter) => {
+                const today = new Date();
+                const ranges = {
+                    today: [today, today],
+                    yesterday: [new Date(today.getTime() - 86400000), new Date(today.getTime() - 86400000)],
+                    thisWeek: [new Date(today.setDate(today.getDate() - today.getDay())), new Date()],
+                    lastWeek: [
+                        new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 7)),
+                        new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 1))
+                    ],
+                    thisMonth: [new Date(today.getFullYear(), today.getMonth(), 1), new Date()],
+                    lastMonth: [
+                        new Date(today.getFullYear(), today.getMonth() - 1, 1),
+                        new Date(today.getFullYear(), today.getMonth(), 0)
+                    ],
+                    last7Days: [new Date(new Date().getTime() - 7 * 86400000), new Date()],
+                    last30Days: [new Date(new Date().getTime() - 30 * 86400000), new Date()]
+                };
+                return ranges[filter] || null;
+            };
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {filteredProjects.map(project => {
-                        const stats = projectStats[project.name];
-                        return (
-                          <div key={project.id} className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all hover:border-indigo-300">
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex-1">
-                                <h3 className="font-bold text-lg text-gray-800 mb-2">{project.name}</h3>
-                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(project.status)}`}>
-                                  {project.status}
-                                </span>
-                              </div>
-                              <div className="flex gap-1">
-                                <button
-                                  onClick={() => editProject(project)}
-                                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                >
-                                  <Edit2 size={18} />
-                                </button>
-                                <button
-                                  onClick={() => deleteProject(project.id)}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              </div>
-                            </div>
+            const filteredTimeEntries = useMemo(() => {
+                let filtered = timeEntries;
 
-                            <div className="space-y-3 mb-4">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Owner:</span>
-                                <span className="font-semibold text-gray-800">{project.owner}</span>
-                              </div>
-                              {project.secondaryOwner && (
-                                <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600">Secondary:</span>
-                                  <span className="font-semibold text-gray-800">{project.secondaryOwner}</span>
+                if (filterProject !== 'all') {
+                    filtered = filtered.filter(e => e.project === filterProject);
+                }
+
+                if (searchTerm) {
+                    filtered = filtered.filter(e =>
+                        e.task.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        e.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        e.project.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+
+                if (dateFilter !== 'all') {
+                    const range = getDateRange(dateFilter);
+                    if (range) {
+                        filtered = filtered.filter(e => {
+                            const entryDate = new Date(e.date);
+                            return entryDate >= range[0] && entryDate <= range[1];
+                        });
+                    }
+                }
+
+                return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            }, [timeEntries, filterProject, searchTerm, dateFilter]);
+
+            const filteredProjects = useMemo(() => {
+                let filtered = projects;
+                
+                if (filterStatus !== 'all') {
+                    filtered = filtered.filter(p => p.status === filterStatus);
+                }
+                
+                if (searchTerm) {
+                    filtered = filtered.filter(p =>
+                        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        p.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        p.owner.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+                
+                return filtered;
+            }, [projects, filterStatus, searchTerm]);
+
+            const totalHours = useMemo(() => {
+                return filteredTimeEntries.reduce((sum, entry) => sum + entry.hours, 0);
+            }, [filteredTimeEntries]);
+
+            const projectStats = useMemo(() => {
+                const stats = {};
+                projects.forEach(project => {
+                    const entries = timeEntries.filter(e => e.project === project.name);
+                    const actualHours = entries.reduce((sum, e) => sum + e.hours, 0);
+                    stats[project.name] = {
+                        actual: actualHours,
+                        estimated: project.estimatedHours,
+                        remaining: project.estimatedHours - actualHours,
+                        progress: project.estimatedHours > 0 ? (actualHours / project.estimatedHours) * 100 : 0
+                    };
+                });
+                return stats;
+            }, [projects, timeEntries]);
+
+            // CRUD operations
+            const addOrUpdateProject = () => {
+                if (editingProject) {
+                    setProjects(projects.map(p => p.id === editingProject.id ? { ...newProject, id: editingProject.id } : p));
+                    setEditingProject(null);
+                } else {
+                    const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
+                    setProjects([...projects, { ...newProject, id: newId }]);
+                }
+                setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
+                setShowProjectModal(false);
+            };
+
+            const deleteProject = (id) => {
+                if (window.confirm('Are you sure you want to delete this project?')) {
+                    setProjects(projects.filter(p => p.id !== id));
+                }
+            };
+
+            const addOrUpdateEntry = () => {
+                if (editingEntry) {
+                    setTimeEntries(timeEntries.map(e => e.id === editingEntry.id ? { ...newEntry, id: editingEntry.id, hours: parseFloat(newEntry.hours) } : e));
+                    setEditingEntry(null);
+                } else {
+                    if (newEntry.project && newEntry.hours && newEntry.task) {
+                        const newId = timeEntries.length > 0 ? Math.max(...timeEntries.map(e => e.id)) + 1 : 1;
+                        setTimeEntries([...timeEntries, {
+                            id: newId,
+                            ...newEntry,
+                            hours: parseFloat(newEntry.hours)
+                        }]);
+                    }
+                }
+                setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
+                setShowEntryModal(false);
+            };
+
+            const deleteEntry = (id) => {
+                if (window.confirm('Are you sure you want to delete this entry?')) {
+                    setTimeEntries(timeEntries.filter(e => e.id !== id));
+                }
+            };
+
+            const editProject = (project) => {
+                setNewProject(project);
+                setEditingProject(project);
+                setShowProjectModal(true);
+            };
+
+            const editEntry = (entry) => {
+                setNewEntry(entry);
+                setEditingEntry(entry);
+                setShowEntryModal(true);
+            };
+
+            const getStatusColor = (status) => {
+                const colors = {
+                    'Active': 'bg-blue-100 text-blue-800 border-blue-300',
+                    'Completed': 'bg-green-100 text-green-800 border-green-300',
+                    'Initial Phase': 'bg-purple-100 text-purple-800 border-purple-300',
+                    'On Hold': 'bg-red-100 text-red-800 border-red-300'
+                };
+                return colors[status] || 'bg-gray-100 text-gray-800 border-gray-300';
+            };
+
+            // Enhanced To-Do Tab Component
+            const ToDoTab = ({ projects, tasks, setTasks }) => {
+                const [newTask, setNewTask] = useState({ title: '', project: '', dueDate: '', priority: 'medium' });
+
+                const addTask = () => {
+                    if (!newTask.title.trim()) return;
+                    setTasks([...tasks, { 
+                        ...newTask, 
+                        id: Date.now(), 
+                        done: false,
+                        createdAt: new Date().toISOString()
+                    }]);
+                    setNewTask({ title: '', project: '', dueDate: '', priority: 'medium' });
+                };
+
+                const toggleTask = (id) => {
+                    setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+                };
+
+                const deleteTask = (id) => {
+                    if (window.confirm('Delete this task?')) {
+                        setTasks(tasks.filter(t => t.id !== id));
+                    }
+                };
+
+                const getPriorityColor = (priority) => {
+                    const colors = {
+                        high: 'border-red-500 bg-red-50',
+                        medium: 'border-yellow-500 bg-yellow-50',
+                        low: 'border-blue-500 bg-blue-50'
+                    };
+                    return colors[priority] || 'border-gray-300 bg-gray-50';
+                };
+
+                const sortedTasks = [...tasks].sort((a, b) => {
+                    if (a.done !== b.done) return a.done - b.done;
+                    
+                    const priorityOrder = { high: 3, medium: 2, low: 1 };
+                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+                        return priorityOrder[b.priority] - priorityOrder[a.priority];
+                    }
+                    
+                    if (a.dueDate && b.dueDate) {
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    }
+                    
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                });
+
+                const pendingTasks = tasks.filter(t => !t.done).length;
+                const completedTasks = tasks.filter(t => t.done).length;
+
+                return (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-blue-100 text-sm font-medium">Total Tasks</p>
+                                        <p className="text-3xl font-bold mt-1">{tasks.length}</p>
+                                        <p className="text-xs text-blue-200 mt-1">All tasks</p>
+                                    </div>
+                                    <ListCheck size={40} className="text-blue-200" />
                                 </div>
-                              )}
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Counterparties:</span>
-                                <span className="font-semibold text-gray-800">{project.counterparties}</span>
-                              </div>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Managed Ops:</span>
-                                <span className={`font-semibold ${project.isManagedOps ? 'text-green-600' : 'text-gray-400'}`}>
-                                  {project.isManagedOps ? 'Yes' : 'No'}
-                                </span>
-                              </div>
                             </div>
+                            
+                            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-orange-100 text-sm font-medium">Pending</p>
+                                        <p className="text-3xl font-bold mt-1">{pendingTasks}</p>
+                                        <p className="text-xs text-orange-200 mt-1">To be completed</p>
+                                    </div>
+                                    <Clock size={40} className="text-orange-200" />
+                                </div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-green-100 text-sm font-medium">Completed</p>
+                                        <p className="text-3xl font-bold mt-1">{completedTasks}</p>
+                                        <p className="text-xs text-green-200 mt-1">Finished tasks</p>
+                                    </div>
+                                    <CheckCircle size={40} className="text-green-200" />
+                                </div>
+                            </div>
+                        </div>
 
-                            <div className="mb-4">
-                              <div className="flex justify-between text-xs text-gray-600 mb-2">
-                                <span>Progress</span>
-                                <span className="font-semibold">{stats.actual.toFixed(1)}h / {project.estimatedHours}h</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                                <div
-                                  className={`h-3 rounded-full transition-all ${
-                                    stats.progress > 100 ? 'bg-red-500' : stats.progress > 80 ? 'bg-yellow-500' : 'bg-gradient-to-r from-green-500 to-green-600'
-                                  }`}
-                                  style={{ width: `${Math.min(stats.progress, 100)}%` }}
+                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <Plus size={22} className="text-indigo-600" />
+                                Add New Task
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="Task title"
+                                    value={newTask.title}
+                                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:col-span-2"
                                 />
-                              </div>
-                              <div className="flex justify-between text-xs mt-1">
-                                <span className={stats.progress > 100 ? 'text-red-600 font-semibold' : 'text-gray-500'}>
-                                  {stats.progress.toFixed(0)}%
-                                </span>
-                                <span className={stats.remaining < 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}>
-                                  {stats.remaining.toFixed(1)}h remaining
-                                </span>
-                              </div>
+                                <select
+                                    value={newTask.project}
+                                    onChange={(e) => setNewTask({ ...newTask, project: e.target.value })}
+                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                >
+                                    <option value="">No Project</option>
+                                    {projects.map(p => (
+                                        <option key={p.id} value={p.name}>{p.name}</option>
+                                    ))}
+                                </select>
+                                <input
+                                    type="date"
+                                    value={newTask.dueDate}
+                                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                />
+                                <select
+                                    value={newTask.priority}
+                                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                >
+                                    <option value="low">Low Priority</option>
+                                    <option value="medium">Medium Priority</option>
+                                    <option value="high">High Priority</option>
+                                </select>
                             </div>
-
-                            {project.notes && (
-                              <div className="mt-4 pt-4 border-t border-gray-200">
-                                <p className="text-xs text-gray-600 font-medium mb-1">Notes:</p>
-                                <p className="text-sm text-gray-700 italic line-clamp-3">{project.notes}</p>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'analytics' && (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-                        <p className="text-blue-100 text-sm font-medium mb-2">Avg Hours/Day</p>
-                        <p className="text-3xl font-bold">
-                          {filteredTimeEntries.length > 0 
-                            ? (totalHours / new Set(filteredTimeEntries.map(e => e.date)).size).toFixed(1)
-                            : '0.0'}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-                        <p className="text-green-100 text-sm font-medium mb-2">Completion Rate</p>
-                        <p className="text-3xl font-bold">
-                          {projects.length > 0 
-                            ? ((projects.filter(p => p.status === 'Completed').length / projects.length) * 100).toFixed(0)
-                            : '0'}%
-                        </p>
-                      </div>
-                      
-                      <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-                        <p className="text-purple-100 text-sm font-medium mb-2">Total Estimated</p>
-                        <p className="text-3xl font-bold">
-                          {projects.reduce((sum, p) => sum + p.estimatedHours, 0)}h
-                        </p>
-                      </div>
-                      
-                      <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
-                        <p className="text-orange-100 text-sm font-medium mb-2">Total Counterparties</p>
-                        <p className="text-3xl font-bold">
-                          {projects.reduce((sum, p) => sum + p.counterparties, 0)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                      <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <TrendingUp size={24} className="text-indigo-600" />
-                        Hours by Project
-                      </h3>
-                      <div className="space-y-4">
-                        {Object.entries(projectStats)
-                          .sort((a, b) => b[1].actual - a[1].actual)
-                          .filter(([name, stats]) => stats.actual > 0)
-                          .map(([projectName, stats]) => {
-                            const project = projects.find(p => p.name === projectName);
-                            return (
-                              <div key={projectName} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div className="flex justify-between items-center mb-3">
-                                  <div className="flex items-center gap-3">
-                                    <span className="font-semibold text-gray-800">{projectName}</span>
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                                      {project.status}
-                                    </span>
-                                  </div>
-                                  <div className="text-right">
-                                    <span className="text-lg font-bold text-indigo-600">{stats.actual.toFixed(1)}h</span>
-                                    <span className="text-sm text-gray-500"> / {stats.estimated}h</span>
-                                  </div>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
-                                  <div
-                                    className={`h-4 rounded-full transition-all ${
-                                      stats.progress > 100 ? 'bg-gradient-to-r from-red-500 to-red-600' : 
-                                      stats.progress > 80 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
-                                      'bg-gradient-to-r from-indigo-500 to-blue-600'
-                                    }`}
-                                    style={{ width: `${Math.min(stats.progress, 100)}%` }}
-                                  />
-                                </div>
-                                <div className="flex justify-between text-xs mt-2 text-gray-600">
-                                  <span>{stats.progress.toFixed(1)}% complete</span>
-                                  <span className={stats.remaining < 0 ? 'text-red-600 font-semibold' : ''}>
-                                    {stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h remaining` : `${Math.abs(stats.remaining).toFixed(1)}h over budget`}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Project Status Distribution</h3>
-                        <div className="space-y-3">
-                          {['Active', 'Completed', 'Initial Phase', 'On Hold'].map(status => {
-                            const count = projects.filter(p => p.status === status).length;
-                            const percentage = projects.length > 0 ? (count / projects.length) * 100 : 0;
-                            return (
-                              <div key={status}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(status)}`}>
-                                    {status}
-                                  </span>
-                                  <span className="text-lg font-bold text-gray-700">{count}</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-gradient-to-r from-indigo-500 to-blue-600 h-2 rounded-full"
-                                    style={{ width: `${percentage}%` }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Key Insights</h3>
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <AlertCircle size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">Most Active Project</p>
-                              <p className="text-sm text-gray-600">
-                                {Object.entries(projectStats).sort((a, b) => b[1].actual - a[1].actual)[0]?.[0] || 'N/A'} with {
-                                  Object.entries(projectStats).sort((a, b) => b[1].actual - a[1].actual)[0]?.[1].actual.toFixed(1) || '0'
-                                }h logged
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                            <Target size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">Projects On Track</p>
-                              <p className="text-sm text-gray-600">
-                                {Object.values(projectStats).filter(s => s.progress <= 100 && s.progress > 0).length} projects within estimated hours
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
-                            <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">Over Budget</p>
-                              <p className="text-sm text-gray-600">
-                                {Object.values(projectStats).filter(s => s.progress > 100).length} projects exceeded estimated hours
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                            <BarChart3 size={20} className="text-purple-600 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <p className="text-sm font-semibold text-gray-800">Average Project Size</p>
-                              <p className="text-sm text-gray-600">
-                                {(projects.reduce((sum, p) => sum + p.estimatedHours, 0) / projects.length).toFixed(1)}h estimated per project
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-{activeTab === 'todo' && <ToDoTab projects={projects} tasks={tasks} setTasks={setTasks} />}
-
-                {showProjectModal && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                            {editingProject ? <Edit2 size={24} /> : <Plus size={24} />}
-                            {editingProject ? 'Edit Project' : 'New Project'}
-                          </h2>
-                          <button
-                            onClick={() => {
-                              setShowProjectModal(false);
-                              setEditingProject(null);
-                              setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-lg"
-                          >
-                            <X size={24} />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="p-6 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Project Name</label>
-                            <input
-                              type="text"
-                              value={newProject.name}
-                              onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              placeholder="Enter project name"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
-                            <select
-                              value={newProject.status}
-                              onChange={(e) => setNewProject({...newProject, status: e.target.value})}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            <button
+                                onClick={addTask}
+                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2 transition-colors"
                             >
-                              <option value="Active">Active</option>
-                              <option value="Completed">Completed</option>
-                              <option value="Initial Phase">Initial Phase</option>
-                              <option value="On Hold">On Hold</option>
-                            </select>
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Owner</label>
-                            <input
-                              type="text"
-                              value={newProject.owner}
-                              onChange={(e) => setNewProject({...newProject, owner: e.target.value})}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              placeholder="Owner name"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Secondary Owner</label>
-                            <input
-                              type="text"
-                              value={newProject.secondaryOwner}
-                              onChange={(e) => setNewProject({...newProject, secondaryOwner: e.target.value})}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              placeholder="Optional"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Counterparties</label>
-                            <input
-                              type="number"
-                              value={newProject.counterparties}
-                              onChange={(e) => setNewProject({...newProject, counterparties: parseInt(e.target.value) || 0})}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              placeholder="0"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Estimated Hours</label>
-                            <input
-                              type="number"
-                              step="0.5"
-                              value={newProject.estimatedHours}
-                              onChange={(e) => setNewProject({...newProject, estimatedHours: parseFloat(e.target.value) || 0})}
-                              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                              placeholder="0"
-                            />
-                          </div>
+                                <Plus size={16} />
+                                Add Task
+                            </button>
                         </div>
-                        
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={newProject.isManagedOps}
-                              onChange={(e) => setNewProject({...newProject, isManagedOps: e.target.checked})}
-                              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                            Is Managed Ops
-                          </label>
+
+                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <ListCheck size={22} className="text-indigo-600" />
+                                Task List ({tasks.length})
+                            </h3>
+
+                            {sortedTasks.length === 0 ? (
+                                <div className="text-center py-8 text-gray-500">
+                                    <Inbox size={48} className="mx-auto mb-4 text-gray-300" />
+                                    <p>No tasks yet. Add a task to get started!</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {sortedTasks.map(task => (
+                                        <div
+                                            key={task.id}
+                                            className={`flex items-center justify-between border rounded-lg p-4 transition-colors ${
+                                                task.done ? 'bg-green-50 border-green-200' : getPriorityColor(task.priority)
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={task.done}
+                                                    onChange={() => toggleTask(task.id)}
+                                                    className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className={`font-medium ${task.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                                        {task.title}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
+                                                        {task.project && (
+                                                            <span className="flex items-center gap-1">
+                                                                <Target size={12} />
+                                                                {task.project}
+                                                            </span>
+                                                        )}
+                                                        {task.dueDate && (
+                                                            <span className="flex items-center gap-1">
+                                                                <Calendar size={12} />
+                                                                Due {task.dueDate}
+                                                            </span>
+                                                        )}
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                                            task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                            'bg-blue-100 text-blue-800'
+                                                        }`}>
+                                                            {task.priority} priority
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => deleteTask(task.id)}
+                                                className="p-2 text-red-500 hover:text-red-700 transition-colors"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-                          <textarea
-                            value={newProject.notes}
-                            onChange={(e) => setNewProject({...newProject, notes: e.target.value})}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            rows="4"
-                            placeholder="Add project notes, requirements, or important details..."
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 rounded-b-xl flex justify-end gap-3">
-                        <button
-                          onClick={() => {
-                            setShowProjectModal(false);
-                            setEditingProject(null);
-                            setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
-                          }}
-                          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={addOrUpdateProject}
-                          className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 font-medium shadow-md"
-                        >
-                          <Save size={18} />
-                          {editingProject ? 'Update Project' : 'Create Project'}
-                        </button>
-						  
-                      </div>
                     </div>
-                  </div>
-                )}
+                );
+            };
 
-                {showEntryModal && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
-                      <div className="bg-white border-b border-gray-200 p-6 rounded-t-xl">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                            {editingEntry ? <Edit2 size={24} /> : <Plus size={24} />}
-                            {editingEntry ? 'Edit Time Entry' : 'New Time Entry'}
-                          </h2>
-                          <button
-                            onClick={() => {
-                              setShowEntryModal(false);
-                              setEditingEntry(null);
-                              setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
-                            }}
-                            className="p-2 hover:bg-gray-100 rounded-lg"
-                          >
-                            <X size={24} />
-                          </button>
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-6">
+                    <div className="max-w-7xl mx-auto">
+                        {/* Header */}
+                        <div className="bg-white rounded-xl shadow-xl p-6 mb-6 border border-gray-200">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                <div>
+                                    <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+                                        Professional Timesheet Manager
+                                    </h1>
+                                    <p className="text-gray-600 mt-2">Complete project and time tracking solution</p>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        onClick={() => {
+                                            setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
+                                            setEditingProject(null);
+                                            setShowProjectModal(true);
+                                        }}
+                                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 flex items-center gap-2 shadow-md"
+                                    >
+                                        <Plus size={18} />
+                                        New Project
+                                    </button>
+
+                                    <button
+                                        onClick={exportToCSV}
+                                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 flex items-center gap-2 shadow-md"
+                                    >
+                                        <Download size={18} />
+                                        Export CSV
+                                    </button>
+
+                                    <button
+                                        onClick={exportJSON}
+                                        className="px-4 py-2 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg hover:from-sky-600 hover:to-sky-700 flex items-center gap-2 shadow-md"
+                                        title="Download a JSON backup of projects and entries"
+                                    >
+                                        <Download size={18} />
+                                        Export JSON
+                                    </button>
+
+                                    <button
+                                        onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                                        className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 flex items-center gap-2 shadow-md"
+                                        title="Load a previously-exported JSON backup"
+                                    >
+                                        <Download size={18} />
+                                        Import JSON
+                                    </button>
+
+                                    <button
+                                        onClick={saveToGist}
+                                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 flex items-center gap-2 shadow-md"
+                                        title="Save to cloud (GitHub Gist)"
+                                    >
+                                        <Cloud size={18} />
+                                        Save to Cloud
+                                    </button>
+
+                                    <button
+                                        onClick={loadFromGist}
+                                        className="px-4 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg hover:from-teal-600 hover:to-teal-700 flex items-center gap-2 shadow-md"
+                                        title="Load from cloud"
+                                    >
+                                        <DownloadCloud size={18} />
+                                        Load from Cloud
+                                    </button>
+
+                                    <button
+                                        onClick={setGistIdManually}
+                                        className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 flex items-center gap-2 shadow-md"
+                                        title="Set Gist ID manually"
+                                    >
+                                        <Key size={18} />
+                                        Set Gist ID
+                                    </button>
+
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        accept="application/json,application/*+json"
+                                        onChange={handleImportFile}
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Navigation Tabs */}
+                            <div className="flex gap-2 border-b overflow-x-auto">
+                                {[
+                                    { id: 'timesheet', label: 'Timesheet', icon: Clock },
+                                    { id: 'projects', label: 'Projects', icon: Target },
+                                    { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+                                    { id: 'todo', label: 'To-Do', icon: CheckSquare }
+                                ].map(tab => {
+                                    const Icon = tab.icon;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`px-6 py-3 font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+                                                activeTab === tab.id
+                                                    ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
+                                                    : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <Icon size={18} />
+                                            {tab.label}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                      </div>
-                      
-                      <div className="p-6 space-y-4">
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
-                          <input
-                            type="date"
-                            value={newEntry.date}
-                            onChange={(e) => setNewEntry({...newEntry, date: e.target.value})}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Project</label>
-                          <select
-                            value={newEntry.project}
-                            onChange={(e) => setNewEntry({...newEntry, project: e.target.value})}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          >
-                            <option value="">Select Project</option>
-                            {projects.map(p => (
-                              <option key={p.id} value={p.name}>{p.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Hours</label>
-                          <input
-                            type="number"
-                            step="0.25"
-                            value={newEntry.hours}
-                            onChange={(e) => setNewEntry({...newEntry, hours: e.target.value})}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="e.g., 2.5"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Task Description</label>
-                          <input
-                            type="text"
-                            value={newEntry.task}
-                            onChange={(e) => setNewEntry({...newEntry, task: e.target.value})}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="What did you work on?"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
-                          <textarea
-                            value={newEntry.notes}
-                            onChange={(e) => setNewEntry({...newEntry, notes: e.target.value})}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            rows="3"
-                            placeholder="Additional notes or context..."
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-50 border-t border-gray-200 p-6 rounded-b-xl flex justify-end gap-3">
-                        <button
-                          onClick={() => {
-                            setShowEntryModal(false);
-                            setEditingEntry(null);
-                            setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
-                          }}
-                          className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={addOrUpdateEntry}
-                          className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 font-medium shadow-md"
-                        >
-                          <Save size={18} />
-                          {editingEntry ? 'Update Entry' : 'Add Entry'}
-                        </button>
-                      </div>
+
+                        {/* Main Content */}
+                        {activeTab === 'timesheet' && (
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-6 text-white">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-indigo-100 text-sm font-medium">Total Hours</p>
+                                                <p className="text-4xl font-bold mt-1">{totalHours.toFixed(1)}</p>
+                                                <p className="text-xs text-indigo-200 mt-1">{dateFilter === 'all' ? 'All Time' : dateFilter.replace(/([A-Z])/g, ' $1').trim()}</p>
+                                            </div>
+                                            <Clock size={40} className="text-indigo-200" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-green-100 text-sm font-medium">Active Projects</p>
+                                                <p className="text-4xl font-bold mt-1">
+                                                    {projects.filter(p => p.status === 'Active').length}
+                                                </p>
+                                                <p className="text-xs text-green-200 mt-1">In Progress</p>
+                                            </div>
+                                            <Target size={40} className="text-green-200" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-purple-100 text-sm font-medium">Total Projects</p>
+                                                <p className="text-4xl font-bold mt-1">{projects.length}</p>
+                                                <p className="text-xs text-purple-200 mt-1">All Statuses</p>
+                                            </div>
+                                            <BarChart3 size={40} className="text-purple-200" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-orange-100 text-sm font-medium">Entries</p>
+                                                <p className="text-4xl font-bold mt-1">{filteredTimeEntries.length}</p>
+                                                <p className="text-xs text-orange-200 mt-1">Time Entries</p>
+                                            </div>
+                                            <FileText size={40} className="text-orange-200" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Filter size={20} className="text-indigo-600" />
+                                        <h3 className="font-bold text-gray-800">Filters</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                                            <select
+                                                value={dateFilter}
+                                                onChange={(e) => setDateFilter(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            >
+                                                <option value="all">All Time</option>
+                                                <option value="today">Today</option>
+                                                <option value="yesterday">Yesterday</option>
+                                                <option value="thisWeek">This Week</option>
+                                                <option value="lastWeek">Last Week</option>
+                                                <option value="last7Days">Last 7 Days</option>
+                                                <option value="thisMonth">This Month</option>
+                                                <option value="lastMonth">Last Month</option>
+                                                <option value="last30Days">Last 30 Days</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                                            <select
+                                                value={filterProject}
+                                                onChange={(e) => setFilterProject(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            >
+                                                <option value="all">All Projects</option>
+                                                {projects.map(p => (
+                                                    <option key={p.id} value={p.name}>{p.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                                            <div className="relative">
+                                                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search tasks, notes..."
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <Plus size={20} className="text-indigo-600" />
+                                            <h3 className="font-bold text-gray-800">Quick Add Time Entry</h3>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
+                                                setEditingEntry(null);
+                                                setShowEntryModal(true);
+                                            }}
+                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm flex items-center gap-2"
+                                        >
+                                            <Plus size={16} />
+                                            Detailed Entry
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                        <input
+                                            type="date"
+                                            value={newEntry.date}
+                                            onChange={(e) => setNewEntry({...newEntry, date: e.target.value})}
+                                            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        />
+                                        <select
+                                            value={newEntry.project}
+                                            onChange={(e) => setNewEntry({...newEntry, project: e.target.value})}
+                                            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        >
+                                            <option value="">Select Project</option>
+                                            {projects.map(p => (
+                                                <option key={p.id} value={p.name}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            type="number"
+                                            step="0.25"
+                                            placeholder="Hours"
+                                            value={newEntry.hours}
+                                            onChange={(e) => setNewEntry({...newEntry, hours: e.target.value})}
+                                            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Task description"
+                                            value={newEntry.task}
+                                            onChange={(e) => setNewEntry({...newEntry, task: e.target.value})}
+                                            className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent col-span-1 md:col-span-2"
+                                        />
+                                    </div>
+                                    <button
+                                        onClick={addOrUpdateEntry}
+                                        className="mt-3 px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 shadow-md"
+                                    >
+                                        <Plus size={18} />
+                                        Add Entry
+                                    </button>
+                                </div>
+
+                                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                    <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <FileText size={20} className="text-indigo-600" />
+                                        Time Entries ({filteredTimeEntries.length})
+                                    </h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                                                <tr>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Date</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Project</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Hours</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Task</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Notes</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-200">
+                                                {filteredTimeEntries.map(entry => (
+                                                    <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
+                                                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">{entry.date}</td>
+                                                        <td className="px-4 py-3 text-sm">
+                                                            <span className="px-3 py-1 bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 rounded-full text-xs font-semibold border border-indigo-200">
+                                                                {entry.project}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-sm font-bold text-indigo-600">{entry.hours}h</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-700">{entry.task}</td>
+                                                        <td className="px-4 py-3 text-sm text-gray-500 italic">{entry.notes || '-'}</td>
+                                                        <td className="px-4 py-3 text-sm">
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => editEntry(entry)}
+                                                                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                                                >
+                                                                    <Edit2 size={16} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => deleteEntry(entry.id)}
+                                                                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'projects' && (
+                            <div className="space-y-6">
+                                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
+                                            <select
+                                                value={filterStatus}
+                                                onChange={(e) => setFilterStatus(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            >
+                                                <option value="all">All Statuses</option>
+                                                <option value="Active">Active</option>
+                                                <option value="Completed">Completed</option>
+                                                <option value="Initial Phase">Initial Phase</option>
+                                                <option value="On Hold">On Hold</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Search Projects</label>
+                                            <div className="relative">
+                                                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search by name, owner, notes..."
+                                                    value={searchTerm}
+                                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                                    className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {filteredProjects.map(project => {
+                                        const stats = projectStats[project.name];
+                                        return (
+                                            <div key={project.id} className="bg-white border-2 border-gray-200 rounded-xl p-6 card-hover">
+                                                <div className="flex items-start justify-between mb-4">
+                                                    <div className="flex-1">
+                                                        <h3 className="font-bold text-lg text-gray-800 mb-2">{project.name}</h3>
+                                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(project.status)}`}>
+                                                            {project.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            onClick={() => editProject(project)}
+                                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        >
+                                                            <Edit2 size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => deleteProject(project.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-gray-600">Owner:</span>
+                                                        <span className="font-semibold text-gray-800">{project.owner}</span>
+                                                    </div>
+                                                    {project.secondaryOwner && (
+                                                        <div className="flex justify-between text-sm">
+                                                            <span className="text-gray-600">Secondary:</span>
+                                                            <span className="font-semibold text-gray-800">{project.secondaryOwner}</span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-gray-600">Counterparties:</span>
+                                                        <span className="font-semibold text-gray-800">{project.counterparties}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-gray-600">Managed Ops:</span>
+                                                        <span className={`font-semibold ${project.isManagedOps ? 'text-green-600' : 'text-gray-400'}`}>
+                                                            {project.isManagedOps ? 'Yes' : 'No'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <div className="flex justify-between text-xs text-gray-600 mb-2">
+                                                        <span>Progress</span>
+                                                        <span className="font-semibold">{stats.actual.toFixed(1)}h / {project.estimatedHours}h</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                                        <div
+                                                            className={`progress-bar h-3 rounded-full transition-all ${
+                                                                stats.progress > 100 ? 'bg-red-500' : stats.progress > 80 ? 'bg-yellow-500' : 'bg-gradient-to-r from-green-500 to-green-600'
+                                                            }`}
+                                                            style={{ width: `${Math.min(stats.progress, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <div className="flex justify-between text-xs mt-1">
+                                                        <span className={stats.progress > 100 ? 'text-red-600 font-semibold' : 'text-gray-500'}>
+                                                            {stats.progress.toFixed(0)}%
+                                                        </span>
+                                                        <span className={stats.remaining < 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}>
+                                                            {stats.remaining.toFixed(1)}h remaining
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {project.notes && (
+                                                    <div className="mt-4 pt-4 border-t border-gray-200">
+                                                        <p className="text-xs text-gray-600 font-medium mb-1">Notes:</p>
+                                                        <p className="text-sm text-gray-700 italic line-clamp-3">{project.notes}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'analytics' && (
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                                        <p className="text-blue-100 text-sm font-medium mb-2">Avg Hours/Day</p>
+                                        <p className="text-3xl font-bold">
+                                            {filteredTimeEntries.length > 0 
+                                                ? (totalHours / new Set(filteredTimeEntries.map(e => e.date)).size).toFixed(1)
+                                                : '0.0'}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+                                        <p className="text-green-100 text-sm font-medium mb-2">Completion Rate</p>
+                                        <p className="text-3xl font-bold">
+                                            {projects.length > 0 
+                                                ? ((projects.filter(p => p.status === 'Completed').length / projects.length) * 100).toFixed(0)
+                                                : '0'}%
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                                        <p className="text-purple-100 text-sm font-medium mb-2">Total Estimated</p>
+                                        <p className="text-3xl font-bold">
+                                            {projects.reduce((sum, p) => sum + p.estimatedHours, 0)}h
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                                        <p className="text-orange-100 text-sm font-medium mb-2">Total Counterparties</p>
+                                        <p className="text-3xl font-bold">
+                                            {projects.reduce((sum, p) => sum + p.counterparties, 0)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                                        <TrendingUp size={24} className="text-indigo-600" />
+                                        Hours by Project
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {Object.entries(projectStats)
+                                            .sort((a, b) => b[1].actual - a[1].actual)
+                                            .filter(([name, stats]) => stats.actual > 0)
+                                            .map(([projectName, stats]) => {
+                                                const project = projects.find(p => p.name === projectName);
+                                                return (
+                                                    <div key={projectName} className="border border-gray-200 rounded-lg p-4 card-hover">
+                                                        <div className="flex justify-between items-center mb-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <span className="font-semibold text-gray-800">{projectName}</span>
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
+                                                                    {project.status}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <span className="text-lg font-bold text-indigo-600">{stats.actual.toFixed(1)}h</span>
+                                                                <span className="text-sm text-gray-500"> / {stats.estimated}h</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                                                            <div
+                                                                className={`progress-bar h-4 rounded-full transition-all ${
+                                                                    stats.progress > 100 ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+                                                                    stats.progress > 80 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
+                                                                    'bg-gradient-to-r from-indigo-500 to-blue-600'
+                                                                }`}
+                                                                style={{ width: `${Math.min(stats.progress, 100)}%` }}
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-between text-xs mt-2 text-gray-600">
+                                                            <span>{stats.progress.toFixed(1)}% complete</span>
+                                                            <span className={stats.remaining < 0 ? 'text-red-600 font-semibold' : ''}>
+                                                                {stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h remaining` : `${Math.abs(stats.remaining).toFixed(1)}h over budget`}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                        <h3 className="text-lg font-bold text-gray-800 mb-4">Project Status Distribution</h3>
+                                        <div className="space-y-3">
+                                            {['Active', 'Completed', 'Initial Phase', 'On Hold'].map(status => {
+                                                const count = projects.filter(p => p.status === status).length;
+                                                const percentage = projects.length > 0 ? (count / projects.length) * 100 : 0;
+                                                return (
+                                                    <div key={status}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(status)}`}>
+                                                                {status}
+                                                            </span>
+                                                            <span className="text-lg font-bold text-gray-700">{count}</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                                            <div
+                                                                className="bg-gradient-to-r from-indigo-500 to-blue-600 h-2 rounded-full"
+                                                                style={{ width: `${percentage}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                                        <h3 className="text-lg font-bold text-gray-800 mb-4">Key Insights</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                                <AlertCircle size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-800">Most Active Project</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {Object.entries(projectStats).sort((a, b) => b[1].actual - a[1].actual)[0]?.[0] || 'N/A'} with {
+                                                            Object.entries(projectStats).sort((a, b) => b[1].actual - a[1].actual)[0]?.[1].actual.toFixed(1) || '0'
+                                                        }h logged
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                                                <Target size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-800">Projects On Track</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {Object.values(projectStats).filter(s => s.progress <= 100 && s.progress > 0).length} projects within estimated hours
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                                                <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-800">Over Budget</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {Object.values(projectStats).filter(s => s.progress > 100).length} projects exceeded estimated hours
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                                                <BarChart3 size={20} className="text-purple-600 flex-shrink-0 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-800">Average Project Size</p>
+                                                    <p className="text-sm text-gray-600">
+                                                        {(projects.reduce((sum, p) => sum + p.estimatedHours, 0) / projects.length).toFixed(1)}h estimated per project
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'todo' && (
+                            <ToDoTab projects={projects} tasks={tasks} setTasks={setTasks} />
+                        )}
+
+                        {/* Modals */}
+                        {showProjectModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                                <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                                    <div className="sticky top-0 bg-white border-b border-gray-200 p-6 rounded-t-xl">
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                                {editingProject ? <Edit2 size={24} /> : <Plus size={24} />}
+                                                {editingProject ? 'Edit Project' : 'New Project'}
+                                            </h2>
+                                            <button
+                                                onClick={() => {
+                                                    setShowProjectModal(false);
+                                                    setEditingProject(null);
+                                                    setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
+                                                }}
+                                                className="p-2 hover:bg-gray-100 rounded-lg"
+                                            >
+                                                <X size={24} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-6 space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Project Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={newProject.name}
+                                                    onChange={(e) => setNewProject({...newProject, name: e.target.value})}
+                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    placeholder="Enter project name"
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                                <select
+                                                    value={newProject.status}
+                                                    onChange={(e) => setNewProject({...newProject, status: e.target.value})}
+                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                >
+                                                    <option value="Active">Active</option>
+                                                    <option value="Completed">Completed</option>
+                                                    <option value="Initial Phase">Initial Phase</option>
+                                                    <option value="On Hold">On Hold</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Owner</label>
+                                                <input
+                                                    type="text"
+                                                    value={newProject.owner}
+                                                    onChange={(e) => setNewProject({...newProject, owner: e.target.value})}
+                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    placeholder="Owner name"
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Secondary Owner</label>
+                                                <input
+                                                    type="text"
+                                                    value={newProject.secondaryOwner}
+                                                    onChange={(e) => setNewProject({...newProject, secondaryOwner: e.target.value})}
+                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    placeholder="Optional"
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Counterparties</label>
+                                                <input
+                                                    type="number"
+                                                    value={newProject.counterparties}
+                                                    onChange={(e) => setNewProject({...newProject, counterparties: parseInt(e.target.value) || 0})}
+                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">Estimated Hours</label>
+                                                <input
+                                                    type="number"
+                                                    step="0.5"
+                                                    value={newProject.estimatedHours}
+                                                    onChange={(e) => setNewProject({...newProject, estimatedHours: parseFloat(e.target.value) || 0})}
+                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={newProject.isManagedOps}
+                                                    onChange={(e) => setNewProject({...newProject, isManagedOps: e.target.checked})}
+                                                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                Is Managed Ops
+                                            </label>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                            <textarea
+                                                value={newProject.notes}
+                                                onChange={(e) => setNewProject({...newProject, notes: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                rows="4"
+                                                placeholder="Add project notes, requirements, or important details..."
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 p-6 rounded-b-xl flex justify-end gap-3">
+                                        <button
+                                            onClick={() => {
+                                                setShowProjectModal(false);
+                                                setEditingProject(null);
+                                                setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
+                                            }}
+                                            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={addOrUpdateProject}
+                                            className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 font-medium shadow-md"
+                                        >
+                                            <Save size={18} />
+                                            {editingProject ? 'Update Project' : 'Create Project'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {showEntryModal && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                                <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
+                                    <div className="bg-white border-b border-gray-200 p-6 rounded-t-xl">
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                                {editingEntry ? <Edit2 size={24} /> : <Plus size={24} />}
+                                                {editingEntry ? 'Edit Time Entry' : 'New Time Entry'}
+                                            </h2>
+                                            <button
+                                                onClick={() => {
+                                                    setShowEntryModal(false);
+                                                    setEditingEntry(null);
+                                                    setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
+                                                }}
+                                                className="p-2 hover:bg-gray-100 rounded-lg"
+                                            >
+                                                <X size={24} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="p-6 space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                                            <input
+                                                type="date"
+                                                value={newEntry.date}
+                                                onChange={(e) => setNewEntry({...newEntry, date: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Project</label>
+                                            <select
+                                                value={newEntry.project}
+                                                onChange={(e) => setNewEntry({...newEntry, project: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            >
+                                                <option value="">Select Project</option>
+                                                {projects.map(p => (
+                                                    <option key={p.id} value={p.name}>{p.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Hours</label>
+                                            <input
+                                                type="number"
+                                                step="0.25"
+                                                value={newEntry.hours}
+                                                onChange={(e) => setNewEntry({...newEntry, hours: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                placeholder="e.g., 2.5"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Task Description</label>
+                                            <input
+                                                type="text"
+                                                value={newEntry.task}
+                                                onChange={(e) => setNewEntry({...newEntry, task: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                placeholder="What did you work on?"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Notes</label>
+                                            <textarea
+                                                value={newEntry.notes}
+                                                onChange={(e) => setNewEntry({...newEntry, notes: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                                rows="3"
+                                                placeholder="Additional notes or context..."
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="bg-gray-50 border-t border-gray-200 p-6 rounded-b-xl flex justify-end gap-3">
+                                        <button
+                                            onClick={() => {
+                                                setShowEntryModal(false);
+                                                setEditingEntry(null);
+                                                setNewEntry({ date: new Date().toISOString().split('T')[0], project: '', hours: '', task: '', notes: '' });
+                                            }}
+                                            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={addOrUpdateEntry}
+                                            className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 font-medium shadow-md"
+                                        >
+                                            <Save size={18} />
+                                            {editingEntry ? 'Update Entry' : 'Add Entry'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
-                  </div>
-                )}
-              </div>
-            
-          );
-        };
-// === To-Do Tab Component ===
-const ToDoTab = ({projects, tasks, setTasks}) => {
-  const [newTask, setNewTask] = React.useState({ title: '', project: '', dueDate: '' });
-
-  const addTask = () => {
-    if (!newTask.title.trim()) return;
-    setTasks([...tasks, { ...newTask, id: Date.now(), done: false }]);
-    setNewTask({ title: '', project: '', dueDate: '' });
-  };
-
-  const toggleTask = (id) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
-  };
-
-  const deleteTask = (id) => {
-    if (window.confirm('Delete this task?')) {
-      setTasks(tasks.filter(t => t.id !== id));
-    }
-  };
-
-  const sorted = [...tasks].sort((a, b) => a.done - b.done);
-
-  return (
-    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200 space-y-4">
-      <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-        <CheckSquare size={22} className="text-indigo-600" />
-        To-Do List
-      </h3>
-
-      <div className="flex flex-wrap gap-2">
-        <input
-          type="text"
-          placeholder="Task title"
-          value={newTask.title}
-          onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-          className="border rounded-lg px-3 py-2 flex-1"
-        />
-        <select
-          value={newTask.project}
-          onChange={(e) => setNewTask({ ...newTask, project: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-        >
-          <option value="">No Project</option>
-          {projects.map(p => (
-            <option key={p.id} value={p.name}>{p.name}</option>
-          ))}
-        </select>
-        <input
-          type="date"
-          value={newTask.dueDate}
-          onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-          className="border rounded-lg px-3 py-2"
-        />
-        <button
-          onClick={addTask}
-          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-        >
-          Add
-        </button>
-      </div>
-
-      {sorted.length === 0 ? (
-        <p className="text-gray-500">No tasks yet.</p>
-      ) : (
-        <div className="space-y-2">
-          {sorted.map(task => (
-            <div
-              key={task.id}
-              className={`flex items-center justify-between border rounded-lg p-3 ${
-                task.done ? 'bg-green-50' : 'bg-white'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={task.done}
-                  onChange={() => toggleTask(task.id)}
-                  className="h-4 w-4"
-                />
-                <div>
-                  <div className={`font-medium ${task.done ? 'line-through text-gray-400' : ''}`}>
-                    {task.title}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {task.project && <span>{task.project} • </span>}
-                    {task.dueDate && <span>Due {task.dueDate}</span>}
-                  </div>
                 </div>
-              </div>
-              <button
-                onClick={() => deleteTask(task.id)}
-                className="text-red-500 hover:text-red-700"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+            );
+        };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<TimesheetApp />);
