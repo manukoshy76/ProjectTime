@@ -392,11 +392,7 @@
                 project: '', hours: '', task: '', notes: ''
             });
 
-            // Project Dashboard states
-            const [newCommunication, setNewCommunication] = useState({ type: 'email', subject: '', body: '' });
-            const [newFile, setNewFile] = useState({ name: '', type: 'document' });
-            const [newLink, setNewLink] = useState({ title: '', url: '', description: '' });
-            const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', email: '' });
+            
 
             // Refs
             const fileInputRef = useRef(null);
@@ -777,134 +773,7 @@
                 setShowProjectDashboard(true);
             };
 
-            // Project Dashboard operations
-            const addCommunication = () => {
-                if (!newCommunication.subject || !newCommunication.body) return;
-                
-                const updatedProject = {
-                    ...selectedProject,
-                    communications: [
-                        ...selectedProject.communications,
-                        {
-                            id: Date.now(),
-                            type: newCommunication.type,
-                            subject: newCommunication.subject,
-                            sender: 'You',
-                            date: new Date().toISOString().split('T')[0],
-                            body: newCommunication.body,
-                            attachments: []
-                        }
-                    ]
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-                setNewCommunication({ type: 'email', subject: '', body: '' });
-            };
-
-            const addFile = () => {
-                if (!newFile.name) return;
-                
-                const updatedProject = {
-                    ...selectedProject,
-                    files: [
-                        ...selectedProject.files,
-                        {
-                            id: Date.now(),
-                            name: newFile.name,
-                            type: newFile.type,
-                            size: '0.5 MB',
-                            uploaded: new Date().toISOString().split('T')[0]
-                        }
-                    ]
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-                setNewFile({ name: '', type: 'document' });
-            };
-
-            const addLink = () => {
-                if (!newLink.title || !newLink.url) return;
-                
-                const updatedProject = {
-                    ...selectedProject,
-                    links: [
-                        ...selectedProject.links,
-                        {
-                            id: Date.now(),
-                            title: newLink.title,
-                            url: newLink.url,
-                            description: newLink.description
-                        }
-                    ]
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-                setNewLink({ title: '', url: '', description: '' });
-            };
-
-            const addTeamMember = () => {
-                if (!newTeamMember.name || !newTeamMember.role) return;
-                
-                const updatedProject = {
-                    ...selectedProject,
-                    team: [
-                        ...selectedProject.team,
-                        {
-                            id: Date.now(),
-                            name: newTeamMember.name,
-                            role: newTeamMember.role,
-                            email: newTeamMember.email
-                        }
-                    ]
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-                setNewTeamMember({ name: '', role: '', email: '' });
-            };
-
-            const deleteCommunication = (id) => {
-                const updatedProject = {
-                    ...selectedProject,
-                    communications: selectedProject.communications.filter(c => c.id !== id)
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-            };
-
-            const deleteFile = (id) => {
-                const updatedProject = {
-                    ...selectedProject,
-                    files: selectedProject.files.filter(f => f.id !== id)
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-            };
-
-            const deleteLink = (id) => {
-                const updatedProject = {
-                    ...selectedProject,
-                    links: selectedProject.links.filter(l => l.id !== id)
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-            };
-
-            const deleteTeamMember = (id) => {
-                const updatedProject = {
-                    ...selectedProject,
-                    team: selectedProject.team.filter(t => t.id !== id)
-                };
-                
-                setProjects(projects.map(p => p.id === selectedProject.id ? updatedProject : p));
-                setSelectedProject(updatedProject);
-            };
+            
 
             const getStatusColor = (status) => {
                 const colors = {
@@ -1127,7 +996,142 @@
             const ProjectDashboard = ({ project, onClose, onUpdate }) => {
                 const stats = projectStats[project.name];
                 const [activeSection, setActiveSection] = useState('overview');
+// Project Dashboard Component
+const ProjectDashboard = ({ project, onClose, onUpdate }) => {
+    const stats = projectStats[project.name];
+    const [activeSection, setActiveSection] = useState('overview');
+    
+    // Move these state variables INSIDE the ProjectDashboard component
+    const [newCommunication, setNewCommunication] = useState({ type: 'email', subject: '', body: '' });
+    const [newFile, setNewFile] = useState({ name: '', type: 'document' });
+    const [newLink, setNewLink] = useState({ title: '', url: '', description: '' });
+    const [newTeamMember, setNewTeamMember] = useState({ name: '', role: '', email: '' });
 
+    // Move these handler functions INSIDE the ProjectDashboard component
+    const addCommunication = () => {
+        if (!newCommunication.subject || !newCommunication.body) return;
+        
+        const updatedProject = {
+            ...project,
+            communications: [
+                ...project.communications,
+                {
+                    id: Date.now(),
+                    type: newCommunication.type,
+                    subject: newCommunication.subject,
+                    sender: 'You',
+                    date: new Date().toISOString().split('T')[0],
+                    body: newCommunication.body,
+                    attachments: []
+                }
+            ]
+        };
+        
+        onUpdate(updatedProject);
+        setNewCommunication({ type: 'email', subject: '', body: '' });
+    };
+
+    const addFile = () => {
+        if (!newFile.name) return;
+        
+        const updatedProject = {
+            ...project,
+            files: [
+                ...project.files,
+                {
+                    id: Date.now(),
+                    name: newFile.name,
+                    type: newFile.type,
+                    size: '0.5 MB',
+                    uploaded: new Date().toISOString().split('T')[0]
+                }
+            ]
+        };
+        
+        onUpdate(updatedProject);
+        setNewFile({ name: '', type: 'document' });
+    };
+
+    const addLink = () => {
+        if (!newLink.title || !newLink.url) return;
+        
+        const updatedProject = {
+            ...project,
+            links: [
+                ...project.links,
+                {
+                    id: Date.now(),
+                    title: newLink.title,
+                    url: newLink.url,
+                    description: newLink.description
+                }
+            ]
+        };
+        
+        onUpdate(updatedProject);
+        setNewLink({ title: '', url: '', description: '' });
+    };
+
+    const addTeamMember = () => {
+        if (!newTeamMember.name || !newTeamMember.role) return;
+        
+        const updatedProject = {
+            ...project,
+            team: [
+                ...project.team,
+                {
+                    id: Date.now(),
+                    name: newTeamMember.name,
+                    role: newTeamMember.role,
+                    email: newTeamMember.email
+                }
+            ]
+        };
+        
+        onUpdate(updatedProject);
+        setNewTeamMember({ name: '', role: '', email: '' });
+    };
+
+    const deleteCommunication = (id) => {
+        const updatedProject = {
+            ...project,
+            communications: project.communications.filter(c => c.id !== id)
+        };
+        
+        onUpdate(updatedProject);
+    };
+
+    const deleteFile = (id) => {
+        const updatedProject = {
+            ...project,
+            files: project.files.filter(f => f.id !== id)
+        };
+        
+        onUpdate(updatedProject);
+    };
+
+    const deleteLink = (id) => {
+        const updatedProject = {
+            ...project,
+            links: project.links.filter(l => l.id !== id)
+        };
+        
+        onUpdate(updatedProject);
+    };
+
+    const deleteTeamMember = (id) => {
+        const updatedProject = {
+            ...project,
+            team: project.team.filter(t => t.id !== id)
+        };
+        
+        onUpdate(updatedProject);
+    };
+
+    if (!project) return null;
+
+    // ... rest of your existing ProjectDashboard JSX remains the same
+    // Make sure all the input fields are using the state variables and handlers defined above
                 if (!project) return null;
 
                 return (
