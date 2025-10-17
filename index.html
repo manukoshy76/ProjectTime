@@ -1182,8 +1182,7 @@ const completedTasks = projectTasks.filter(t => t.done).length;
         return colors[priority] || 'border-gray-300 bg-gray-50';
     };
 
-    const pendingTasks = projectTasks.filter(t => !t.done).length;
-    const completedTasks = projectTasks.filter(t => t.done).length;
+
 	
     if (!project) return null;
 
