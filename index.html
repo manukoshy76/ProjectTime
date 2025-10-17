@@ -1141,7 +1141,10 @@ const [newTask, setNewTask] = useState({
         
         onUpdate(updatedProject);
     };
- const projectTasks = tasks.filter(task => task.project === project.name);
+const projectTasks = tasks.filter(task => task.project === project.name);
+const pendingTasks = projectTasks.filter(t => !t.done).length;
+const completedTasks = projectTasks.filter(t => t.done).length;
+
  // Task functions for project dashboard
     const addTask = () => {
         if (!newTask.title.trim()) return;
