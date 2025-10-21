@@ -2781,45 +2781,48 @@ const completedTasks = projectTasks.filter(t => t.done).length;
                     </>
                 )}
 
-                {taskGroupBy === 'date' && (
-                    <>
-                        {useMemo(() => {
-                            const grouped = {};
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            
-                            tasks.forEach(task => {
-                                let dateGroup;
-                                if (!task.dueDate) {
-                                    dateGroup = 'No Due Date';
-                                } else {
-                                    const taskDate = new Date(task.dueDate);
-                                    taskDate.setHours(0, 0, 0, 0);
-                                    const daysDiff = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
-                                    
-                                    if (daysDiff < 0) dateGroup = 'Overdue';
-                                    else if (daysDiff === 0) dateGroup = 'Today';
-                                    else if (daysDiff === 1) dateGroup = 'Tomorrow';
-                                    else if (daysDiff <= 7) dateGroup = 'This Week';
-                                    else if (daysDiff <= 30) dateGroup = 'This Month';
-                                    else dateGroup = 'Later';
-                                }
-                                
-                                if (!grouped[dateGroup]) grouped[dateGroup] = [];
-                                grouped[dateGroup].push(task);
-                            });
+{taskGroupBy === 'date' && (
+    <>
+        {useMemo(() => {
+            const grouped = {};
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            tasks.forEach(task => {
+                let dateGroup;
+                if (!task.dueDate) {
+                    dateGroup = 'No Due Date';
+                } else {
+                    const taskDate = new Date(task.dueDate);
+                    taskDate.setHours(0, 0, 0, 0);
+                    
+                    // Calculate days difference correctly
+                    const timeDiff = taskDate.getTime() - today.getTime();
+                    const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                    
+                    if (daysDiff < 0) dateGroup = 'Overdue';
+                    else if (daysDiff === 0) dateGroup = 'Today';
+                    else if (daysDiff === 1) dateGroup = 'Tomorrow';
+                    else if (daysDiff > 1 && daysDiff <= 7) dateGroup = 'This Week';
+                    else if (daysDiff > 7 && daysDiff <= 30) dateGroup = 'This Month';
+                    else dateGroup = 'Later';
+                }
+                
+                if (!grouped[dateGroup]) grouped[dateGroup] = [];
+                grouped[dateGroup].push(task);
+            });
 
-                            const order = ['Overdue', 'Today', 'Tomorrow', 'This Week', 'This Month', 'Later', 'No Due Date'];
-                            return order
-                                .filter(key => grouped[key])
-                                .map(key => ({
-                                    label: key,
-                                    tasks: grouped[key].sort((a, b) => {
-                                        if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
-                                        return 0;
-                                    })
-                                }));
-                        }, [tasks]).map((group, idx) => (
+            const order = ['Overdue', 'Today', 'Tomorrow', 'This Week', 'This Month', 'Later', 'No Due Date'];
+            return order
+                .filter(key => grouped[key])
+                .map(key => ({
+                    label: key,
+                    tasks: grouped[key].sort((a, b) => {
+                        if (a.dueDate && b.dueDate) return new Date(a.dueDate) - new Date(b.dueDate);
+                        return 0;
+                    })
+                }));
+        }, [tasks]).map((group, idx) => (
                             <div key={idx} className="border-l-4 border-indigo-600 pl-6 py-4">
                                 <div className="flex items-center gap-3 mb-4">
                                     <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
