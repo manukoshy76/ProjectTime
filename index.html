@@ -8,6 +8,8 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include SheetJS for Excel handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         .line-clamp-3 {
             display: -webkit-box;
@@ -67,6 +69,37 @@
         }
         .pulse-update {
             animation: pulse 0.5s ease-in-out;
+        }
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .recon-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .recon-table th, .recon-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        
+        .recon-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .recon-table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        .recon-table tr:hover {
+            background-color: #f3f4f6;
         }
     </style>
 </head>
@@ -306,6 +339,14 @@
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 <polyline points="1 4 1 10 7 10"></polyline>
                 <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+        );
+
+        const Upload = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
         );
 
@@ -1030,6 +1071,357 @@
             );
         };
 
+        // DeepSeek Integration - Reconciliation Documentation Component
+        const ReconDocumentationSection = ({ project, onUpdate }) => {
+            // File input ref for import
+            const fileInputRef = useRef(null);
+            
+            // Initialize recon documentation data
+            const [reconData, setReconData] = useState(project.reconDocumentation || {
+                overview: [],
+                genevaWorkflow: [],
+                reconWorkflow: [],
+                reconFFDs: [],
+                genevaRSLDT: [],
+                ftp: []
+            });
+
+            const [activeTable, setActiveTable] = useState('overview');
+
+            // Update project when recon data changes
+useEffect(() => {
+    // Only update if reconData has actually changed from project data
+    if (JSON.stringify(reconData) !== JSON.stringify(project.reconDocumentation || {})) {
+        const updatedProject = {
+            ...project,
+            reconDocumentation: reconData
+        };
+        onUpdate(updatedProject);
+    }
+}, [reconData, project, onUpdate]);
+
+            const tableOptions = [
+                { id: 'overview', label: 'Overview' },
+                { id: 'genevaWorkflow', label: 'Geneva Workflow' },
+                { id: 'reconWorkflow', label: 'Recon Workflow' },
+                { id: 'reconFFDs', label: 'Recon FFDs' },
+                { id: 'genevaRSLDT', label: 'Geneva RSL & DT' },
+                { id: 'ftp', label: 'FTP' }
+            ];
+
+            // Function to add new row to a table
+            const addTableRow = (tableName) => {
+                const emptyRow = getEmptyRowForTable(tableName);
+                setReconData(prev => ({
+                    ...prev,
+                    [tableName]: [...prev[tableName], emptyRow]
+                }));
+            };
+
+            // Function to delete row from a table
+            const deleteTableRow = (tableName, index) => {
+                if (window.confirm("Delete this row?")) {
+                    setReconData(prev => ({
+                        ...prev,
+                        [tableName]: prev[tableName].filter((_, i) => i !== index)
+                    }));
+                }
+            };
+
+            // Function to update table cell
+            const updateTableCell = (tableName, rowIndex, field, value) => {
+                setReconData(prev => ({
+                    ...prev,
+                    [tableName]: prev[tableName].map((row, index) => 
+                        index === rowIndex ? { ...row, [field]: value } : row
+                    )
+                }));
+            };
+
+            // Helper function to get empty row for each table type
+            const getEmptyRowForTable = (tableName) => {
+                switch (tableName) {
+                    case 'genevaWorkflow':
+                        return { activity: "", scheduledTime: "", portfolio: "", custodian: "", accountingParameters: "", periodEndDate: "" };
+                    case 'reconWorkflow':
+                        return { jobName: "", scheduledTime: "", job: "", fileNames: "", destinationFolder: "" };
+                    case 'reconFFDs':
+                        return { counterparty: "", type: "", module: "", matchGroup: "", fileFormats: "", filenames: "" };
+                    case 'genevaRSLDT':
+                        return { name: "", settingName: "", value: "" };
+                    case 'ftp':
+                        return { counterparty: "", username: "", server: "", password: "", port: "", contact: "", note: "" };
+                    default:
+                        return { content: "" };
+                }
+            };
+
+            // Generate Excel Template
+            const generateExcelTemplate = () => {
+                const templateData = {
+                    overview: [
+                        { content: "Project Recon Documentation Template" },
+                        { content: "" },
+                        { content: "Instructions:" },
+                        { content: "1. Fill out each sheet with your project data" },
+                        { content: "2. Save this file" },
+                        { content: "3. Use the Import button in the application to load the data" },
+                        { content: "" },
+                        { content: "Overview: Use this sheet for general project information" }
+                    ],
+                    genevaWorkflow: [
+                        { activity: "SSC Recon Securities Extract", scheduledTime: "02:05:00", portfolio: "", custodian: "", accountingParameters: "", periodEndDate: "" },
+                        { activity: "SSC Recon Position Extract", scheduledTime: "02:07:00", portfolio: "@EZE", custodian: "BAML, BONY, GSCO, GSI, MSCO", accountingParameters: "Night Squared_BypassStartegy", periodEndDate: "-1||23:59:59" }
+                    ],
+                    reconWorkflow: [
+                        { jobName: "Daily Security Cross-Reference Job", scheduledTime: "2025-03-18 02:55:00", job: "Security Cross-Reference", fileNames: "\\\\server\\path\\to\\file.txt", destinationFolder: "" }
+                    ],
+                    reconFFDs: [
+                        { counterparty: "BAML", type: "PB/Custodian", module: "CASH", matchGroup: "Daily Reconciliation", fileFormats: "BAML Cash", filenames: "\\\\server\\path\\to\\file.csv" }
+                    ],
+                    genevaRSLDT: [
+                        { name: "SSC Recon Securities Extract", settingName: "GenevaReport", value: "AMS_SSCReconSecurities.rsl" }
+                    ],
+                    ftp: [
+                        { counterparty: "MSCO/MSFS", username: "username", server: "sftp.server.com", password: "", port: "22", contact: "contact@example.com", note: "Additional notes here" }
+                    ]
+                };
+
+                // Create a new workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Add each table as a separate sheet
+                Object.keys(templateData).forEach(sheetName => {
+                    const ws = XLSX.utils.json_to_sheet(templateData[sheetName]);
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                });
+                
+                // Generate and download the file
+                XLSX.writeFile(wb, `${project.name}_Recon_Template.xlsx`);
+            };
+
+            // Import data from Excel
+            const importFromExcel = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        const importedData = {};
+                        
+                        // Process each sheet
+                        workbook.SheetNames.forEach(sheetName => {
+                            const worksheet = workbook.Sheets[sheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                            importedData[sheetName] = jsonData;
+                        });
+                        
+                        // Update the state with imported data
+                        setReconData(importedData);
+                        alert("Data imported successfully!");
+                    } catch (error) {
+                        alert("Error importing file: " + error.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+                
+                // Reset file input
+                event.target.value = '';
+            };
+
+            // Export data to Excel
+            const exportToExcel = () => {
+                // Create a new workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Add each table as a separate sheet
+                Object.keys(reconData).forEach(sheetName => {
+                    if (reconData[sheetName].length > 0) {
+                        const ws = XLSX.utils.json_to_sheet(reconData[sheetName]);
+                        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                    }
+                });
+                
+                // Generate and download the file
+                XLSX.writeFile(wb, `${project.name}_Recon_Documentation.xlsx`);
+            };
+
+            const renderTable = () => {
+                const data = reconData[activeTable] || [];
+                
+                if (activeTable === 'overview') {
+                    return (
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <h4 className="text-lg font-semibold text-gray-800">Project Overview</h4>
+                                <button
+                                    onClick={() => addTableRow('overview')}
+                                    className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 text-sm"
+                                >
+                                    <Plus size={14} />
+                                    Add Line
+                                </button>
+                            </div>
+                            <div className="space-y-2">
+                                {data.map((item, index) => (
+                                    <div key={index} className="flex items-center gap-2 p-2 border border-gray-200 rounded">
+                                        <input
+                                            type="text"
+                                            value={item.content || ''}
+                                            onChange={(e) => updateTableCell('overview', index, 'content', e.target.value)}
+                                            className="flex-1 border border-gray-300 rounded px-3 py-1 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            placeholder="Enter overview content..."
+                                        />
+                                        <button
+                                            onClick={() => deleteTableRow('overview', index)}
+                                            className="p-1 text-red-500 hover:text-red-700"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                }
+
+                // For tabular data
+                return (
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <h4 className="text-lg font-semibold text-gray-800">{tableOptions.find(t => t.id === activeTable)?.label}</h4>
+                            <button
+                                onClick={() => addTableRow(activeTable)}
+                                className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2 text-sm"
+                            >
+                                <Plus size={14} />
+                                Add Row
+                            </button>
+                        </div>
+                        <div className="table-container border border-gray-200 rounded-lg">
+                            <table className="recon-table">
+                                <thead>
+                                    <tr>
+                                        {Object.keys(data[0] || {}).map(key => (
+                                            <th key={key} className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</th>
+                                        ))}
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {data.map((row, rowIndex) => (
+                                        <tr key={rowIndex}>
+                                            {Object.keys(row).map(key => (
+                                                <td key={key}>
+                                                    <input
+                                                        type="text"
+                                                        value={row[key]}
+                                                        onChange={(e) => updateTableCell(activeTable, rowIndex, key, e.target.value)}
+                                                        className="w-full border-none focus:ring-0 p-1 bg-transparent"
+                                                    />
+                                                </td>
+                                            ))}
+                                            <td>
+                                                <button
+                                                    onClick={() => deleteTableRow(activeTable, rowIndex)}
+                                                    className="p-1 text-red-500 hover:text-red-700"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div className="space-y-6">
+                    <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <FileText size={24} className="text-indigo-600" />
+                                Reconciliation Documentation
+                            </h3>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={generateExcelTemplate}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
+                                >
+                                    <Download size={16} />
+                                    Get Template
+                                </button>
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                                >
+                                    <Upload size={16} />
+                                    Import Excel
+                                </button>
+                                <button
+                                    onClick={exportToExcel}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
+                                >
+                                    <Download size={16} />
+                                    Export Excel
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept=".xlsx, .xls"
+                                    onChange={importFromExcel}
+                                    style={{ display: 'none' }}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="flex flex-wrap gap-2">
+                                {tableOptions.map(table => (
+                                    <button
+                                        key={table.id}
+                                        onClick={() => setActiveTable(table.id)}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                            activeTable === table.id
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                        }`}
+                                    >
+                                        {table.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {renderTable()}
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle size={20} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="font-semibold text-yellow-800">Excel Import/Export Instructions</h4>
+                                <div className="text-yellow-700 text-sm mt-1 space-y-2">
+                                    <p><strong>1. Get Template:</strong> Download an Excel template with the correct structure</p>
+                                    <p><strong>2. Fill Template:</strong> Add your project data to the template</p>
+                                    <p><strong>3. Import Excel:</strong> Upload your filled Excel file to load the data</p>
+                                    <p><strong>4. Export Excel:</strong> Download current data as Excel for sharing or backup</p>
+                                    <p><strong>Note:</strong> Each tab in Excel corresponds to a different section of documentation</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const TimesheetApp = () => {
             // Cloud sync states
             const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
@@ -1079,7 +1471,8 @@
                             { id: 1, name: 'Manu Koshy', role: 'Project Lead', email: 'manu@company.com' },
                             { id: 2, name: 'Tom Hantzarides', role: 'Secondary Owner', email: 'tom@company.com' },
                             { id: 3, name: 'Kavoosh Team', role: 'Implementation Team', email: 'kavoosh@company.com' }
-                        ]
+                        ],
+                        reconDocumentation: null
                     },
                     { 
                         id: 2, 
@@ -1094,7 +1487,8 @@
                         communications: [],
                         files: [],
                         links: [],
-                        team: []
+                        team: [],
+                        reconDocumentation: null
                     },
                     { 
                         id: 3, 
@@ -1109,7 +1503,8 @@
                         communications: [],
                         files: [],
                         links: [],
-                        team: []
+                        team: [],
+                        reconDocumentation: null
                     }
                 ];
                 
@@ -1119,6 +1514,7 @@
                     files: [],
                     links: [],
                     team: [],
+                    reconDocumentation: null,
                     ...project
                 }));
             });
@@ -1582,7 +1978,8 @@
                     { id: 'files', label: 'Files', icon: Folder },
                     { id: 'links', label: 'Links', icon: Link },
                     { id: 'team', label: 'Team', icon: Users },
-                    { id: 'time', label: 'Time Tracking', icon: Clock }
+                    { id: 'time', label: 'Time Tracking', icon: Clock },
+                    { id: 'recon-docs', label: 'Recon Documentation', icon: FileText }
                 ];
 
                 // Communication functions
@@ -2510,6 +2907,11 @@
                                             )}
                                         </div>
                                     </div>
+                                )}
+
+                                {/* Recon Documentation Section */}
+                                {activeSection === 'recon-docs' && (
+                                    <ReconDocumentationSection project={project} onUpdate={onUpdate} />
                                 )}
                             </div>
                         </div>
