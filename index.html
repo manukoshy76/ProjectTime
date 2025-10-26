@@ -1737,32 +1737,43 @@
 
             // Export/Import functions
             const exportToCSV = () => {
-                const headers = ['Date', 'Project', 'Hours', 'Task', 'Notes'];
+                const headers = ['Date', 'Day', 'Project', 'Hours', 'Task', 'Notes'];
                 const csv = [
                     headers.join(','),
-                    ...timeEntries.map(e => [e.date, e.project, e.hours, `"${e.task}"`, `"${e.notes}"`].join(','))
+                    ...filteredTimeEntries.map(e => {
+                        const dayOfWeek = new Date(e.date).toLocaleDateString('en-US', { weekday: 'short' });
+                        return [e.date, dayOfWeek, e.project, e.hours, `"${e.task}"`, `"${e.notes}"`].join(',');
+                    })
                 ].join('\n');
                 
                 const blob = new Blob([csv], { type: 'text/csv' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `timesheet_${dateFilter}_${new Date().toISOString().split('T')[0]}.csv`;
+                const filterLabel = dateFilter === 'all' ? 'all_entries' : dateFilter;
+                a.download = `timesheet_${filterLabel}_${new Date().toISOString().split('T')[0]}.csv`;
                 a.click();
+                window.URL.revokeObjectURL(url);
             };
 
             const exportJSON = () => {
                 const data = {
                     projects,
-                    timeEntries,
+                    timeEntries: filteredTimeEntries,
                     tasks,
+                    filter: {
+                        dateRange: dateFilter,
+                        project: filterProject,
+                        searchTerm: searchTerm
+                    },
                     exportedAt: new Date().toISOString()
                 };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `timesheet_backup_${new Date().toISOString().split('T')[0]}.json`;
+                const filterLabel = dateFilter === 'all' ? 'all' : dateFilter;
+                a.download = `timesheet_${filterLabel}_${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
             };
@@ -1796,21 +1807,41 @@
             // Utility functions
             const getDateRange = (filter) => {
                 const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
                 const ranges = {
-                    today: [today, today],
-                    yesterday: [new Date(today.getTime() - 86400000), new Date(today.getTime() - 86400000)],
-                    thisWeek: [new Date(today.setDate(today.getDate() - today.getDay())), new Date()],
-                    lastWeek: [
-                        new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 7)),
-                        new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 1))
+                    today: [today, new Date(today.getTime() + 86399999)],
+                    yesterday: [
+                        new Date(today.getTime() - 86400000),
+                        new Date(today.getTime() - 1)
                     ],
-                    thisMonth: [new Date(today.getFullYear(), today.getMonth(), 1), new Date()],
+                    thisWeek: [
+                        new Date(today.getTime() - (today.getDay() * 86400000)),
+                        new Date(today.getTime() + 86399999)
+                    ],
+                    lastWeek: [
+                        new Date(today.getTime() - ((today.getDay() + 7) * 86400000)),
+                        new Date(today.getTime() - ((today.getDay() + 1) * 86400000))
+                    ],
+                    thisMonth: [
+                        new Date(today.getFullYear(), today.getMonth(), 1),
+                        new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999)
+                    ],
                     lastMonth: [
                         new Date(today.getFullYear(), today.getMonth() - 1, 1),
-                        new Date(today.getFullYear(), today.getMonth(), 0)
+                        new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999)
                     ],
-                    last7Days: [new Date(new Date().getTime() - 7 * 86400000), new Date()],
-                    last30Days: [new Date(new Date().getTime() - 30 * 86400000), new Date()]
+                    last7Days: [
+                        new Date(today.getTime() - 6 * 86400000),
+                        new Date(today.getTime() + 86399999)
+                    ],
+                    last30Days: [
+                        new Date(today.getTime() - 29 * 86400000),
+                        new Date(today.getTime() + 86399999)
+                    ]
                 };
                 return ranges[filter] || null;
             };
@@ -1835,6 +1866,7 @@
                     if (range) {
                         filtered = filtered.filter(e => {
                             const entryDate = new Date(e.date);
+                            entryDate.setHours(0, 0, 0, 0);
                             return entryDate >= range[0] && entryDate <= range[1];
                         });
                     }
@@ -3377,6 +3409,7 @@
                                             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                                                 <tr>
                                                     <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Date</th>
+                                                    <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Day</th>
                                                     <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Project</th>
                                                     <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Hours</th>
                                                     <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Task</th>
@@ -3385,9 +3418,12 @@
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
-                                                {filteredTimeEntries.map(entry => (
+                                                {filteredTimeEntries.map(entry => {
+                                                    const dayOfWeek = new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short' });
+                                                    return (
                                                     <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
                                                         <td className="px-4 py-3 text-sm text-gray-900 font-medium">{entry.date}</td>
+                                                        <td className="px-4 py-3 text-sm font-semibold text-gray-700">{dayOfWeek}</td>
                                                         <td className="px-4 py-3 text-sm">
                                                             <span className="px-3 py-1 bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 rounded-full text-xs font-semibold border border-indigo-200">
                                                                 {entry.project}
@@ -3413,7 +3449,8 @@
                                                             </div>
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                    );
+                                                })}
                                             </tbody>
                                         </table>
                                     </div>
