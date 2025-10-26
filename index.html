@@ -121,6 +121,15 @@
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
         );
+
+        const Calendar = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+        );
         
         const Plus = ({size = 24}) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1430,6 +1439,446 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            );
+        };
+
+        // Weekly Calendar Component - Feature Complete
+        const WeeklyCalendar = ({ projects }) => {
+            // Calendar state
+            const [meetings, setMeetings] = useState(() => {
+                const saved = localStorage.getItem('meetings_calendar');
+                return saved ? JSON.parse(saved) : [];
+            });
+            
+            const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+                const today = new Date();
+                const day = today.getDay();
+                const date = new Date(today);
+                date.setDate(today.getDate() - day); // Set to Sunday
+                return date;
+            });
+            
+            const [showMeetingModal, setShowMeetingModal] = useState(false);
+            const [editingMeeting, setEditingMeeting] = useState(null);
+            const [selectedMeetingDay, setSelectedMeetingDay] = useState(null);
+            const meetingTimeoutsRef = useRef({});
+            
+            const [editingForm, setEditingForm] = useState({
+                name: '',
+                project: '',
+                date: '',
+                startTime: '',
+                endTime: '',
+                attendees: '',
+                description: ''
+            });
+
+            // Save meetings to localStorage
+            useEffect(() => {
+                localStorage.setItem('meetings_calendar', JSON.stringify(meetings));
+            }, [meetings]);
+
+            // Schedule notifications for all meetings
+            useEffect(() => {
+                // Clear old timeouts
+                Object.values(meetingTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
+                meetingTimeoutsRef.current = {};
+
+                // Schedule new notifications
+                meetings.forEach(meeting => {
+                    const [hours, minutes] = meeting.startTime.split(':');
+                    const meetingDate = new Date(meeting.date);
+                    meetingDate.setHours(parseInt(hours), parseInt(minutes), 0);
+                    const notificationTime = new Date(meetingDate.getTime() - 15 * 60000); // 15 min before
+                    
+                    const now = new Date();
+                    const timeUntil = notificationTime.getTime() - now.getTime();
+                    
+                    if (timeUntil > 0) {
+                        const timeout = setTimeout(() => {
+                            if ('Notification' in window && Notification.permission === 'granted') {
+                                new Notification('📅 Meeting in 15 Minutes!', {
+                                    body: `${meeting.name}\nProject: ${meeting.project}\nStarting at ${meeting.startTime}`,
+                                    requireInteraction: true
+                                });
+                            }
+                        }, timeUntil);
+                        
+                        meetingTimeoutsRef.current[meeting.id] = timeout;
+                    }
+                });
+
+                return () => {
+                    Object.values(meetingTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
+                };
+            }, [meetings]);
+
+            const getWeekDays = () => {
+                const days = [];
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(currentWeekStart);
+                    date.setDate(currentWeekStart.getDate() + i);
+                    days.push(date);
+                }
+                return days;
+            };
+
+            const getMeetingsForDay = (dateStr) => {
+                return meetings.filter(m => m.date === dateStr);
+            };
+
+            const calculateDuration = (startTime, endTime) => {
+                const [startH, startM] = startTime.split(':').map(Number);
+                const [endH, endM] = endTime.split(':').map(Number);
+                const startMinutes = startH * 60 + startM;
+                const endMinutes = endH * 60 + endM;
+                const duration = endMinutes - startMinutes;
+                
+                if (duration < 0) return '0m';
+                const hours = Math.floor(duration / 60);
+                const mins = duration % 60;
+                return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+            };
+
+            const addOrUpdateMeeting = () => {
+                if (!editingForm.name || !editingForm.project || !editingForm.date || !editingForm.startTime || !editingForm.endTime) {
+                    alert('Please fill all required fields');
+                    return;
+                }
+
+                const [startH, startM] = editingForm.startTime.split(':').map(Number);
+                const [endH, endM] = editingForm.endTime.split(':').map(Number);
+                const startMinutes = startH * 60 + startM;
+                const endMinutes = endH * 60 + endM;
+                
+                if (endMinutes <= startMinutes) {
+                    alert('End time must be after start time');
+                    return;
+                }
+
+                if (editingMeeting) {
+                    setMeetings(meetings.map(m => 
+                        m.id === editingMeeting.id 
+                            ? { ...editingMeeting, ...editingForm }
+                            : m
+                    ));
+                } else {
+                    setMeetings([...meetings, {
+                        id: Date.now(),
+                        ...editingForm
+                    }]);
+                }
+
+                setShowMeetingModal(false);
+                setEditingMeeting(null);
+                setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', attendees: '', description: '' });
+            };
+
+            const deleteMeeting = (id) => {
+                if (confirm('Delete this meeting?')) {
+                    setMeetings(meetings.filter(m => m.id !== id));
+                    if (meetingTimeoutsRef.current[id]) {
+                        clearTimeout(meetingTimeoutsRef.current[id]);
+                    }
+                }
+            };
+
+            const changeWeek = (direction) => {
+                const newDate = new Date(currentWeekStart);
+                newDate.setDate(currentWeekStart.getDate() + (direction * 7));
+                setCurrentWeekStart(newDate);
+            };
+
+            // Analytics calculations
+            const weekMeetings = meetings.filter(m => {
+                const mDate = new Date(m.date);
+                const weekEnd = new Date(currentWeekStart);
+                weekEnd.setDate(currentWeekStart.getDate() + 7);
+                return mDate >= currentWeekStart && mDate < weekEnd;
+            });
+
+            const totalMeetings = weekMeetings.length;
+            
+            const totalHours = weekMeetings.reduce((sum, m) => {
+                const [startH, startM] = m.startTime.split(':').map(Number);
+                const [endH, endM] = m.endTime.split(':').map(Number);
+                const startMinutes = startH * 60 + startM;
+                const endMinutes = endH * 60 + endM;
+                return sum + (endMinutes - startMinutes) / 60;
+            }, 0);
+
+            const freeTime = (40 - totalHours).toFixed(1);
+
+            const busiestDay = (() => {
+                const dayHours = {};
+                getWeekDays().forEach(d => {
+                    const dateStr = d.toISOString().split('T')[0];
+                    const dayMeetings = getMeetingsForDay(dateStr);
+                    dayHours[d.getDay()] = dayMeetings.reduce((sum, m) => {
+                        const [startH, startM] = m.startTime.split(':').map(Number);
+                        const [endH, endM] = m.endTime.split(':').map(Number);
+                        const startMinutes = startH * 60 + startM;
+                        const endMinutes = endH * 60 + endM;
+                        return sum + (endMinutes - startMinutes) / 60;
+                    }, 0);
+                });
+                
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const maxDay = Object.keys(dayHours).reduce((a, b) => dayHours[a] > dayHours[b] ? a : b);
+                return dayNames[maxDay];
+            })();
+
+            const weekStart = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(currentWeekStart.getDate() + 6);
+            const weekEndStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            const isToday = (date) => {
+                const today = new Date();
+                return date.toDateString() === today.toDateString();
+            };
+
+            return (
+                <div className="space-y-6">
+                    {/* Header with Week Navigation */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                                <Calendar size={32} className="text-indigo-600" />
+                                Weekly Calendar
+                            </h2>
+                            <p className="text-gray-600 text-sm mt-1">{weekStart} - {weekEndStr}</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => changeWeek(-1)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-sm"
+                            >
+                                ← Previous Week
+                            </button>
+                            <button
+                                onClick={() => changeWeek(1)}
+                                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-sm"
+                            >
+                                Next Week →
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowMeetingModal(true);
+                                    setSelectedMeetingDay(new Date().toISOString().split('T')[0]);
+                                    setEditingForm({ name: '', project: '', date: new Date().toISOString().split('T')[0], startTime: '', endTime: '', attendees: '', description: '' });
+                                }}
+                                className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 flex items-center gap-2 font-medium"
+                            >
+                                <Plus size={18} />
+                                Add Meeting
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Analytics Dashboard */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+                            <div className="text-sm text-gray-600 font-medium">Total Meetings</div>
+                            <div className="text-3xl font-bold text-indigo-600 mt-2">{totalMeetings}</div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+                            <div className="text-sm text-gray-600 font-medium">Total Hours</div>
+                            <div className="text-3xl font-bold text-blue-600 mt-2">{totalHours.toFixed(1)}h</div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+                            <div className="text-sm text-gray-600 font-medium">Free Time</div>
+                            <div className="text-3xl font-bold text-green-600 mt-2">{freeTime}h</div>
+                        </div>
+                        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition">
+                            <div className="text-sm text-gray-600 font-medium">Busiest Day</div>
+                            <div className="text-lg font-bold text-orange-600 mt-2">{busiestDay}</div>
+                        </div>
+                    </div>
+
+                    {/* 7-Day Calendar Grid */}
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="grid grid-cols-7 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
+                            {getWeekDays().map((date, idx) => (
+                                <div key={idx} className="p-4 border-r border-gray-200 last:border-r-0">
+                                    <div className="text-xs font-semibold text-gray-600 uppercase">{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]}</div>
+                                    <div className={`text-lg font-bold mt-1 ${isToday(date) ? 'text-white bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg px-2 py-1' : 'text-gray-900'}`}>
+                                        {date.getDate()}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-7">
+                            {getWeekDays().map((date, dayIdx) => {
+                                const dateStr = date.toISOString().split('T')[0];
+                                const dayMeetings = getMeetingsForDay(dateStr);
+                                
+                                return (
+                                    <div key={dayIdx} className="min-h-96 border-r border-gray-200 last:border-r-0 p-3 bg-white hover:bg-gray-50 transition">
+                                        {dayMeetings.length === 0 ? (
+                                            <div className="text-center text-gray-400 text-sm py-12">
+                                                No meetings
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {dayMeetings.map(meeting => (
+                                                    <div
+                                                        key={meeting.id}
+                                                        className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg p-3 text-sm group relative hover:shadow-lg transition cursor-pointer"
+                                                        onClick={() => {
+                                                            setEditingMeeting(meeting);
+                                                            setEditingForm(meeting);
+                                                            setShowMeetingModal(true);
+                                                        }}
+                                                    >
+                                                        <div className="font-semibold">{meeting.name}</div>
+                                                        <div className="text-xs opacity-90">{meeting.startTime} - {meeting.endTime}</div>
+                                                        <div className="text-xs opacity-90">{calculateDuration(meeting.startTime, meeting.endTime)}</div>
+                                                        <div className="text-xs opacity-80 mt-1">{meeting.project}</div>
+                                                        
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                deleteMeeting(meeting.id);
+                                                            }}
+                                                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-500 rounded transition"
+                                                        >
+                                                            ×
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Meeting Modal */}
+                    {showMeetingModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+                                <div className="bg-gradient-to-r from-indigo-600 to-blue-600 border-b border-gray-200 p-6 rounded-t-xl flex items-center justify-between">
+                                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                        <Calendar size={24} />
+                                        {editingMeeting ? 'Edit Meeting' : 'Add Meeting'}
+                                    </h2>
+                                    <button
+                                        onClick={() => {
+                                            setShowMeetingModal(false);
+                                            setEditingMeeting(null);
+                                            setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', attendees: '', description: '' });
+                                        }}
+                                        className="p-2 hover:bg-white/20 rounded-lg"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                
+                                <div className="p-6 space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Meeting Name *</label>
+                                        <input
+                                            type="text"
+                                            value={editingForm.name}
+                                            onChange={(e) => setEditingForm({...editingForm, name: e.target.value})}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            placeholder="e.g., Team Sync"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Project *</label>
+                                        <select
+                                            value={editingForm.project}
+                                            onChange={(e) => setEditingForm({...editingForm, project: e.target.value})}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        >
+                                            <option value="">Select a project</option>
+                                            {projects.map(p => (
+                                                <option key={p.id} value={p.name}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Date *</label>
+                                        <input
+                                            type="date"
+                                            value={editingForm.date}
+                                            onChange={(e) => setEditingForm({...editingForm, date: e.target.value})}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Start Time *</label>
+                                            <input
+                                                type="time"
+                                                value={editingForm.startTime}
+                                                onChange={(e) => setEditingForm({...editingForm, startTime: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">End Time *</label>
+                                            <input
+                                                type="time"
+                                                value={editingForm.endTime}
+                                                onChange={(e) => setEditingForm({...editingForm, endTime: e.target.value})}
+                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Attendees</label>
+                                        <input
+                                            type="text"
+                                            value={editingForm.attendees}
+                                            onChange={(e) => setEditingForm({...editingForm, attendees: e.target.value})}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            placeholder="e.g., John, Sarah, Team"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                                        <textarea
+                                            value={editingForm.description}
+                                            onChange={(e) => setEditingForm({...editingForm, description: e.target.value})}
+                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            rows={3}
+                                            placeholder="Agenda, notes, etc."
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 border-t border-gray-200 p-6 rounded-b-xl flex justify-end gap-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowMeetingModal(false);
+                                            setEditingMeeting(null);
+                                            setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', attendees: '', description: '' });
+                                        }}
+                                        className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={addOrUpdateMeeting}
+                                        className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium"
+                                    >
+                                        {editingMeeting ? 'Update Meeting' : 'Add Meeting'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -3148,6 +3597,7 @@
                                     { id: 'timesheet', label: 'Timesheet', icon: Clock },
                                     { id: 'projects', label: 'Projects', icon: Target },
                                     { id: 'todo', label: 'To-Do', icon: CheckSquare },
+                                    { id: 'weekly-calendar', label: '📅 Weekly Calendar', icon: Calendar },
                                     { id: 'todo-timeline', label: 'Task Timeline', icon: Calendar }
                                 ].map(tab => {
                                     const Icon = tab.icon;
@@ -4613,6 +5063,12 @@
                                         </button>
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {activeTab === 'weekly-calendar' && (
+                            <div className="p-6">
+                                <WeeklyCalendar projects={projects} />
                             </div>
                         )}
                     </div>
