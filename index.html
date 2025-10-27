@@ -113,21 +113,21 @@
 
         // ===== ROUTING HOOK =====
         const useRouter = () => {
-            const [path, setPath] = useState(() => window.location.pathname || '/');
+            const [path, setPath] = useState(() => window.location.hash.slice(1) || '/');
 
             useEffect(() => {
-                const handlePopState = () => {
-                    const newPath = window.location.pathname || '/';
+                const handleHashChange = () => {
+                    const newPath = window.location.hash.slice(1) || '/';
                     setPath(newPath);
                 };
 
-                window.addEventListener('popstate', handlePopState);
-                return () => window.removeEventListener('popstate', handlePopState);
+                window.addEventListener('hashchange', handleHashChange);
+                return () => window.removeEventListener('hashchange', handleHashChange);
             }, []);
 
             const navigate = (newPath) => {
+                window.location.hash = newPath;
                 setPath(newPath);
-                window.history.pushState({ path: newPath }, '', newPath);
             };
 
             const goBack = () => {
