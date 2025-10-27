@@ -110,6 +110,34 @@
         const { useState, useMemo, useEffect, useRef, Fragment } = React;
         
         // Request notification permission on app load
+
+        // ===== ROUTING HOOK =====
+        const useRouter = () => {
+            const [path, setPath] = useState(() => window.location.pathname || '/');
+
+            useEffect(() => {
+                const handlePopState = () => {
+                    const newPath = window.location.pathname || '/';
+                    setPath(newPath);
+                };
+
+                window.addEventListener('popstate', handlePopState);
+                return () => window.removeEventListener('popstate', handlePopState);
+            }, []);
+
+            const navigate = (newPath) => {
+                setPath(newPath);
+                window.history.pushState({ path: newPath }, '', newPath);
+            };
+
+            const goBack = () => {
+                window.history.back();
+            };
+
+            return { path, navigate, goBack };
+        };
+
+        // Request notification permission on app load
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
@@ -173,6 +201,12 @@
             <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        );
+        
+        const ChevronLeft = ({size = 24, className = ""}) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
         );
         
@@ -1875,6 +1909,17 @@
         };
 
         const TimesheetApp = () => {
+            const { path, navigate, goBack } = useRouter();
+            // Helper to get project ID from path
+            const getProjectIdFromPath = () => {
+                const match = path.match(/\/project\/(\d+)/);
+                return match ? parseInt(match[1]) : null;
+            };
+
+            // Get selected project from URL if on a project page
+            const currentProjectId = getProjectIdFromPath();
+            const currentProjectFromPath = currentProjectId ? projects.find(p => p.id === currentProjectId) : null;
+
             // Cloud sync states
             const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
             const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_id') || null);
@@ -2500,8 +2545,7 @@
             };
 
             const openProjectDashboard = (project) => {
-                setSelectedProject(project);
-                setShowProjectDashboard(true);
+                navigate(`/project/${project.id}`);
             };
 
             const getStatusColor = (status) => {
@@ -4696,19 +4740,47 @@
                             </div>
                         )}
 
-                        {/* Project Dashboard Modal */}
-                        {showProjectDashboard && selectedProject && (
-                            <ProjectDashboard 
-                                project={selectedProject} 
-                                onClose={() => setShowProjectDashboard(false)}
-                                onUpdate={(updatedProject) => {
-                                    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
-                                    setSelectedProject(updatedProject);
-                                }}
-                                tasks={tasks}
-                                setTasks={setTasks}
-                            />
-                        )}
+                        {/* Project Dashboard - Full Page or Modal based on route */}
+                        {(showProjectDashboard && selectedProject) || (currentProjectFromPath && path.startsWith('/project/')) ? (
+                            currentProjectFromPath ? (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 overflow-y-auto">
+                                    <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full my-4 mx-4 max-h-[90vh] overflow-y-auto">
+                                        <button 
+                                            onClick={() => {
+                                                goBack();
+                                                setTimeout(() => setShowProjectDashboard(false), 100);
+                                            }}
+                                            className="absolute top-4 left-4 p-2 hover:bg-gray-100 rounded-lg z-10"
+                                        >
+                                            <ChevronLeft size={24} className="text-gray-600" />
+                                        </button>
+                                        <ProjectDashboard 
+                                            project={currentProjectFromPath} 
+                                            onClose={() => {
+                                                goBack();
+                                                setShowProjectDashboard(false);
+                                            }}
+                                            onUpdate={(updatedProject) => {
+                                                setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+                                            }}
+                                            tasks={tasks}
+                                            setTasks={setTasks}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <ProjectDashboard 
+                                    project={selectedProject} 
+                                    onClose={() => setShowProjectDashboard(false)}
+                                    onUpdate={(updatedProject) => {
+                                        setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+                                        setSelectedProject(updatedProject);
+                                    }}
+                                    tasks={tasks}
+                                    setTasks={setTasks}
+                                />
+                            )
+                        ) : null}
 
                         {/* Task Detail Modal */}
                         {selectedTask && (
