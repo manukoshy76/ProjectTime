@@ -1704,7 +1704,32 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             const newMinutes = (minutes + diffMinutes + 1440) % 1440;
             return minutesToTime(newMinutes);
         };
+const parseEmail = async (file) => {
+    const text = await file.text();
+    const lines = text.split('\n');
+    const email = {
+        id: Date.now(),
+        subject: lines.find(l => l.startsWith('Subject:'))?.replace('Subject:', '').trim() || 'No Subject',
+        from: lines.find(l => l.startsWith('From:'))?.replace('From:', '').trim() || 'Unknown',
+        body: lines.slice(10).join('\n').substring(0, 200),
+        date: new Date().toISOString().split('T')[0],
+        read: false,
+        notes: ''
+    };
+    return email;
+};
 
+const handleDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    files.forEach(async (file) => {
+        if (file.name.endsWith('.msg') || file.type === 'message/rfc822') {
+            const email = await parseEmail(file);
+            setEmails([...emails, email]);
+        }
+    });
+};
         // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
 // Find the WeeklyCalendar component in your HTML and replace it with this code
 
@@ -2418,6 +2443,14 @@ const [meetings, setMeetings] = useState(() => {
         const saved = localStorage.getItem('meetings_calendar');
         return saved ? JSON.parse(saved) : [];
     });
+
+    const [emails, setEmails] = useState(() => {
+    const saved = localStorage.getItem('emails_data');
+    return saved ? JSON.parse(saved) : [];
+});
+const [dragOver, setDragOver] = useState(false);
+const [emailNotes, setEmailNotes] = useState({});
+
             // Local storage effects
             useEffect(() => {
                 localStorage.setItem('timesheet_projects', JSON.stringify(projects));
@@ -2434,7 +2467,13 @@ const [meetings, setMeetings] = useState(() => {
             useEffect(() => {
                 localStorage.setItem('todays_focus_tasks', JSON.stringify(todaysTasks));
             }, [todaysTasks]);
+             useEffect(() => {
+    localStorage.setItem('emails_data', JSON.stringify(emails));
+}, [emails]);
 
+useEffect(() => {
+    localStorage.setItem('email_notes', JSON.stringify(emailNotes));
+}, [emailNotes]);
             // Cloud sync functions (same as before)
             const setupGistToken = () => {
                 if (!GIST_TOKEN) {
@@ -3934,7 +3973,8 @@ const [meetings, setMeetings] = useState(() => {
                                     { id: 'projects', label: 'Projects', icon: Target },
                                     { id: 'todo', label: 'To-Do', icon: CheckSquare },
                                     { id: 'weekly-calendar', label: '📅 Weekly Calendar', icon: Calendar },
-                                    { id: 'todo-timeline', label: 'Task Timeline', icon: Calendar }
+                                    { id: 'todo-timeline', label: 'Task Timeline', icon: Calendar },
+                                    { id: 'emails', label: '📧 Emails', icon: Mail }
                                 ].map(tab => {
                                     const Icon = tab.icon;
                                     return (
@@ -5428,7 +5468,89 @@ const [meetings, setMeetings] = useState(() => {
                                 </div>
                             </div>
                         )}
+{activeTab === 'emails' && (
+    <div className="space-y-2">
+        <div 
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+                dragOver ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 bg-gray-50'
+            }`}
+        >
+            <Mail size={32} className="mx-auto mb-2 text-indigo-600" />
+            <p className="font-bold text-gray-800">Drag & Drop Emails Here</p>
+            <p className="text-xs text-gray-600">or click to browse</p>
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                        const file = e.target.files[0];
+                        parseEmail(file).then(email => setEmails([...emails, email]));
+                    }
+                }}
+                accept=".msg,.eml"
+                style={{ display: 'none' }}
+                onClick={() => fileInputRef.current?.click()}
+            />
+            <button
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-3 px-4 py-2 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700"
+            >
+                Browse Files
+            </button>
+        </div>
 
+        <div className="bg-white rounded border shadow p-2">
+            <h3 className="font-bold text-sm mb-2">Emails ({emails.length})</h3>
+            {emails.length === 0 ? (
+                <p className="text-gray-500 text-xs text-center py-4">No emails yet</p>
+            ) : (
+                <div className="space-y-2">
+                    {emails.map(email => (
+                        <div key={email.id} className={`p-2 border rounded text-xs ${email.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'}`}>
+                            <div className="flex justify-between items-start mb-1">
+                                <div className="flex-1">
+                                    <p className="font-semibold">{email.subject}</p>
+                                    <p className="text-gray-600 text-xs">{email.from}</p>
+                                    <p className="text-gray-500 text-xs">{email.date}</p>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={email.read}
+                                    onChange={() => setEmails(emails.map(e => e.id === email.id ? {...e, read: !e.read} : e))}
+                                    className="ml-2"
+                                />
+                            </div>
+                            <textarea
+                                value={emailNotes[email.id] || ''}
+                                onChange={(e) => setEmailNotes({...emailNotes, [email.id]: e.target.value})}
+                                placeholder="Add notes..."
+                                className="w-full border rounded px-2 py-1 text-xs mb-1"
+                                rows="2"
+                            />
+                            <div className="flex gap-1">
+                                <button
+                                    onClick={() => setEmails(emails.filter(e => e.id !== email.id))}
+                                    className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                                >
+                                    Delete
+                                </button>
+                                <button
+                                    onClick={() => alert('📧 Email: ' + email.subject + '\n' + (emailNotes[email.id] || 'No notes'))}
+                                    className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
+                                >
+                                    View
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </div>
+)}
 {activeTab === 'weekly-calendar' && (
     <div className="p-6">
         <WeeklyCalendar 
