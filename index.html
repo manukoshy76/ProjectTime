@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Include SheetJS for Excel handling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
         .line-clamp-3 {
             display: -webkit-box;
@@ -1705,18 +1706,58 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             return minutesToTime(newMinutes);
         };
 const parseEmail = async (file) => {
-    const text = await file.text();
-    const lines = text.split('\n');
-    const email = {
-        id: Date.now(),
-        subject: lines.find(l => l.startsWith('Subject:'))?.replace('Subject:', '').trim() || 'No Subject',
-        from: lines.find(l => l.startsWith('From:'))?.replace('From:', '').trim() || 'Unknown',
-        body: lines.slice(10).join('\n').substring(0, 200),
-        date: new Date().toISOString().split('T')[0],
-        read: false,
-        notes: ''
-    };
-    return email;
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const zip = new JSZip();
+        await zip.loadAsync(arrayBuffer);
+        
+        let subject = 'No Subject';
+        let from = 'Unknown';
+        let body = '';
+        
+        // Try to read __properties_version1.0
+        const propsFile = zip.file('__properties_version1.0');
+        if (propsFile) {
+            const propsText = await propsFile.async('text');
+            const subjectMatch = propsFile.name.match(/Subject[:\s]+([^\n]+)/);
+            subject = 'Email from file';
+        }
+        
+        // Try to extract from Outlook Message format
+        const files = Object.keys(zip.files);
+        const bodyFile = files.find(f => f.includes('bodyHtml') || f.includes('body'));
+        
+        if (bodyFile) {
+            body = await zip.file(bodyFile).async('text');
+        }
+        
+        // Fallback: read file name
+        subject = file.name.replace('.msg', '').substring(0, 50);
+        
+        const email = {
+            id: Date.now(),
+            subject: subject || 'No Subject',
+            from: from,
+            body: body.substring(0, 200) || 'No content',
+            date: new Date().toISOString().split('T')[0],
+            read: false,
+            notes: '',
+            fileName: file.name
+        };
+        return email;
+    } catch (error) {
+        console.log('Parse error:', error);
+        return {
+            id: Date.now(),
+            subject: file.name.replace('.msg', ''),
+            from: 'Outlook Message',
+            body: 'Email file loaded',
+            date: new Date().toISOString().split('T')[0],
+            read: false,
+            notes: '',
+            fileName: file.name
+        };
+    }
 };
 
 const handleDrop = (e) => {
