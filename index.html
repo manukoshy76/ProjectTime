@@ -2501,6 +2501,8 @@
                     projects,
                     timeEntries,
                     tasks,
+                    todaysTasks,  // ADD THIS LINE
+    meetings, 
                     updatedAt: new Date().toISOString()
                 };
 
@@ -2612,6 +2614,8 @@
                         setProjects(data.projects || []);
                         setTimeEntries(data.timeEntries || []);
                         setTasks(data.tasks || []);
+                         setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
+    setMeetings(data.meetings || []); 
                         alert('Data loaded from cloud!');
                     }
                     
@@ -2655,6 +2659,8 @@
                     projects,
                     timeEntries: filteredTimeEntries,
                     tasks,
+                    todaysTasks,  // ADD THIS LINE
+        meetings,
                     filter: {
                         dateRange: dateFilter,
                         project: filterProject,
@@ -2688,6 +2694,8 @@
                             if (Array.isArray(parsed.tasks)) {
                                 setTasks(parsed.tasks);
                             }
+                            setTodaysTasks(parsed.todaysTasks || []);
+    setMeetings(parsed.meetings || []);
                             alert('Import successful.');
                         }
                     } catch (err) {
