@@ -1707,44 +1707,58 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
         };
 const parseEmail = async (file) => {
     try {
-        const arrayBuffer = await file.arrayBuffer();
-        const zip = new JSZip();
-        await zip.loadAsync(arrayBuffer);
+        const fileName = file.name.replace('.msg', '');
         
-        let subject = 'No Subject';
-        let from = 'Unknown';
-        let body = '';
+        // Extract information from filename pattern like "RE_ JPM Recon Build"
+        let subject = fileName;
+        let from = 'Unknown Sender';
         
-        // Try to read __properties_version1.0
-        const propsFile = zip.file('__properties_version1.0');
-        if (propsFile) {
-            const propsText = await propsFile.async('text');
-            const subjectMatch = propsFile.name.match(/Subject[:\s]+([^\n]+)/);
-            subject = 'Email from file';
+        // Common patterns in email filenames
+        const patterns = [
+            // Pattern: "RE_ Subject _ Sender"
+            /RE_([^_]+)_([^_]+)/i,
+            // Pattern: "RE_ Subject - Sender"  
+            /RE_([^_]+)[-_]([^.]+)/i,
+            // Pattern: "RE_ Subject"
+            /RE_([^.]+)/i,
+            // Pattern: "FW_ Subject _ Sender"
+            /FW_([^_]+)_([^_]+)/i,
+        ];
+        
+        for (const pattern of patterns) {
+            const match = fileName.match(pattern);
+            if (match) {
+                if (match[1]) {
+                    subject = 'RE: ' + match[1].trim().replace(/_/g, ' ');
+                }
+                if (match[2]) {
+                    from = match[2].trim().replace(/_/g, ' ');
+                }
+                break;
+            }
         }
         
-        // Try to extract from Outlook Message format
-        const files = Object.keys(zip.files);
-        const bodyFile = files.find(f => f.includes('bodyHtml') || f.includes('body'));
-        
-        if (bodyFile) {
-            body = await zip.file(bodyFile).async('text');
+        // If no pattern matched but filename starts with RE_, use basic extraction
+        if (fileName.startsWith('RE_') && from === 'Unknown Sender') {
+            const basicMatch = fileName.match(/RE_(.+)/);
+            if (basicMatch) {
+                subject = 'RE: ' + basicMatch[1].replace(/_/g, ' ');
+            }
         }
-        
-        // Fallback: read file name
-        subject = file.name.replace('.msg', '').substring(0, 50);
         
         const email = {
             id: Date.now(),
-            subject: subject || 'No Subject',
+            subject: subject,
             from: from,
-            body: body.substring(0, 200) || 'No content',
+            body: 'Drag & drop to import Outlook MSG files. Sender info can be added in notes.',
             date: new Date().toISOString().split('T')[0],
             read: false,
-            notes: '',
+            notes: 'Sender to be confirmed', // Default note
             fileName: file.name
         };
+        
         return email;
+        
     } catch (error) {
         console.log('Parse error:', error);
         return {
@@ -1759,15 +1773,29 @@ const parseEmail = async (file) => {
         };
     }
 };
-
 const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
     const files = Array.from(e.dataTransfer.files);
+    
+    // Process each file
     files.forEach(async (file) => {
         if (file.name.endsWith('.msg') || file.type === 'message/rfc822') {
+            console.log('Processing MSG file:', file.name);
             const email = await parseEmail(file);
-            setEmails([...emails, email]);
+            
+            // Special handling for "RE_" pattern in filename
+            if (email.from === 'Outlook Message' && file.name.includes('RE_')) {
+                const subjectMatch = file.name.match(/RE_([^_]+)_?(.*)/i);
+                if (subjectMatch) {
+                    email.subject = 'RE: ' + subjectMatch[1].replace(/_/g, ' ');
+                    if (subjectMatch[2]) {
+                        email.body = 'Regarding: ' + subjectMatch[2].replace(/_/g, ' ');
+                    }
+                }
+            }
+            
+            setEmails(prev => [...prev, email]);
         }
     });
 };
@@ -5543,19 +5571,28 @@ useEffect(() => {
             </button>
         </div>
 
-        <div className="bg-white rounded border shadow p-2">
+<div className="bg-white rounded border shadow p-2">
             <h3 className="font-bold text-sm mb-2">Emails ({emails.length})</h3>
             {emails.length === 0 ? (
                 <p className="text-gray-500 text-xs text-center py-4">No emails yet</p>
             ) : (
                 <div className="space-y-2">
                     {emails.map(email => (
-                        <div key={email.id} className={`p-2 border rounded text-xs ${email.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'}`}>
-                            <div className="flex justify-between items-start mb-1">
+                        <div key={email.id} className={`p-3 border rounded text-sm ${email.read ? 'bg-gray-50' : 'bg-blue-50 border-blue-200'}`}>
+                            <div className="flex justify-between items-start mb-2">
                                 <div className="flex-1">
-                                    <p className="font-semibold">{email.subject}</p>
-                                    <p className="text-gray-600 text-xs">{email.from}</p>
-                                    <p className="text-gray-500 text-xs">{email.date}</p>
+                                    <p className="font-semibold text-blue-800">{email.subject}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs text-gray-600">From:</span>
+                                        <input
+                                            type="text"
+                                            value={email.from}
+                                            onChange={(e) => setEmails(emails.map(e => e.id === email.id ? {...e, from: e.target.value} : e))}
+                                            className="text-xs border-b border-gray-300 px-1 py-0.5 focus:border-blue-500 focus:outline-none"
+                                            placeholder="Enter sender name"
+                                        />
+                                    </div>
+                                    <p className="text-gray-500 text-xs mt-1">{email.date}</p>
                                 </div>
                                 <input
                                     type="checkbox"
@@ -5564,13 +5601,15 @@ useEffect(() => {
                                     className="ml-2"
                                 />
                             </div>
+                            
                             <textarea
                                 value={emailNotes[email.id] || ''}
                                 onChange={(e) => setEmailNotes({...emailNotes, [email.id]: e.target.value})}
-                                placeholder="Add notes..."
-                                className="w-full border rounded px-2 py-1 text-xs mb-1"
+                                placeholder="Add notes about this email..."
+                                className="w-full border rounded px-2 py-1 text-xs mb-2"
                                 rows="2"
                             />
+                            
                             <div className="flex gap-1">
                                 <button
                                     onClick={() => setEmails(emails.filter(e => e.id !== email.id))}
@@ -5579,10 +5618,13 @@ useEffect(() => {
                                     Delete
                                 </button>
                                 <button
-                                    onClick={() => alert('📧 Email: ' + email.subject + '\n' + (emailNotes[email.id] || 'No notes'))}
+                                    onClick={() => {
+                                        const emailData = emails.find(e => e.id === email.id);
+                                        alert(`📧 Email Details:\nSubject: ${emailData.subject}\nFrom: ${emailData.from}\nDate: ${emailData.date}\nNotes: ${emailNotes[email.id] || 'None'}`);
+                                    }}
                                     className="px-2 py-1 bg-blue-500 text-white rounded text-xs hover:bg-blue-600"
                                 >
-                                    View
+                                    View Details
                                 </button>
                             </div>
                         </div>
@@ -5592,6 +5634,7 @@ useEffect(() => {
         </div>
     </div>
 )}
+
 {activeTab === 'weekly-calendar' && (
     <div className="p-6">
         <WeeklyCalendar 
