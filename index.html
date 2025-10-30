@@ -1746,12 +1746,7 @@
             return minutesToTime(newMinutes);
         };
 
-        const WeeklyCalendar = ({ projects }) => {
-            // Calendar state
-            const [meetings, setMeetings] = useState(() => {
-                const saved = localStorage.getItem('meetings_calendar');
-                return saved ? JSON.parse(saved) : [];
-            });
+        const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
             
             const [selectedTimezone, setSelectedTimezone] = useState('ist');
             const [currentTime, setCurrentTime] = useState(new Date());
@@ -2453,7 +2448,10 @@
 
             // Refs
             const fileInputRef = useRef(null);
-
+const [meetings, setMeetings] = useState(() => {
+        const saved = localStorage.getItem('meetings_calendar');
+        return saved ? JSON.parse(saved) : [];
+    });
             // Local storage effects
             useEffect(() => {
                 localStorage.setItem('timesheet_projects', JSON.stringify(projects));
@@ -5495,11 +5493,15 @@
                             </div>
                         )}
 
-                        {activeTab === 'weekly-calendar' && (
-                            <div className="p-6">
-                                <WeeklyCalendar projects={projects} />
-                            </div>
-                        )}
+{activeTab === 'weekly-calendar' && (
+    <div className="p-6">
+        <WeeklyCalendar 
+            projects={projects} 
+            meetings={meetings} 
+            setMeetings={setMeetings} 
+        />
+    </div>
+)}
                         </div>
                     </div>
                 </div>
