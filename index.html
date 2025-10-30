@@ -1029,335 +1029,291 @@
             );
         };
 
-        // DeepSeek Integration - Enhanced To-Do Tab Component
-        const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) => {
-            const [newTask, setNewTask] = useState({ 
-                title: '', 
-                project: '', 
-                dueDate: '', 
-                priority: 'medium',
-                status: 'todo' // Default status
-            });
-            const [updateTrigger, setUpdateTrigger] = useState(0);
+  
 
-            // Force refresh when tasks change
-            const refreshTasks = () => {
-                setUpdateTrigger(prev => prev + 1);
-            };
+const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) => {
+    const [newTask, setNewTask] = useState({ 
+        title: '', 
+        project: '', 
+        dueDate: '', 
+        priority: 'medium',
+        status: 'todo'
+    });
+    const [updateTrigger, setUpdateTrigger] = useState(0);
 
-            // Calculate overall progress
-            const allSubtasks = tasks.flatMap(task => task.subtasks || []);
-            const completedSubtasks = allSubtasks.filter(st => st.done).length;
-            const totalSubtasks = allSubtasks.length;
-            const overallProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
+    const refreshTasks = () => {
+        setUpdateTrigger(prev => prev + 1);
+    };
 
-            const addTask = () => {
-                if (!newTask.title.trim()) return;
-                const newTaskObj = { 
-                    ...newTask, 
-                    id: Date.now(), 
-                    done: false,
-                    createdAt: new Date().toISOString(),
-                    subtasks: [] // Initialize with empty subtasks array
-                };
-                setTasks([...tasks, newTaskObj]);
-                setNewTask({ 
-                    title: '', 
-                    project: '', 
-                    dueDate: '', 
-                    priority: 'medium',
-                    status: 'todo'
-                });
-                refreshTasks();
-            };
+    const allSubtasks = tasks.flatMap(task => task.subtasks || []);
+    const completedSubtasks = allSubtasks.filter(st => st.done).length;
+    const totalSubtasks = allSubtasks.length;
+    const overallProgress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
-            const toggleTask = (id) => {
-                setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
-                refreshTasks();
-            };
-
-            const deleteTask = (id) => {
-                if (window.confirm('Delete this task?')) {
-                    setTasks(tasks.filter(t => t.id !== id));
-                    refreshTasks();
-                }
-            };
-
-            const getPriorityColor = (priority) => {
-                const colors = {
-                    high: 'border-red-500 bg-red-50',
-                    medium: 'border-yellow-500 bg-yellow-50',
-                    low: 'border-blue-500 bg-blue-50'
-                };
-                return colors[priority] || 'border-gray-300 bg-gray-50';
-            };
-
-            const getStatusColor = (status) => {
-                const colors = {
-                    'todo': 'bg-gray-100 text-gray-800 border-gray-300',
-                    'in-progress': 'bg-blue-100 text-blue-800 border-blue-300',
-                    'review': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                    'completed': 'bg-green-100 text-green-800 border-green-300',
-                    'follow-up': 'bg-orange-100 text-orange-800 border-orange-300'
-                };
-                return colors[status] || colors.todo;
-            };
-
-            const sortedTasks = [...tasks].sort((a, b) => {
-                // Sort by status priority first
-                const statusOrder = { 
-                    'in-progress': 5, 
-                    'follow-up': 4, 
-                    'review': 3, 
-                    'todo': 2, 
-                    'completed': 1 
-                };
-                
-                if (statusOrder[a.status] !== statusOrder[b.status]) {
-                    return statusOrder[b.status] - statusOrder[a.status];
-                }
-                
-                // Then by priority
-                const priorityOrder = { high: 3, medium: 2, low: 1 };
-                if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                    return priorityOrder[b.priority] - priorityOrder[a.priority];
-                }
-                
-                // Then by due date
-                if (a.dueDate && b.dueDate) {
-                    return new Date(a.dueDate) - new Date(b.dueDate);
-                }
-                
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
-
-            const pendingTasks = tasks.filter(t => t.status !== 'completed').length;
-            const completedTasks = tasks.filter(t => t.status === 'completed').length;
-
-            return (
-                <div className="space-y-3" key={updateTrigger}>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow p-3 text-white">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-blue-100 text-xs font-medium">Total Tasks</p>
-                                    <p className="text-2xl font-bold mt-0.5">{tasks.length}</p>
-                                </div>
-                                <ListCheck size={28} className="text-blue-200" />
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-3 text-white">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-orange-100 text-xs font-medium">Pending</p>
-                                    <p className="text-2xl font-bold mt-0.5">{pendingTasks}</p>
-                                </div>
-                                <Clock size={28} className="text-orange-200" />
-                            </div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-3 text-white">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-green-100 text-sm font-medium">Completed</p>
-                                    <p className="text-2xl font-bold mt-0.5">{completedTasks}</p>
-                                </div>
-                                <CheckCircle size={28} className="text-green-200" />
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-3 text-white">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-purple-100 text-xs font-medium">Progress</p>
-                                    <p className="text-2xl font-bold mt-0.5">{Math.round(overallProgress)}%</p>
-                                </div>
-                                <ProgressRing progress={overallProgress} size={32} strokeWidth={2} />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
-                        <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <Plus size={18} className="text-indigo-600" />
-                            Add New Task
-                        </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-6 gap-2 mb-3">
-                            <input
-                                type="text"
-                                placeholder="Task title"
-                                value={newTask.title}
-                                onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:col-span-2"
-                            />
-                            <select
-                                value={newTask.project}
-                                onChange={(e) => setNewTask({ ...newTask, project: e.target.value })}
-                                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                                <option value="">No Project</option>
-                                {projects.map(p => (
-                                    <option key={p.id} value={p.name}>{p.name}</option>
-                                ))}
-                            </select>
-                            <input
-                                type="date"
-                                value={newTask.dueDate}
-                                onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            />
-                            <select
-                                value={newTask.priority}
-                                onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
-                            <select
-                                value={newTask.status}
-                                onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
-                                className="border border-gray-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            >
-                                <option value="todo">To Do</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="review">Review</option>
-                                <option value="follow-up">Follow Up</option>
-                            </select>
-                        </div>
-                        <button
-                            onClick={addTask}
-                            className="px-3 py-1.5 text-sm bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-1 transition-colors"
-                        >
-                            <Plus size={14} />
-                            Add Task
-                        </button>
-                    </div>
-
-                    <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
-                        <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <ListCheck size={18} className="text-indigo-600" />
-                            Task List ({tasks.length})
-                        </h3>
-
-                        {sortedTasks.length === 0 ? (
-                            <div className="text-center py-4 text-gray-500">
-                                <Inbox size={36} className="mx-auto mb-2 text-gray-300" />
-                                <p className="text-sm">No tasks yet. Add a task to get started!</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                {sortedTasks.map(task => {
-                                    const taskSubtasks = task.subtasks || [];
-                                    const taskCompletedSubtasks = taskSubtasks.filter(st => st.done).length;
-                                    const taskTotalSubtasks = taskSubtasks.length;
-                                    const taskProgress = taskTotalSubtasks > 0 ? (taskCompletedSubtasks / taskTotalSubtasks) * 100 : 0;
-                                    
-                                    return (
-                                        <div
-                                            key={task.id}
-                                            onClick={() => setSelectedTask(task)}
-                                            className={`flex items-start justify-between border rounded p-2.5 transition-colors cursor-pointer hover:bg-indigo-50 text-sm ${
-                                                task.status === 'completed' ? 'bg-green-50 border-green-200' : getPriorityColor(task.priority)
-                                            }`}
-                                        >
-                                            <div className="flex items-start gap-2 flex-1">
-                                                <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1 ${
-                                                    task.status === 'completed' ? 'bg-green-500' :
-                                                    task.status === 'in-progress' ? 'bg-blue-500' :
-                                                    task.status === 'review' ? 'bg-yellow-500' :
-                                                    task.status === 'follow-up' ? 'bg-orange-500' :
-                                                    'bg-gray-400'
-                                                }`}></div>
-                                                <div className="flex-1">
-                                                    <div className={`font-medium text-xs ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                                        {task.title}
-                                                        {(task.subtasks && task.subtasks.length > 0) && (
-                                                            <span className="ml-1 text-gray-500">
-                                                                ({taskCompletedSubtasks}/{taskTotalSubtasks})
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium border ${getStatusColor(task.status || 'todo')}`}>
-                                                            {task.status === 'todo' && 'To Do'}
-                                                            {task.status === 'in-progress' && 'In Progress'}
-                                                            {task.status === 'review' && 'In Review'}
-                                                            {task.status === 'follow-up' && 'Follow Up'}
-                                                            {task.status === 'completed' && 'Completed'}
-                                                        </span>
-                                                        {task.project && (
-                                                            <span className="flex items-center gap-0.5">
-                                                                <Target size={10} />
-                                                                {task.project}
-                                                            </span>
-                                                        )}
-                                                        {task.dueDate && (
-                                                            <span className="flex items-center gap-0.5">
-                                                                <Calendar size={10} />
-                                                                {task.dueDate}
-                                                            </span>
-                                                        )}
-                                                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                                                            task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                                            'bg-blue-100 text-blue-800'
-                                                        }`}>
-                                                            {task.priority}
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    {/* Task Progress Bar */}
-                                                    {taskTotalSubtasks > 0 && (
-                                                        <div className="mt-1">
-                                                            <div className="flex justify-between text-xs text-gray-500 mb-0.5">
-                                                                <span>Progress:</span>
-                                                                <span>{Math.round(taskProgress)}%</span>
-                                                            </div>
-                                                            <div className="w-full bg-gray-200 rounded-full h-1">
-                                                                <div 
-                                                                    className="bg-green-500 h-1 rounded-full progress-bar" 
-                                                                    style={{ width: `${taskProgress}%` }}
-                                                                ></div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    deleteTask(task.id);
-                                                }}
-                                                className="p-1 text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Task Detail Modal */}
-                    {selectedTask && (
-                        <TaskDetailModal 
-                            task={selectedTask} 
-                            onClose={() => setSelectedTask(null)}
-                            onUpdate={() => {}}
-                            tasks={tasks}
-                            setTasks={setTasks}
-                            refreshTasks={refreshTasks}
-                        />
-                    )}
-                </div>
-            );
+    const addTask = () => {
+        if (!newTask.title.trim()) return;
+        const newTaskObj = { 
+            ...newTask, 
+            id: Date.now(), 
+            done: false,
+            createdAt: new Date().toISOString(),
+            subtasks: []
         };
+        setTasks([...tasks, newTaskObj]);
+        setNewTask({ 
+            title: '', 
+            project: '', 
+            dueDate: '', 
+            priority: 'medium',
+            status: 'todo'
+        });
+        refreshTasks();
+    };
 
+    const toggleTask = (id) => {
+        setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+        refreshTasks();
+    };
+
+    const deleteTask = (id) => {
+        if (window.confirm('Delete this task?')) {
+            setTasks(tasks.filter(t => t.id !== id));
+            refreshTasks();
+        }
+    };
+
+    const getPriorityColor = (priority) => {
+        const colors = {
+            high: 'border-red-500 bg-red-50',
+            medium: 'border-yellow-500 bg-yellow-50',
+            low: 'border-blue-500 bg-blue-50'
+        };
+        return colors[priority] || 'border-gray-300 bg-gray-50';
+    };
+
+    const getStatusColor = (status) => {
+        const colors = {
+            'todo': 'bg-gray-100 text-gray-800 border-gray-300',
+            'in-progress': 'bg-blue-100 text-blue-800 border-blue-300',
+            'review': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+            'completed': 'bg-green-100 text-green-800 border-green-300',
+            'follow-up': 'bg-orange-100 text-orange-800 border-orange-300'
+        };
+        return colors[status] || colors.todo;
+    };
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+        const statusOrder = { 
+            'in-progress': 5, 
+            'follow-up': 4, 
+            'review': 3, 
+            'todo': 2, 
+            'completed': 1 
+        };
+        
+        if (statusOrder[a.status] !== statusOrder[b.status]) {
+            return statusOrder[b.status] - statusOrder[a.status];
+        }
+        
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+            return priorityOrder[b.priority] - priorityOrder[a.priority];
+        }
+        
+        if (a.dueDate && b.dueDate) {
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        }
+        
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    const pendingTasks = tasks.filter(t => t.status !== 'completed').length;
+    const completedTasks = tasks.filter(t => t.status === 'completed').length;
+
+    return (
+        <div className="space-y-2" key={updateTrigger}>
+            {/* Compact Add Task Form - Like Timesheet */}
+            <div className="bg-white rounded-lg shadow-sm p-2 border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-sm text-gray-800 flex items-center gap-1">
+                        <Plus size={14} className="text-indigo-600" />
+                        Quick Add Task
+                    </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-1.5">
+                    <input
+                        type="text"
+                        placeholder="Task title"
+                        value={newTask.title}
+                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:col-span-2"
+                    />
+                    <select
+                        value={newTask.project}
+                        onChange={(e) => setNewTask({ ...newTask, project: e.target.value })}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                        <option value="">No Project</option>
+                        {projects.map(p => (
+                            <option key={p.id} value={p.name}>{p.name}</option>
+                        ))}
+                    </select>
+                    <input
+                        type="date"
+                        value={newTask.dueDate}
+                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                    <select
+                        value={newTask.priority}
+                        onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                    <select
+                        value={newTask.status}
+                        onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                        <option value="todo">To Do</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="review">Review</option>
+                        <option value="follow-up">Follow Up</option>
+                    </select>
+                    <button
+                        onClick={addTask}
+                        className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-1 transition-colors font-medium"
+                    >
+                        <Plus size={12} />
+                        Add
+                    </button>
+                </div>
+            </div>
+
+            {/* Task List */}
+            <div className="bg-white rounded-lg shadow-sm p-2 border border-gray-200">
+                <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1">
+                    <ListCheck size={14} className="text-indigo-600" />
+                    Task List ({tasks.length})
+                </h3>
+
+                {sortedTasks.length === 0 ? (
+                    <div className="text-center py-3 text-gray-500">
+                        <Inbox size={28} className="mx-auto mb-1 text-gray-300" />
+                        <p className="text-xs">No tasks yet. Add a task to get started!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-1">
+                        {sortedTasks.map(task => {
+                            const taskSubtasks = task.subtasks || [];
+                            const taskCompletedSubtasks = taskSubtasks.filter(st => st.done).length;
+                            const taskTotalSubtasks = taskSubtasks.length;
+                            const taskProgress = taskTotalSubtasks > 0 ? (taskCompletedSubtasks / taskTotalSubtasks) * 100 : 0;
+                            
+                            return (
+                                <div
+                                    key={task.id}
+                                    onClick={() => setSelectedTask(task)}
+                                    className={`flex items-start justify-between border rounded p-1.5 transition-colors cursor-pointer hover:bg-indigo-50 text-xs ${
+                                        task.status === 'completed' ? 'bg-green-50 border-green-200' : getPriorityColor(task.priority)
+                                    }`}
+                                >
+                                    <div className="flex items-start gap-1.5 flex-1">
+                                        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${
+                                            task.status === 'completed' ? 'bg-green-500' :
+                                            task.status === 'in-progress' ? 'bg-blue-500' :
+                                            task.status === 'review' ? 'bg-yellow-500' :
+                                            task.status === 'follow-up' ? 'bg-orange-500' :
+                                            'bg-gray-400'
+                                        }`}></div>
+                                        <div className="flex-1">
+                                            <div className={`font-medium text-xs ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                                {task.title}
+                                                {(task.subtasks && task.subtasks.length > 0) && (
+                                                    <span className="ml-1 text-gray-500">
+                                                        ({taskCompletedSubtasks}/{taskTotalSubtasks})
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 flex-wrap">
+                                                <span className={`px-1 py-0.5 rounded text-xs font-medium border ${getStatusColor(task.status || 'todo')}`}>
+                                                    {task.status === 'todo' && 'To Do'}
+                                                    {task.status === 'in-progress' && 'In Progress'}
+                                                    {task.status === 'review' && 'In Review'}
+                                                    {task.status === 'follow-up' && 'Follow Up'}
+                                                    {task.status === 'completed' && 'Completed'}
+                                                </span>
+                                                {task.project && (
+                                                    <span className="flex items-center gap-0.5">
+                                                        <Target size={10} />
+                                                        {task.project}
+                                                    </span>
+                                                )}
+                                                {task.dueDate && (
+                                                    <span className="flex items-center gap-0.5">
+                                                        <Calendar size={10} />
+                                                        {task.dueDate}
+                                                    </span>
+                                                )}
+                                                <span className={`px-1 py-0.5 rounded text-xs font-medium ${
+                                                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-blue-100 text-blue-800'
+                                                }`}>
+                                                    {task.priority}
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Task Progress Bar */}
+                                            {taskTotalSubtasks > 0 && (
+                                                <div className="mt-1">
+                                                    <div className="flex justify-between text-xs text-gray-500 mb-0.5">
+                                                        <span>Progress:</span>
+                                                        <span>{Math.round(taskProgress)}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-1">
+                                                        <div 
+                                                            className="bg-green-500 h-1 rounded-full progress-bar" 
+                                                            style={{ width: `${taskProgress}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteTask(task.id);
+                                        }}
+                                        className="p-1 text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {/* Task Detail Modal */}
+            {selectedTask && (
+                <TaskDetailModal 
+                    task={selectedTask} 
+                    onClose={() => setSelectedTask(null)}
+                    onUpdate={() => {}}
+                    tasks={tasks}
+                    setTasks={setTasks}
+                    refreshTasks={refreshTasks}
+                />
+            )}
+        </div>
+    );
+};
         // DeepSeek Integration - Reconciliation Documentation Component
         const ReconDocumentationSection = ({ project, onUpdate }) => {
             // File input ref for import
@@ -1746,564 +1702,380 @@
             return minutesToTime(newMinutes);
         };
 
-        const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
-            
-            const [selectedTimezone, setSelectedTimezone] = useState('ist');
-            const [currentTime, setCurrentTime] = useState(new Date());
-            const [currentWeekStart, setCurrentWeekStart] = useState(() => {
-                const today = new Date();
-                const day = today.getDay();
-                const date = new Date(today);
-                date.setDate(today.getDate() - day);
-                return date;
-            });
-            
-            const [showMeetingModal, setShowMeetingModal] = useState(false);
-            const [editingMeeting, setEditingMeeting] = useState(null);
-            const [selectedMeetingDay, setSelectedMeetingDay] = useState(null);
-            const meetingTimeoutsRef = useRef({});
-            const daysContainer = useRef(null);
-            const timeContainer = useRef(null);
-            
-            const [editingForm, setEditingForm] = useState({
-                name: '',
-                project: '',
-                date: '',
-                startTime: '',
-                endTime: '',
-                timezone: 'ist',
-                attendees: '',
-                description: ''
-            });
+        // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
+// Find the WeeklyCalendar component in your HTML and replace it with this code
 
-            // Update current time every second for display
-            useEffect(() => {
-                const timer = setInterval(() => {
-                    setCurrentTime(new Date());
-                }, 1000); // Update every second
-                return () => clearInterval(timer);
-            }, []);
+const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
+    const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+        const today = new Date();
+        const day = today.getDay();
+        const date = new Date(today);
+        date.setDate(today.getDate() - day);
+        return date;
+    });
+    
+    const [showMeetingModal, setShowMeetingModal] = useState(false);
+    const [editingMeeting, setEditingMeeting] = useState(null);
+    const [editingForm, setEditingForm] = useState({
+        name: '',
+        project: '',
+        date: '',
+        startTime: '',
+        endTime: ''
+    });
 
-            // Sync scroll between time column and days container
-            useEffect(() => {
-                const daysEl = daysContainer.current;
-                const timeEl = timeContainer.current;
+    const WORK_START = 13; // 1 PM
+    const WORK_END = 22.5; // 10:30 PM
 
-                if (!daysEl || !timeEl) return;
+    const getWeekDays = () => {
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(currentWeekStart);
+            date.setDate(currentWeekStart.getDate() + i);
+            days.push(date);
+        }
+        return days;
+    };
 
-                const handleScroll = (e) => {
-                    const scrollTop = e.target.scrollTop;
-                    timeEl.scrollTop = scrollTop;
-                };
+    const getMeetingsForDay = (dateStr) => {
+        return meetings
+            .filter(m => m.date === dateStr)
+            .sort((a, b) => a.startTime.localeCompare(b.startTime));
+    };
 
-                daysEl.addEventListener('scroll', handleScroll);
-                return () => daysEl.removeEventListener('scroll', handleScroll);
-            }, []);
+    const getFreeTimes = (dateStr) => {
+        const dayMeetings = getMeetingsForDay(dateStr);
+        if (dayMeetings.length === 0) {
+            return [`Free all day (1 PM - 10:30 PM)`];
+        }
 
-            // Save meetings to localStorage
-            useEffect(() => {
-                localStorage.setItem('meetings_calendar', JSON.stringify(meetings));
-            }, [meetings]);
+        const freeTimes = [];
+        
+        // Check if free at start of day
+        if (dayMeetings[0].startTime > "13:00") {
+            freeTimes.push(`Free: 1:00 PM - ${convertTo12Hour(dayMeetings[0].startTime)}`);
+        }
 
-            // Schedule notifications for all meetings
-            useEffect(() => {
-                Object.values(meetingTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
-                meetingTimeoutsRef.current = {};
+        // Check gaps between meetings
+        for (let i = 0; i < dayMeetings.length - 1; i++) {
+            const endTime = dayMeetings[i].endTime;
+            const nextStart = dayMeetings[i + 1].startTime;
+            if (endTime < nextStart) {
+                freeTimes.push(`Free: ${convertTo12Hour(endTime)} - ${convertTo12Hour(nextStart)}`);
+            }
+        }
 
-                meetings.forEach(meeting => {
-                    const [hours, minutes] = meeting.startTime.split(':');
-                    const meetingDate = new Date(meeting.date);
-                    meetingDate.setHours(parseInt(hours), parseInt(minutes), 0);
-                    const notificationTime = new Date(meetingDate.getTime() - 15 * 60000);
-                    
-                    const now = new Date();
-                    const timeUntil = notificationTime.getTime() - now.getTime();
-                    
-                    if (timeUntil > 0) {
-                        const timeout = setTimeout(() => {
-                            if ('Notification' in window && Notification.permission === 'granted') {
-                                new Notification('📅 Meeting in 15 Minutes!', {
-                                    body: `${meeting.name}\nProject: ${meeting.project}\nStarting at ${meeting.startTime}`,
-                                    requireInteraction: true
-                                });
-                            }
-                        }, timeUntil);
-                        
-                        meetingTimeoutsRef.current[meeting.id] = timeout;
-                    }
-                });
+        // Check if free at end of day
+        const lastMeeting = dayMeetings[dayMeetings.length - 1];
+        if (lastMeeting.endTime < "22:30") {
+            freeTimes.push(`Free: ${convertTo12Hour(lastMeeting.endTime)} - 10:30 PM`);
+        }
 
-                return () => {
-                    Object.values(meetingTimeoutsRef.current).forEach(timeout => clearTimeout(timeout));
-                };
-            }, [meetings]);
+        return freeTimes;
+    };
 
-            const getWeekDays = () => {
-                const days = [];
-                for (let i = 0; i < 7; i++) {
-                    const date = new Date(currentWeekStart);
-                    date.setDate(currentWeekStart.getDate() + i);
-                    days.push(date);
-                }
-                return days;
+    const convertTo12Hour = (time24) => {
+        const [hours, minutes] = time24.split(':').map(Number);
+        const meridiem = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12 || 12;
+        return `${hours12}:${String(minutes).padStart(2, '0')} ${meridiem}`;
+    };
+
+    const getDurationMinutes = (start, end) => {
+        const [startH, startM] = start.split(':').map(Number);
+        const [endH, endM] = end.split(':').map(Number);
+        return (endH * 60 + endM) - (startH * 60 + startM);
+    };
+
+    const addOrUpdateMeeting = () => {
+        if (!editingForm.name || !editingForm.project || !editingForm.date || !editingForm.startTime || !editingForm.endTime) {
+            alert('Please fill all fields');
+            return;
+        }
+
+        if (editingForm.endTime <= editingForm.startTime) {
+            alert('End time must be after start time');
+            return;
+        }
+
+        if (editingMeeting) {
+            setMeetings(meetings.map(m => m.id === editingMeeting.id ? {
+                ...editingMeeting,
+                ...editingForm
+            } : m));
+        } else {
+            const newMeeting = {
+                id: Date.now(),
+                ...editingForm
             };
+            setMeetings([...meetings, newMeeting]);
+        }
 
-            const getMeetingsForDay = (dateStr) => {
-                return meetings.filter(m => m.date === dateStr);
-            };
+        setShowMeetingModal(false);
+        setEditingMeeting(null);
+        setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '' });
+    };
 
-            const calculateDuration = (startTime, endTime) => {
-                const [startH, startM] = startTime.split(':').map(Number);
-                const [endH, endM] = endTime.split(':').map(Number);
-                const startMinutes = startH * 60 + startM;
-                const endMinutes = endH * 60 + endM;
-                const duration = endMinutes - startMinutes;
-                
-                if (duration < 0) return '0m';
-                const hours = Math.floor(duration / 60);
-                const mins = duration % 60;
-                return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-            };
+    const deleteMeeting = (meetingId) => {
+        if (window.confirm('Delete this meeting?')) {
+            setMeetings(meetings.filter(m => m.id !== meetingId));
+        }
+    };
 
-            const addOrUpdateMeeting = () => {
-                if (!editingForm.name || !editingForm.project || !editingForm.date || !editingForm.startTime || !editingForm.endTime) {
-                    alert('Please fill all required fields');
-                    return;
-                }
+    const getColor = (index) => {
+        const colors = ['blue', 'purple', 'red', 'green', 'orange'];
+        return colors[index % colors.length];
+    };
 
-                const [startH, startM] = editingForm.startTime.split(':').map(Number);
-                const [endH, endM] = editingForm.endTime.split(':').map(Number);
-                const startMinutes = startH * 60 + startM;
-                const endMinutes = endH * 60 + endM;
-                
-                if (endMinutes <= startMinutes) {
-                    alert('End time must be after start time');
-                    return;
-                }
+    const isToday = (date) => {
+        const today = new Date();
+        return date.getDate() === today.getDate() &&
+               date.getMonth() === today.getMonth() &&
+               date.getFullYear() === today.getFullYear();
+    };
 
-                if (editingMeeting) {
-                    setMeetings(meetings.map(m => m.id === editingMeeting.id ? {
-                        ...editingMeeting,
-                        ...editingForm
-                    } : m));
-                } else {
-                    const newMeeting = {
-                        id: Date.now(),
-                        ...editingForm
-                    };
-                    setMeetings([...meetings, newMeeting]);
-                }
+    const weekDays = getWeekDays();
 
-                setShowMeetingModal(false);
-                setEditingMeeting(null);
-                setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', timezone: 'ist', attendees: '', description: '' });
-            };
-
-            const deleteMeeting = (meetingId) => {
-                if (window.confirm('Are you sure you want to delete this meeting?')) {
-                    setMeetings(meetings.filter(m => m.id !== meetingId));
-                }
-            };
-
-            const openEditModal = (meeting) => {
-                setEditingMeeting(meeting);
-                setEditingForm(meeting);
-                setShowMeetingModal(true);
-            };
-
-            const selectedTzData = TIMEZONES.find(tz => tz.id === selectedTimezone);
-            const timeSlots = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
-            const weekDays = getWeekDays();
-
-            const convertedMeetings = useMemo(() => {
-                return meetings.map(meeting => {
-                    const fromTz = TIMEZONES.find(t => t.id === (meeting.timezone || 'ist'));
-                    const convertedStartTime = convertTime(meeting.startTime, fromTz.offset, selectedTzData.offset);
-                    const convertedEndTime = convertTime(meeting.endTime, fromTz.offset, selectedTzData.offset);
-                    
-                    // Calculate duration based on original timezone times (duration never changes)
-                    const durationMinutes = timeToMinutes(meeting.endTime) - timeToMinutes(meeting.startTime);
-                    const duration = durationMinutes / 60;
-                    
-                    return {
-                        ...meeting,
-                        displayTime: convertedStartTime,
-                        displayEndTime: convertedEndTime,
-                        duration: duration,
-                    };
-                });
-            }, [meetings, selectedTimezone, selectedTzData]);
-
-            const getEventPosition = (meeting) => {
-                const startMinutes = timeToMinutes(meeting.displayTime);
-                const durationMinutes = meeting.duration * 60;
-                
-                // Each hour is 60px, so each minute is 1px (60px / 60 minutes)
-                const topPx = (startMinutes % 60); // Position within the hour
-                const heightPx = durationMinutes; // Height based on duration
-                
-                // Get which hour slot to start in
-                const hourSlot = Math.floor(startMinutes / 60);
-                const topOffset = hourSlot * 60 + topPx;
-                
-                return { 
-                    top: `${topOffset}px`, 
-                    height: `${Math.max(heightPx, 20)}px`,
-                    position: 'absolute'
-                };
-            };
-
-            const isToday = (date) => {
-                const today = new Date();
-                return date.getDate() === today.getDate() &&
-                       date.getMonth() === today.getMonth() &&
-                       date.getFullYear() === today.getFullYear();
-            };
-
-            const getCurrentTimePosition = () => {
-                const minutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-                // Each hour is 40px now (was 60px), so convert minutes to pixels
-                return (minutes / 60) * 40;
-            };
-
-            const getColor = (index) => {
-                const colors = ['blue', 'purple', 'red', 'green', 'orange'];
-                return colors[index % colors.length];
-            };
-
-            return (
-                <div className="flex flex-col h-full bg-white">
-                    {/* Header - Removed, was taking space */}
-
-                    {/* Current Time Display - Compact */}
-                    <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200">
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex items-center gap-3">
-                                <div>
-                                    <span className="text-xs font-semibold text-gray-600">IST: </span>
-                                    <span className="text-base font-bold text-indigo-600">
-                                        {String(currentTime.getHours()).padStart(2, '0')}:{String(currentTime.getMinutes()).padStart(2, '0')}
-                                    </span>
-                                </div>
-                                <div>
-                                    <span className="text-xs font-semibold text-gray-600">{selectedTzData.name}: </span>
-                                    <span className="text-base font-bold text-blue-600">
-                                        {(() => {
-                                            const istOffset = 5.5;
-                                            const minutes = currentTime.getHours() * 60 + currentTime.getMinutes();
-                                            const diffMinutes = (selectedTzData.offset - istOffset) * 60;
-                                            const newMinutes = (minutes + diffMinutes + 1440) % 1440;
-                                            const hours = Math.floor(newMinutes / 60);
-                                            const mins = newMinutes % 60;
-                                            return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
-                                        })()}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => setCurrentWeekStart(new Date(currentWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000))}
-                                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded font-medium"
-                                    title="Previous week"
-                                >
-                                    ← Prev
-                                </button>
-                                <span className="text-xs font-semibold text-gray-600 px-2">
-                                    {currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                </span>
-                                <button
-                                    onClick={() => setCurrentWeekStart(new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000))}
-                                    className="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded font-medium"
-                                    title="Next week"
-                                >
-                                    Next →
-                                </button>
-                            </div>
-                        </div>
+    return (
+        <div className="space-y-4">
+            {/* Week Navigation */}
+            <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <Calendar size={24} className="text-indigo-600" />
+                            Weekly Calendar (IST: 1 PM - 10:30 PM)
+                        </h2>
                     </div>
-
-                    {/* Timezone Selector - Compact */}
-                    <div className="timezone-bar flex justify-between items-center py-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-semibold text-gray-600">TZ:</span>
-                            {TIMEZONES.map(tz => (
-                                <button
-                                    key={tz.id}
-                                    onClick={() => setSelectedTimezone(tz.id)}
-                                    className={`tz-badge text-xs px-2 py-0.5 ${selectedTimezone === tz.id ? 'active' : ''}`}
-                                    title={tz.label}
-                                >
-                                    {tz.name}
-                                </button>
-                            ))}
-                        </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setCurrentWeekStart(new Date(currentWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000))}
+                            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded font-medium text-sm"
+                        >
+                            ← Prev Week
+                        </button>
+                        <span className="text-sm font-semibold text-gray-700 px-3 py-2 bg-indigo-50 rounded border border-indigo-200">
+                            {currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                        <button
+                            onClick={() => setCurrentWeekStart(new Date(currentWeekStart.getTime() + 7 * 24 * 60 * 60 * 1000))}
+                            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded font-medium text-sm"
+                        >
+                            Next Week →
+                        </button>
                         <button
                             onClick={() => {
                                 const today = new Date().toISOString().split('T')[0];
-                                setEditingForm({ name: '', project: '', date: today, startTime: '09:00', endTime: '10:00', timezone: 'ist', attendees: '', description: '' });
+                                setEditingForm({ name: '', project: '', date: today, startTime: '14:00', endTime: '15:00' });
                                 setEditingMeeting(null);
                                 setShowMeetingModal(true);
                             }}
-                            className="px-2 py-0.5 text-xs bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded font-medium flex items-center gap-1 whitespace-nowrap"
+                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded font-medium text-sm flex items-center gap-2"
                         >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                            Add
+                            <Plus size={16} />
+                            Add Meeting
                         </button>
                     </div>
+                </div>
+            </div>
 
-                    {/* Instructions - Hidden to save space, can be toggled */}
-                    {/* <div className="px-6 py-2 bg-blue-50 border-b border-blue-200 text-xs text-blue-700">
-                        💡 <strong>Tip:</strong> Click on any meeting to edit or delete it. Use the "Add" button in the timezone bar to create new meetings.
-                    </div> */}
+            {/* Calendar Grid */}
+            
 
-                    {/* Calendar Grid */}
-                    <div className="calendar-container scrollbar-thin">
-                        {/* Time Column */}
-                        <div className="time-column scrollbar-thin synced-scroll" ref={timeContainer}>
-                            <div style={{ height: '40px' }}></div>
-                            {timeSlots.map((slot, idx) => (
-                                <div key={idx} className="time-slot">
-                                    {slot}
-                                </div>
-                            ))}
+{/* Calendar Grid - Compact */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+    {weekDays.filter((date) => {
+        const day = date.getDay();
+        return day !== 0 && day !== 6; // Remove Sunday (0) and Saturday (6)
+    }).map((date, dayIndex) => {
+        const dateStr = date.toISOString().split('T')[0];
+        const dayMeetings = getMeetingsForDay(dateStr);
+        const freeTimes = getFreeTimes(dateStr);
+        const today = isToday(date);
+        const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+
+        return (
+            <div key={dayIndex} className={`rounded shadow overflow-hidden border ${today ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 bg-white'}`}>
+                {/* Day Header - Compact */}
+                <div className={`px-2.5 py-2 ${today ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`}>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className={`font-bold text-base ${today ? 'text-white' : 'text-gray-800'}`}>{date.getDate()}</p>
+                            <p className={`text-xs font-semibold ${today ? 'text-indigo-100' : 'text-gray-600'}`}>{dayName}</p>
                         </div>
+                        {today && (
+                            <div className="text-xs bg-white text-indigo-600 px-1.5 py-0.5 rounded font-bold">TODAY</div>
+                        )}
+                    </div>
+                </div>
 
-                        {/* Days Container */}
-                        <div className="days-container scrollbar-thin" ref={daysContainer}>
-                            {weekDays.map((date, dayIndex) => {
-                                const dateStr = date.toISOString().split('T')[0];
-                                const dayMeetings = convertedMeetings.filter(m => m.date === dateStr);
-                                const today = isToday(date);
-                                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+                {/* Meetings - Compact */}
+                <div className="p-2 space-y-1 border-b border-gray-200">
+                    {dayMeetings.length === 0 ? (
+                        <p className="text-xs text-gray-500 italic">No meetings</p>
+                    ) : (
+                        <div className="space-y-1">
+                            {dayMeetings.map((meeting, idx) => {
+                                const duration = getDurationMinutes(meeting.startTime, meeting.endTime);
+                                const hours = Math.floor(duration / 60);
+                                const mins = duration % 60;
+                                const durationStr = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 
                                 return (
-                                    <div key={dayIndex} className="day-column">
-                                        <div className={`day-header ${today ? 'today' : ''}`}>
-                                            <div className="day-name">{dayName}</div>
-                                            <div className="day-date">{date.getDate()}</div>
-                                        </div>
-
-                                        <div className="day-cells">
-                                            {today && (
-                                                <div 
-                                                    className="current-time-indicator"
-                                                    style={{ top: `${getCurrentTimePosition()}px` }}
-                                                >
-                                                    <div className="current-time-dot"></div>
-                                                </div>
-                                            )}
-
-                                            {timeSlots.map((slot, slotIdx) => (
-                                                <div key={slotIdx} className="day-cell"></div>
-                                            ))}
-
-                                            {dayMeetings.map((meeting, idx) => (
-                                                <div
-                                                    key={meeting.id}
-                                                    className={`meeting-event ${getColor(idx)}`}
-                                                    style={getEventPosition(meeting)}
-                                                    onClick={() => openEditModal(meeting)}
-                                                    title={`${meeting.name} - ${meeting.displayTime}`}
-                                                >
-                                                    <div className="meeting-title">{meeting.name}</div>
-                                                    <div className="meeting-time">{meeting.displayTime}</div>
-                                                    <div className="meeting-tz">{(meeting.timezone || 'ist').toUpperCase()}</div>
-                                                </div>
-                                            ))}
+                                    <div
+                                        key={meeting.id}
+                                        className={`p-1.5 rounded border-l-2 text-xs ${
+                                            getColor(idx) === 'blue' ? 'bg-blue-50 border-blue-400' :
+                                            getColor(idx) === 'purple' ? 'bg-purple-50 border-purple-400' :
+                                            getColor(idx) === 'red' ? 'bg-red-50 border-red-400' :
+                                            getColor(idx) === 'green' ? 'bg-green-50 border-green-400' :
+                                            'bg-orange-50 border-orange-400'
+                                        }`}
+                                    >
+                                        <div className="flex items-start justify-between gap-1">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold text-gray-800 truncate text-xs">{meeting.name}</p>
+                                                <p className="text-xs text-gray-600">{convertTo12Hour(meeting.startTime)}</p>
+                                                <p className="text-xs text-gray-500">{durationStr}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => deleteMeeting(meeting.id)}
+                                                className="text-red-500 hover:text-red-700 flex-shrink-0 mt-0.5"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
-                    </div>
-
-                    {/* Add Meeting Modal */}
-                    {showMeetingModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-screen overflow-y-auto">
-                                <div className={`bg-gradient-to-r ${editingMeeting ? 'from-purple-600 to-pink-600' : 'from-indigo-600 to-blue-600'} p-6 rounded-t-xl`}>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-white">
-                                                {editingMeeting ? '✏️ Edit Meeting' : '➕ Add New Meeting'}
-                                            </h2>
-                                            <p className="text-sm text-white/80 mt-1">
-                                                {editingMeeting ? 'Update the meeting details below' : 'Create a new meeting for your calendar'}
-                                            </p>
-                                        </div>
-                                        <button
-                                            onClick={() => {
-                                                setShowMeetingModal(false);
-                                                setEditingMeeting(null);
-                                                setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', timezone: 'ist', attendees: '', description: '' });
-                                            }}
-                                            className="text-white hover:text-gray-200 text-2xl"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div className="p-6 space-y-4">
-                                    {/* Required Fields Indicator */}
-                                    <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2">
-                                        <p className="text-xs text-amber-700">
-                                            <span className="font-semibold">Required fields:</span> Meeting Name, Project, Date, Start Time, End Time
-                                        </p>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                Meeting Name <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={editingForm.name}
-                                                onChange={(e) => setEditingForm({...editingForm, name: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                placeholder="e.g., Team Standup"
-                                            />
-                                        </div>
-                                        
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                Project <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
-                                                value={editingForm.project}
-                                                onChange={(e) => setEditingForm({...editingForm, project: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            >
-                                                <option value="">Select Project</option>
-                                                {projects && projects.map(p => (
-                                                    <option key={p.id} value={p.name}>{p.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                Date <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={editingForm.date}
-                                                onChange={(e) => setEditingForm({...editingForm, date: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Timezone</label>
-                                            <select
-                                                value={editingForm.timezone || 'ist'}
-                                                onChange={(e) => setEditingForm({...editingForm, timezone: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            >
-                                                {TIMEZONES.map(tz => (
-                                                    <option key={tz.id} value={tz.id}>{tz.name} - {tz.label}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                Start Time <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="time"
-                                                value={editingForm.startTime}
-                                                onChange={(e) => setEditingForm({...editingForm, startTime: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                        
-                                        <div>
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                End Time <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="time"
-                                                value={editingForm.endTime}
-                                                onChange={(e) => setEditingForm({...editingForm, endTime: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            />
-                                            {editingForm.startTime && editingForm.endTime && (
-                                                <p className="text-xs text-gray-600 mt-1">
-                                                    Duration: {calculateDuration(editingForm.startTime, editingForm.endTime)}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Attendees</label>
-                                            <input
-                                                type="text"
-                                                value={editingForm.attendees}
-                                                onChange={(e) => setEditingForm({...editingForm, attendees: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                placeholder="e.g., john@example.com, jane@example.com"
-                                            />
-                                        </div>
-
-                                        <div className="col-span-2">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                                            <textarea
-                                                value={editingForm.description}
-                                                onChange={(e) => setEditingForm({...editingForm, description: e.target.value})}
-                                                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                rows="3"
-                                                placeholder="Meeting details, agenda, etc..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div className="bg-gray-50 border-t border-gray-200 p-6 rounded-b-xl flex justify-between gap-3">
-                                    <div>
-                                        {editingMeeting && (
-                                            <button
-                                                onClick={() => {
-                                                    deleteMeeting(editingMeeting.id);
-                                                    setShowMeetingModal(false);
-                                                    setEditingMeeting(null);
-                                                    setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', timezone: 'ist', attendees: '', description: '' });
-                                                }}
-                                                className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 font-medium transition-colors"
-                                            >
-                                                🗑️ Delete Meeting
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => {
-                                                setShowMeetingModal(false);
-                                                setEditingMeeting(null);
-                                                setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '', timezone: 'ist', attendees: '', description: '' });
-                                            }}
-                                            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={addOrUpdateMeeting}
-                                            className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium transition-all"
-                                        >
-                                            {editingMeeting ? '💾 Update Meeting' : '➕ Add Meeting'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     )}
                 </div>
-            );
-        };
+
+                {/* Free Time - Compact */}
+                <div className="p-2">
+                    <p className="text-xs font-bold text-green-700 mb-1">✓ Free:</p>
+                    <div className="space-y-0.5">
+                        {freeTimes.map((freeTime, idx) => (
+                            <p key={idx} className="text-xs bg-green-50 text-green-800 px-1.5 py-0.5 rounded border border-green-200">
+                                {freeTime}
+                            </p>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    })}
+</div>
+
+            {/* Add/Edit Meeting Modal */}
+            {showMeetingModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
+                        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 rounded-t-lg">
+                            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                <Plus size={24} />
+                                {editingMeeting ? 'Edit Meeting' : 'New Meeting'}
+                            </h2>
+                        </div>
+                        
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Meeting Name *</label>
+                                <input
+                                    type="text"
+                                    value={editingForm.name}
+                                    onChange={(e) => setEditingForm({...editingForm, name: e.target.value})}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    placeholder="e.g., Team Standup"
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Project *</label>
+                                <select
+                                    value={editingForm.project}
+                                    onChange={(e) => setEditingForm({...editingForm, project: e.target.value})}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                >
+                                    <option value="">Select Project</option>
+                                    {projects && projects.map(p => (
+                                        <option key={p.id} value={p.name}>{p.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Date *</label>
+                                <input
+                                    type="date"
+                                    value={editingForm.date}
+                                    onChange={(e) => setEditingForm({...editingForm, date: e.target.value})}
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Start Time *</label>
+                                    <input
+                                        type="time"
+                                        value={editingForm.startTime}
+                                        onChange={(e) => setEditingForm({...editingForm, startTime: e.target.value})}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">End Time *</label>
+                                    <input
+                                        type="time"
+                                        value={editingForm.endTime}
+                                        onChange={(e) => setEditingForm({...editingForm, endTime: e.target.value})}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                    />
+                                </div>
+                            </div>
+
+                            {editingForm.startTime && editingForm.endTime && (
+                                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                                    <p className="text-sm text-indigo-800">
+                                        <span className="font-bold">Duration:</span> {(() => {
+                                            const mins = getDurationMinutes(editingForm.startTime, editingForm.endTime);
+                                            const hours = Math.floor(mins / 60);
+                                            const minutes = mins % 60;
+                                            return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+                                        })()}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="bg-gray-50 border-t border-gray-200 p-6 rounded-b-lg flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowMeetingModal(false);
+                                    setEditingMeeting(null);
+                                    setEditingForm({ name: '', project: '', date: '', startTime: '', endTime: '' });
+                                }}
+                                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={addOrUpdateMeeting}
+                                className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium"
+                            >
+                                {editingMeeting ? 'Update' : 'Add'} Meeting
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
         const TimesheetApp = () => {
             // Cloud sync states
             const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
@@ -3193,13 +2965,13 @@ const [meetings, setMeetings] = useState(() => {
                             {/* Navigation Tabs */}
                             <div className="border-b border-gray-200">
                                 <div className="flex overflow-x-auto">
-                                    {dashboardTabs.map(tab => {
-                                        const Icon = tab.icon;
-                                        return (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => setActiveSection(tab.id)}
-                                                className={`px-3 py-1.5 text-sm font-semibold flex items-center gap-1 border-b-2 transition-all whitespace-nowrap ${
+                                   {dashboardTabs.map(tab => {
+    const Icon = tab.icon;
+    return (
+        <button
+            key={tab.id}
+            onClick={() => setActiveSection(tab.id)}
+            className={`px-2 py-1 text-xs font-semibold flex items-center gap-1 border-b-2 transition-all whitespace-nowrap ${
                                                     activeSection === tab.id
                                                         ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
                                                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -3225,704 +2997,624 @@ const [meetings, setMeetings] = useState(() => {
                             <div className="flex-1 overflow-y-auto p-3">
                                 {/* Overview Section */}
                                 {activeSection === 'overview' && (
-                                    <div className="space-y-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded shadow-lg p-3 text-white">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-blue-100 text-xs font-medium">Hours</p>
-                                                        <p className="text-2xl font-bold mt-0.5">{stats.actual.toFixed(1)}</p>
-                                                        <p className="text-xs text-blue-200 mt-0.5">of {project.estimatedHours}h</p>
-                                                    </div>
-                                                    <Clock size={28} className="text-blue-200" />
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded shadow-lg p-3 text-white">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-green-100 text-xs font-medium">Progress</p>
-                                                        <p className="text-2xl font-bold mt-0.5">{stats.progress.toFixed(0)}%</p>
-                                                        <p className="text-xs text-green-200 mt-0.5">{stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h rem` : 'Over'}</p>
-                                                    </div>
-                                                    <TrendingUp size={28} className="text-green-200" />
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded shadow-lg p-3 text-white">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-purple-100 text-xs font-medium">Counterparties</p>
-                                                        <p className="text-2xl font-bold mt-0.5">{project.counterparties}</p>
-                                                        <p className="text-xs text-purple-200 mt-0.5">External</p>
-                                                    </div>
-                                                    <Users size={28} className="text-purple-200" />
-                                                </div>
-                                            </div>
+    <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded shadow p-2 text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-blue-100 text-xs font-medium">Hours</p>
+                        <p className="text-xl font-bold mt-0.5">{stats.actual.toFixed(1)}</p>
+                        <p className="text-xs text-blue-200 mt-0.5">of {project.estimatedHours}h</p>
+                    </div>
+                    <Clock size={20} className="text-blue-200" />
+                </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded shadow p-2 text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-green-100 text-xs font-medium">Progress</p>
+                        <p className="text-xl font-bold mt-0.5">{stats.progress.toFixed(0)}%</p>
+                        <p className="text-xs text-green-200 mt-0.5">{stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h rem` : 'Over'}</p>
+                    </div>
+                    <TrendingUp size={20} className="text-green-200" />
+                </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded shadow p-2 text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-purple-100 text-xs font-medium">Counterparties</p>
+                        <p className="text-xl font-bold mt-0.5">{project.counterparties}</p>
+                        <p className="text-xs text-purple-200 mt-0.5">External</p>
+                    </div>
+                    <Users size={20} className="text-purple-200" />
+                </div>
+            </div>
 
-                                            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow-lg p-3 text-white">
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="text-orange-100 text-xs font-medium">Tasks</p>
-                                                        <p className="text-2xl font-bold mt-0.5">{stats.projectTasks.length}</p>
-                                                        <p className="text-xs text-orange-200 mt-0.5">
-                                                            {stats.pendingTasks} pending
-                                                        </p>
-                                                    </div>
-                                                    <CheckSquare size={28} className="text-orange-200" />
-                                                </div>
-                                            </div>
-                                        </div>
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow p-2 text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-orange-100 text-xs font-medium">Tasks</p>
+                        <p className="text-xl font-bold mt-0.5">{stats.projectTasks.length}</p>
+                        <p className="text-xs text-orange-200 mt-0.5">
+                            {stats.pendingTasks} pending
+                        </p>
+                    </div>
+                    <CheckSquare size={20} className="text-orange-200" />
+                </div>
+            </div>
+        </div>
 
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-                                            <div className="bg-white rounded shadow-lg p-3 border border-gray-200">
-                                                <h3 className="text-sm font-bold text-gray-800 mb-2">Details</h3>
-                                                <div className="space-y-2 text-sm">
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Primary Owner:</span>
-                                                        <span className="font-semibold">{project.owner}</span>
-                                                    </div>
-                                                    {project.secondaryOwner && (
-                                                        <div className="flex justify-between">
-                                                            <span className="text-gray-600">Secondary Owner:</span>
-                                                            <span className="font-semibold">{project.secondaryOwner}</span>
-                                                        </div>
-                                                    )}
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Managed Ops:</span>
-                                                        <span className={`font-semibold ${project.isManagedOps ? 'text-green-600' : 'text-gray-400'}`}>
-                                                            {project.isManagedOps ? 'Yes' : 'No'}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span className="text-gray-600">Status:</span>
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                                                            {project.status}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            <div className="bg-white rounded shadow p-2 border border-gray-200">
+                <h3 className="text-xs font-bold text-gray-800 mb-1.5">Details</h3>
+                <div className="space-y-1 text-xs">
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Primary:</span>
+                        <span className="font-semibold text-gray-800">{project.owner}</span>
+                    </div>
+                    {project.secondaryOwner && (
+                        <div className="flex justify-between">
+                            <span className="text-gray-600">Secondary:</span>
+                            <span className="font-semibold text-gray-800">{project.secondaryOwner}</span>
+                        </div>
+                    )}
+                    <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(project.status)}`}>
+                            {project.status}
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-                                            <div className="bg-white rounded shadow-lg p-3 border border-gray-200">
-                                                <h3 className="text-sm font-bold text-gray-800 mb-2">Progress</h3>
-                                                <div className="mb-2">
-                                                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                                                        <span>Done</span>
-                                                        <span className="font-semibold">{stats.progress.toFixed(1)}%</span>
-                                                    </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                                                        <div
-                                                            className={`progress-bar h-2 rounded-full transition-all ${
-                                                                stats.progress > 100 ? 'bg-gradient-to-r from-red-500 to-red-600' : 
-                                                                stats.progress > 80 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
-                                                                'bg-gradient-to-r from-indigo-500 to-blue-600'
-                                                            }`}
-                                                            style={{ width: `${Math.min(stats.progress, 100)}%` }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div className="text-xs text-gray-600 space-y-1">
-                                                    <div className="flex justify-between">
-                                                        <span>Logged:</span>
-                                                        <span className="font-semibold">{stats.actual.toFixed(1)}h</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span>Est:</span>
-                                                        <span className="font-semibold">{project.estimatedHours}h</span>
-                                                    </div>
-                                                    <div className="flex justify-between">
-                                                        <span>Rem:</span>
-                                                        <span className={`font-semibold ${stats.remaining < 0 ? 'text-red-600' : ''}`}>
-                                                            {stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h` : `${Math.abs(stats.remaining).toFixed(1)}h over`}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+            <div className="bg-white rounded shadow p-2 border border-gray-200">
+                <h3 className="text-xs font-bold text-gray-800 mb-1.5">Progress</h3>
+                <div className="mb-1.5">
+                    <div className="flex justify-between text-xs text-gray-600 mb-0.5">
+                        <span>Done</span>
+                        <span className="font-semibold">{stats.progress.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div
+                            className={`progress-bar h-1.5 rounded-full transition-all ${
+                                stats.progress > 100 ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+                                stats.progress > 80 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
+                                'bg-gradient-to-r from-indigo-500 to-blue-600'
+                            }`}
+                            style={{ width: `${Math.min(stats.progress, 100)}%` }}
+                        />
+                    </div>
+                </div>
+                <div className="text-xs text-gray-600 space-y-0.5">
+                    <div className="flex justify-between">
+                        <span>Logged:</span>
+                        <span className="font-semibold">{stats.actual.toFixed(1)}h</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Est:</span>
+                        <span className="font-semibold">{project.estimatedHours}h</span>
+                    </div>
+                    <div className="flex justify-between">
+                        <span>Rem:</span>
+                        <span className={`font-semibold ${stats.remaining < 0 ? 'text-red-600' : ''}`}>
+                            {stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h` : `${Math.abs(stats.remaining).toFixed(1)}h over`}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                                        {project.notes && (
-                                            <div className="bg-white rounded shadow-lg p-3 border border-gray-200">
-                                                <h3 className="text-sm font-bold text-gray-800 mb-1">Notes</h3>
-                                                <p className="text-sm text-gray-700">{project.notes}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+        {project.notes && (
+            <div className="bg-white rounded shadow p-2 border border-gray-200">
+                <h3 className="text-xs font-bold text-gray-800 mb-0.5">Notes</h3>
+                <p className="text-xs text-gray-700">{project.notes}</p>
+            </div>
+        )}
+    </div>
+)}
 
                                 {/* Tasks Section */}
-                                {activeSection === 'tasks' && (
-                                    <div className="space-y-3">
-                                        {/* Task Summary Card */}
-                                        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow-lg p-3 text-white">
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-orange-100 text-xs font-medium">Tasks</p>
-                                                    <p className="text-2xl font-bold mt-0.5">{stats.projectTasks.length}</p>
-                                                    <p className="text-xs text-orange-200 mt-0.5">
-                                                        {stats.pendingTasks} pending
-                                                    </p>
-                                                </div>
-                                                <CheckSquare size={28} className="text-orange-200" />
-                                            </div>
-                                        </div>
+                               {activeSection === 'tasks' && (
+    <div className="space-y-2">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow p-2 text-white">
+            <div className="flex items-center justify-between">
+                <div>
+                    <p className="text-orange-100 text-xs font-medium">Tasks</p>
+                    <p className="text-xl font-bold mt-0.5">{stats.projectTasks.length}</p>
+                    <p className="text-xs text-orange-200 mt-0.5">
+                        {stats.pendingTasks} pending
+                    </p>
+                </div>
+                <CheckSquare size={20} className="text-orange-200" />
+            </div>
+        </div>
 
-                                        {/* Add New Task Form */}
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                                <Plus size={20} className="text-indigo-600" />
-                                                Add New Task for {project.name}
-                                            </h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Task title"
-                                                    value={newTask.title}
-                                                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:col-span-2"
-                                                />
-                                                <input
-                                                    type="date"
-                                                    value={newTask.dueDate}
-                                                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                />
-                                                <select
-                                                    value={newTask.priority}
-                                                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                                                    className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                >
-                                                    <option value="low">Low Priority</option>
-                                                    <option value="medium">Medium Priority</option>
-                                                    <option value="high">High Priority</option>
-                                                </select>
-                                            </div>
-                                            <div className="mb-4">
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-                                                <textarea
-                                                    value={newTask.notes}
-                                                    onChange={(e) => setNewTask({ ...newTask, notes: e.target.value })}
-                                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                    rows="2"
-                                                    placeholder="Additional task notes..."
-                                                />
-                                            </div>
-                                            <button
-                                                onClick={addTask}
-                                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-2 transition-colors"
-                                            >
-                                                <Plus size={16} />
-                                                Add Task
-                                            </button>
-                                        </div>
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <Plus size={14} className="text-indigo-600" />
+                Add Task
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-1.5 mb-2">
+                <input
+                    type="text"
+                    placeholder="Title"
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent md:col-span-2"
+                />
+                <input
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+                <select
+                    value={newTask.priority}
+                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                    className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <button
+                onClick={addTask}
+                className="px-2 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 flex items-center gap-1 transition-colors font-medium"
+            >
+                <Plus size={12} />
+                Add
+            </button>
+        </div>
 
-                                        {/* Task List */}
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                                <ListCheck size={20} className="text-indigo-600" />
-                                                Task List ({stats.projectTasks.length})
-                                            </h3>
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <ListCheck size={14} className="text-indigo-600" />
+                Tasks ({stats.projectTasks.length})
+            </h3>
 
-                                            {stats.projectTasks.length === 0 ? (
-                                                <div className="text-center py-8 text-gray-500">
-                                                    <Inbox size={48} className="mx-auto mb-4 text-gray-300" />
-                                                    <p>No tasks for this project yet. Add a task to get started!</p>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {stats.projectTasks
-                                                        .sort((a, b) => {
-                                                            if (a.status !== b.status) {
-                                                                const statusOrder = { 
-                                                                    'in-progress': 5, 
-                                                                    'follow-up': 4, 
-                                                                    'review': 3, 
-                                                                    'todo': 2, 
-                                                                    'completed': 1 
-                                                                };
-                                                                return statusOrder[b.status] - statusOrder[a.status];
-                                                            }
-                                                            const priorityOrder = { high: 3, medium: 2, low: 1 };
-                                                            if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-                                                                return priorityOrder[b.priority] - priorityOrder[a.priority];
-                                                            }
-                                                            if (a.dueDate && b.dueDate) {
-                                                                return new Date(a.dueDate) - new Date(b.dueDate);
-                                                            }
-                                                            return new Date(b.createdAt) - new Date(a.createdAt);
-                                                        })
-                                                        .map(task => {
-                                                            const taskSubtasks = task.subtasks || [];
-                                                            const taskCompletedSubtasks = taskSubtasks.filter(st => st.done).length;
-                                                            const taskTotalSubtasks = taskSubtasks.length;
-                                                            const taskProgress = taskTotalSubtasks > 0 ? (taskCompletedSubtasks / taskTotalSubtasks) * 100 : 0;
-                                                            
-                                                            return (
-                                                                <div
-                                                                    key={task.id}
-                                                                    onClick={() => setSelectedTask(task)}
-                                                                    className={`flex items-center justify-between border rounded-lg p-4 transition-colors cursor-pointer hover:bg-indigo-50 ${
-                                                                        task.status === 'completed' ? 'bg-green-50 border-green-200' : getPriorityColor(task.priority)
-                                                                    }`}
-                                                                >
-                                                                    <div className="flex items-center gap-3 flex-1">
-                                                                        <div className={`w-3 h-3 rounded-full ${
-                                                                            task.status === 'completed' ? 'bg-green-500' :
-                                                                            task.status === 'in-progress' ? 'bg-blue-500' :
-                                                                            task.status === 'review' ? 'bg-yellow-500' :
-                                                                            task.status === 'follow-up' ? 'bg-orange-500' :
-                                                                            'bg-gray-400'
-                                                                        }`}></div>
-                                                                        <div className="flex-1">
-                                                                            <div className={`font-medium ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                                                                {task.title}
-                                                                                {(task.subtasks && task.subtasks.length > 0) && (
-                                                                                    <span className="ml-2 text-xs text-gray-500">
-                                                                                        ({taskCompletedSubtasks}/{taskTotalSubtasks} subtasks)
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                            <div className="text-sm text-gray-500 flex items-center gap-2 mt-1 flex-wrap">
-                                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(task.status || 'todo')}`}>
-                                                                                    {task.status === 'todo' && 'To Do'}
-                                                                                    {task.status === 'in-progress' && 'In Progress'}
-                                                                                    {task.status === 'review' && 'In Review'}
-                                                                                    {task.status === 'follow-up' && 'Follow Up'}
-                                                                                    {task.status === 'completed' && 'Completed'}
-                                                                                </span>
-                                                                                {task.dueDate && (
-                                                                                    <span className="flex items-center gap-1">
-                                                                                        <Calendar size={12} />
-                                                                                        Due {task.dueDate}
-                                                                                    </span>
-                                                                                )}
-                                                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                                                                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                                                                                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                                                                    'bg-blue-100 text-blue-800'
-                                                                                }`}>
-                                                                                    {task.priority} priority
-                                                                                </span>
-                                                                            </div>
-                                                                            
-                                                                            {/* Task Progress Bar */}
-                                                                            {taskTotalSubtasks > 0 && (
-                                                                                <div className="mt-2">
-                                                                                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                                                                        <span>Progress</span>
-                                                                                        <span>{Math.round(taskProgress)}%</span>
-                                                                                    </div>
-                                                                                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                                                                        <div 
-                                                                                            className="bg-green-500 h-1.5 rounded-full progress-bar" 
-                                                                                            style={{ width: `${taskProgress}%` }}
-                                                                                        ></div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            deleteTask(task.id);
-                                                                        }}
-                                                                        className="p-2 text-red-500 hover:text-red-700 transition-colors"
-                                                                    >
-                                                                        <Trash2 size={16} />
-                                                                    </button>
-                                                                </div>
-                                                            );
-                                                        })
-                                                    }
+            {stats.projectTasks.length === 0 ? (
+                <div className="text-center py-2 text-gray-500">
+                    <p className="text-xs">No tasks yet</p>
+                </div>
+            ) : (
+                <div className="space-y-1">
+                    {stats.projectTasks
+                        .sort((a, b) => {
+                            if (a.status !== b.status) {
+                                const statusOrder = { 'in-progress': 5, 'follow-up': 4, 'review': 3, 'todo': 2, 'completed': 1 };
+                                return statusOrder[b.status] - statusOrder[a.status];
+                            }
+                            const priorityOrder = { high: 3, medium: 2, low: 1 };
+                            if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+                                return priorityOrder[b.priority] - priorityOrder[a.priority];
+                            }
+                            if (a.dueDate && b.dueDate) {
+                                return new Date(a.dueDate) - new Date(b.dueDate);
+                            }
+                            return new Date(b.createdAt) - new Date(a.createdAt);
+                        })
+                        .map(task => {
+                            const taskSubtasks = task.subtasks || [];
+                            const taskCompletedSubtasks = taskSubtasks.filter(st => st.done).length;
+                            const taskTotalSubtasks = taskSubtasks.length;
+                            const taskProgress = taskTotalSubtasks > 0 ? (taskCompletedSubtasks / taskTotalSubtasks) * 100 : 0;
+                            
+                            return (
+                                <div
+                                    key={task.id}
+                                    onClick={() => setSelectedTask(task)}
+                                    className={`flex items-start justify-between border rounded p-1.5 transition-colors cursor-pointer hover:bg-indigo-50 text-xs ${
+                                        task.status === 'completed' ? 'bg-green-50 border-green-200' : 'border-gray-200 bg-white'
+                                    }`}
+                                >
+                                    <div className="flex items-start gap-1 flex-1">
+                                        <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-0.5 ${
+                                            task.status === 'completed' ? 'bg-green-500' :
+                                            task.status === 'in-progress' ? 'bg-blue-500' :
+                                            task.status === 'review' ? 'bg-yellow-500' :
+                                            task.status === 'follow-up' ? 'bg-orange-500' :
+                                            'bg-gray-400'
+                                        }`}></div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className={`font-semibold text-xs ${task.status === 'completed' ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                                {task.title}
+                                                {(task.subtasks && task.subtasks.length > 0) && (
+                                                    <span className="ml-1 text-gray-500">
+                                                        ({taskCompletedSubtasks}/{taskTotalSubtasks})
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-0.5 flex-wrap">
+                                                {task.dueDate && (
+                                                    <span className="flex items-center gap-0.5">
+                                                        <Calendar size={10} />
+                                                        {task.dueDate}
+                                                    </span>
+                                                )}
+                                                <span className={`px-1 py-0.5 rounded text-xs font-medium ${
+                                                    task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                                    task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                    'bg-blue-100 text-blue-800'
+                                                }`}>
+                                                    {task.priority}
+                                                </span>
+                                            </div>
+                                            
+                                            {taskTotalSubtasks > 0 && (
+                                                <div className="mt-0.5">
+                                                    <div className="w-full bg-gray-200 rounded-full h-0.5">
+                                                        <div 
+                                                            className="bg-green-500 h-0.5 rounded-full progress-bar" 
+                                                            style={{ width: `${taskProgress}%` }}
+                                                        ></div>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
-                                )}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            deleteTask(task.id);
+                                        }}
+                                        className="p-0.5 text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                </div>
+                            );
+                        })
+                    }
+                </div>
+            )}
+        </div>
+    </div>
+)}
 
-                                {/* Other sections (communications, files, links, team, time) remain the same */}
                                 {activeSection === 'communications' && (
-                                    <div className="space-y-6">
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                                <MessageCircle size={20} className="text-indigo-600" />
-                                                Add Communication
-                                            </h3>
-                                            <div className="space-y-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                                                        <select
-                                                            value={newCommunication.type}
-                                                            onChange={(e) => setNewCommunication({...newCommunication, type: e.target.value})}
-                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        >
-                                                            <option value="email">Email</option>
-                                                            <option value="meeting">Meeting</option>
-                                                            <option value="call">Phone Call</option>
-                                                            <option value="note">Note</option>
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
-                                                        <input
-                                                            type="text"
-                                                            value={newCommunication.subject}
-                                                            onChange={(e) => setNewCommunication({...newCommunication, subject: e.target.value})}
-                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                            placeholder="Communication subject"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
-                                                    <textarea
-                                                        value={newCommunication.body}
-                                                        onChange={(e) => setNewCommunication({...newCommunication, body: e.target.value})}
-                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        rows="4"
-                                                        placeholder="Enter communication details..."
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={addCommunication}
-                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-                                                >
-                                                    <Plus size={16} />
-                                                    Add Communication
-                                                </button>
-                                            </div>
-                                        </div>
+    <div className="space-y-2">
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <MessageCircle size={14} className="text-indigo-600" />
+                Add
+            </h3>
+            <div className="space-y-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <select
+                        value={newCommunication.type}
+                        onChange={(e) => setNewCommunication({...newCommunication, type: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                        <option value="email">Email</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="call">Call</option>
+                        <option value="note">Note</option>
+                    </select>
+                    <input
+                        type="text"
+                        value={newCommunication.subject}
+                        onChange={(e) => setNewCommunication({...newCommunication, subject: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Subject"
+                    />
+                </div>
+                <textarea
+                    value={newCommunication.body}
+                    onChange={(e) => setNewCommunication({...newCommunication, body: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    rows="2"
+                    placeholder="Message..."
+                />
+                <button
+                    onClick={addCommunication}
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
+                >
+                    <Plus size={12} />
+                    Add
+                </button>
+            </div>
+        </div>
 
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Communication History</h3>
-                                            {project.communications.length === 0 ? (
-                                                <p className="text-gray-500 text-center py-4">No communications yet.</p>
-                                            ) : (
-                                                <div className="space-y-4">
-                                                    {project.communications
-                                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
-                                                        .map(comm => (
-                                                            <div key={comm.id} className="border border-gray-200 rounded-lg p-4">
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                                                            comm.type === 'email' ? 'bg-blue-100 text-blue-800' :
-                                                                            comm.type === 'meeting' ? 'bg-green-100 text-green-800' :
-                                                                            comm.type === 'call' ? 'bg-purple-100 text-purple-800' :
-                                                                            'bg-gray-100 text-gray-800'
-                                                                        }`}>
-                                                                            {comm.type}
-                                                                        </span>
-                                                                        <span className="font-semibold text-gray-800">{comm.subject}</span>
-                                                                    </div>
-                                                                    <button
-                                                                        onClick={() => deleteCommunication(comm.id)}
-                                                                        className="p-1 text-red-500 hover:text-red-700"
-                                                                    >
-                                                                        <Trash2 size={16} />
-                                                                    </button>
-                                                                </div>
-                                                                <div className="flex justify-between text-sm text-gray-500 mb-3">
-                                                                    <span>From: {comm.sender}</span>
-                                                                    <span>Date: {comm.date}</span>
-                                                                </div>
-                                                                <p className="text-gray-700">{comm.body}</p>
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </div>
-                                            )}
-                                        </div>
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5">History</h3>
+            {project.communications.length === 0 ? (
+                <p className="text-gray-500 text-xs text-center py-2">No communications</p>
+            ) : (
+                <div className="space-y-1">
+                    {project.communications
+                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .map(comm => (
+                            <div key={comm.id} className="border border-gray-200 rounded p-1.5 text-xs">
+                                <div className="flex justify-between items-start mb-0.5">
+                                    <div className="flex items-center gap-1">
+                                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                            comm.type === 'email' ? 'bg-blue-100 text-blue-800' :
+                                            comm.type === 'meeting' ? 'bg-green-100 text-green-800' :
+                                            comm.type === 'call' ? 'bg-purple-100 text-purple-800' :
+                                            'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {comm.type}
+                                        </span>
+                                        <span className="font-semibold text-gray-800 truncate">{comm.subject}</span>
                                     </div>
-                                )}
-
+                                    <button
+                                        onClick={() => deleteCommunication(comm.id)}
+                                        className="p-0.5 text-red-500 hover:text-red-700"
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
+                                </div>
+                                <p className="text-gray-600 text-xs line-clamp-2">{comm.body}</p>
+                                <p className="text-gray-500 text-xs mt-0.5">{comm.date}</p>
+                            </div>
+                        ))
+                    }
+                </div>
+            )}
+        </div>
+    </div>
+)}
                                 {/* Files Section */}
                                 {activeSection === 'files' && (
-                                    <div className="space-y-6">
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                                <Folder size={20} className="text-indigo-600" />
-                                                Add File Reference
-                                            </h3>
-                                            <div className="space-y-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">File Name</label>
-                                                        <input
-                                                            type="text"
-                                                            value={newFile.name}
-                                                            onChange={(e) => setNewFile({...newFile, name: e.target.value})}
-                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                            placeholder="File name"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                                                        <select
-                                                            value={newFile.type}
-                                                            onChange={(e) => setNewFile({...newFile, type: e.target.value})}
-                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        >
-                                                            <option value="document">Document</option>
-                                                            <option value="spreadsheet">Spreadsheet</option>
-                                                            <option value="presentation">Presentation</option>
-                                                            <option value="image">Image</option>
-                                                            <option value="other">Other</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <button
-                                                    onClick={addFile}
-                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-                                                >
-                                                    <Plus size={16} />
-                                                    Add File Reference
-                                                </button>
-                                            </div>
-                                        </div>
+    <div className="space-y-2">
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <Folder size={14} className="text-indigo-600" />
+                Add File
+            </h3>
+            <div className="space-y-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <input
+                        type="text"
+                        value={newFile.name}
+                        onChange={(e) => setNewFile({...newFile, name: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="File name"
+                    />
+                    <select
+                        value={newFile.type}
+                        onChange={(e) => setNewFile({...newFile, type: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    >
+                        <option value="document">Document</option>
+                        <option value="spreadsheet">Spreadsheet</option>
+                        <option value="presentation">Presentation</option>
+                        <option value="image">Image</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <button
+                    onClick={addFile}
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
+                >
+                    <Plus size={12} />
+                    Add
+                </button>
+            </div>
+        </div>
 
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Project Files</h3>
-                                            {project.files.length === 0 ? (
-                                                <p className="text-gray-500 text-center py-4">No files added yet.</p>
-                                            ) : (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    {project.files.map(file => (
-                                                        <div key={file.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                                            <div className="flex items-center gap-3 mb-2">
-                                                                <FileText size={20} className="text-indigo-600" />
-                                                                <div className="flex-1">
-                                                                    <div className="font-semibold text-gray-800 truncate">{file.name}</div>
-                                                                    <div className="text-sm text-gray-500">{file.type} • {file.size}</div>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => deleteFile(file.id)}
-                                                                    className="p-1 text-red-500 hover:text-red-700"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                            <div className="text-xs text-gray-500">Uploaded: {file.uploaded}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5">Files</h3>
+            {project.files.length === 0 ? (
+                <p className="text-gray-500 text-xs text-center py-2">No files</p>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    {project.files.map(file => (
+                        <div key={file.id} className="border border-gray-200 rounded p-1.5 text-xs">
+                            <div className="flex items-start gap-1.5 mb-0.5">
+                                <FileText size={14} className="text-indigo-600 flex-shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-gray-800 truncate text-xs">{file.name}</div>
+                                    <div className="text-xs text-gray-500">{file.type}</div>
+                                </div>
+                                <button
+                                    onClick={() => deleteFile(file.id)}
+                                    className="p-0.5 text-red-500 hover:text-red-700"
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </div>
+)}
 
                                 {/* Links Section */}
                                 {activeSection === 'links' && (
-                                    <div className="space-y-6">
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                                <Link size={20} className="text-indigo-600" />
-                                                Add Link
-                                            </h3>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                                                    <input
-                                                        type="text"
-                                                        value={newLink.title}
-                                                        onChange={(e) => setNewLink({...newLink, title: e.target.value})}
-                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        placeholder="Link title"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">URL</label>
-                                                    <input
-                                                        type="url"
-                                                        value={newLink.url}
-                                                        onChange={(e) => setNewLink({...newLink, url: e.target.value})}
-                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        placeholder="https://example.com"
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                                    <input
-                                                        type="text"
-                                                        value={newLink.description}
-                                                        onChange={(e) => setNewLink({...newLink, description: e.target.value})}
-                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        placeholder="Brief description"
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={addLink}
-                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-                                                >
-                                                    <Plus size={16} />
-                                                    Add Link
-                                                </button>
-                                            </div>
-                                        </div>
+    <div className="space-y-2">
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <Link size={14} className="text-indigo-600" />
+                Add Link
+            </h3>
+            <div className="space-y-1">
+                <input
+                    type="text"
+                    value={newLink.title}
+                    onChange={(e) => setNewLink({...newLink, title: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Title"
+                />
+                <input
+                    type="url"
+                    value={newLink.url}
+                    onChange={(e) => setNewLink({...newLink, url: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="URL"
+                />
+                <input
+                    type="text"
+                    value={newLink.description}
+                    onChange={(e) => setNewLink({...newLink, description: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Description"
+                />
+                <button
+                    onClick={addLink}
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
+                >
+                    <Plus size={12} />
+                    Add
+                </button>
+            </div>
+        </div>
 
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Project Links</h3>
-                                            {project.links.length === 0 ? (
-                                                <p className="text-gray-500 text-center py-4">No links added yet.</p>
-                                            ) : (
-                                                <div className="space-y-3">
-                                                    {project.links.map(link => (
-                                                        <div key={link.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <div>
-                                                                    <div className="font-semibold text-gray-800">{link.title}</div>
-                                                                    {link.description && (
-                                                                        <div className="text-sm text-gray-600 mt-1">{link.description}</div>
-                                                                    )}
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => deleteLink(link.id)}
-                                                                    className="p-1 text-red-500 hover:text-red-700"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                            <a 
-                                                                href={link.url} 
-                                                                target="_blank" 
-                                                                rel="noopener noreferrer"
-                                                                className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
-                                                            >
-                                                                {link.url}
-                                                                <ExternalLink size={14} />
-                                                            </a>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5">Links</h3>
+            {project.links.length === 0 ? (
+                <p className="text-gray-500 text-xs text-center py-2">No links</p>
+            ) : (
+                <div className="space-y-1.5">
+                    {project.links.map(link => (
+                        <div key={link.id} className="border border-gray-200 rounded p-1.5 text-xs">
+                            <div className="flex justify-between items-start mb-0.5">
+                                <div>
+                                    <div className="font-semibold text-gray-800">{link.title}</div>
+                                    {link.description && (
+                                        <div className="text-gray-600 text-xs mt-0.5">{link.description}</div>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => deleteLink(link.id)}
+                                    className="p-0.5 text-red-500 hover:text-red-700"
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
+                            <a 
+                                href={link.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center gap-0.5"
+                            >
+                                {link.url}
+                                <ExternalLink size={10} />
+                            </a>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </div>
+)}
 
                                 {/* Team Section */}
                                 {activeSection === 'team' && (
-                                    <div className="space-y-6">
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                                <Users size={20} className="text-indigo-600" />
-                                                Add Team Member
-                                            </h3>
-                                            <div className="space-y-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-                                                        <input
-                                                            type="text"
-                                                            value={newTeamMember.name}
-                                                            onChange={(e) => setNewTeamMember({...newTeamMember, name: e.target.value})}
-                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                            placeholder="Team member name"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                                                        <input
-                                                            type="text"
-                                                            value={newTeamMember.role}
-                                                            onChange={(e) => setNewTeamMember({...newTeamMember, role: e.target.value})}
-                                                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                            placeholder="Team role"
-                                                        />
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                                                    <input
-                                                        type="email"
-                                                        value={newTeamMember.email}
-                                                        onChange={(e) => setNewTeamMember({...newTeamMember, email: e.target.value})}
-                                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                        placeholder="email@example.com"
-                                                    />
-                                                </div>
-                                                <button
-                                                    onClick={addTeamMember}
-                                                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-                                                >
-                                                    <Plus size={16} />
-                                                    Add Team Member
-                                                </button>
-                                            </div>
-                                        </div>
+    <div className="space-y-2">
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <Users size={14} className="text-indigo-600" />
+                Add Member
+            </h3>
+            <div className="space-y-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    <input
+                        type="text"
+                        value={newTeamMember.name}
+                        onChange={(e) => setNewTeamMember({...newTeamMember, name: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Name"
+                    />
+                    <input
+                        type="text"
+                        value={newTeamMember.role}
+                        onChange={(e) => setNewTeamMember({...newTeamMember, role: e.target.value})}
+                        className="border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="Role"
+                    />
+                </div>
+                <input
+                    type="email"
+                    value={newTeamMember.email}
+                    onChange={(e) => setNewTeamMember({...newTeamMember, email: e.target.value})}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    placeholder="Email"
+                />
+                <button
+                    onClick={addTeamMember}
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
+                >
+                    <Plus size={12} />
+                    Add
+                </button>
+            </div>
+        </div>
 
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Project Team</h3>
-                                            {project.team.length === 0 ? (
-                                                <p className="text-gray-500 text-center py-4">No team members added yet.</p>
-                                            ) : (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    {project.team.map(member => (
-                                                        <div key={member.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <div>
-                                                                    <div className="font-semibold text-gray-800">{member.name}</div>
-                                                                    <div className="text-sm text-gray-600 mt-1">{member.role}</div>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => deleteTeamMember(member.id)}
-                                                                    className="p-1 text-red-500 hover:text-red-700"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                            {member.email && (
-                                                                <div className="text-sm text-indigo-600 flex items-center gap-1">
-                                                                    <Mail size={14} />
-                                                                    {member.email}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5">Team</h3>
+            {project.team.length === 0 ? (
+                <p className="text-gray-500 text-xs text-center py-2">No members</p>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                    {project.team.map(member => (
+                        <div key={member.id} className="border border-gray-200 rounded p-1.5 text-xs">
+                            <div className="flex justify-between items-start mb-0.5">
+                                <div>
+                                    <div className="font-semibold text-gray-800">{member.name}</div>
+                                    <div className="text-gray-600 text-xs mt-0.5">{member.role}</div>
+                                </div>
+                                <button
+                                    onClick={() => deleteTeamMember(member.id)}
+                                    className="p-0.5 text-red-500 hover:text-red-700"
+                                >
+                                    <Trash2 size={12} />
+                                </button>
+                            </div>
+                            {member.email && (
+                                <div className="text-indigo-600 text-xs flex items-center gap-0.5">
+                                    <Mail size={12} />
+                                    {member.email}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    </div>
+)}
 
                                 {/* Time Tracking Section */}
                                 {activeSection === 'time' && (
-                                    <div className="space-y-6">
-                                        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-                                            <h3 className="text-lg font-bold text-gray-800 mb-4">Time Entries for {project.name}</h3>
-                                            {filteredTimeEntries.filter(entry => entry.project === project.name).length === 0 ? (
-                                                <p className="text-gray-500 text-center py-4">No time entries for this project yet.</p>
-                                            ) : (
-                                                <div className="overflow-x-auto">
-                                                    <table className="w-full">
-                                                        <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                                                            <tr>
-                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Date</th>
-                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Hours</th>
-                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Task</th>
-                                                                <th className="px-4 py-3 text-left text-sm font-bold text-gray-700">Notes</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-gray-200">
-                                                            {filteredTimeEntries
-                                                                .filter(entry => entry.project === project.name)
-                                                                .map(entry => (
-                                                                    <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
-                                                                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">{entry.date}</td>
-                                                                        <td className="px-4 py-3 text-sm font-bold text-indigo-600">{entry.hours}h</td>
-                                                                        <td className="px-4 py-3 text-sm text-gray-700">{entry.task}</td>
-                                                                        <td className="px-4 py-3 text-sm text-gray-500 italic">{entry.notes || '-'}</td>
-                                                                    </tr>
-                                                                ))
-                                                            }
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
+    <div className="space-y-2">
+        <div className="bg-white rounded shadow p-2 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5">Time Entries</h3>
+            {filteredTimeEntries.filter(entry => entry.project === project.name).length === 0 ? (
+                <p className="text-gray-500 text-xs text-center py-2">No entries</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-1.5 py-1 text-left text-xs font-bold text-gray-700">Date</th>
+                                <th className="px-1.5 py-1 text-left text-xs font-bold text-gray-700">Hours</th>
+                                <th className="px-1.5 py-1 text-left text-xs font-bold text-gray-700">Task</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {filteredTimeEntries
+                                .filter(entry => entry.project === project.name)
+                                .map(entry => (
+                                    <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
+                                        <td className="px-1.5 py-1 text-xs text-gray-900 font-medium">{entry.date}</td>
+                                        <td className="px-1.5 py-1 text-xs font-bold text-indigo-600">{entry.hours}h</td>
+                                        <td className="px-1.5 py-1 text-xs text-gray-700">{entry.task}</td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    </div>
+)}
                                 {/* Recon Documentation Section */}
                                 {activeSection === 'recon-docs' && (
                                     <ReconDocumentationSection project={project} onUpdate={onUpdate} />
@@ -4074,6 +3766,45 @@ const [meetings, setMeetings] = useState(() => {
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+                                    {/* Today's Meetings */}
+{(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const todayMeetings = meetings.filter(m => m.date === today).sort((a, b) => a.startTime.localeCompare(b.startTime));
+    
+    const convertTo12Hour = (time24) => {
+        const [hours, minutes] = time24.split(':').map(Number);
+        const meridiem = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12 || 12;
+        return `${hours12}:${String(minutes).padStart(2, '0')} ${meridiem}`;
+    };
+    
+    if (todayMeetings.length === 0) return null;
+    
+    return (
+        <div className="bg-white rounded border shadow-sm p-2 border-purple-200 lg:col-span-3 order-first">
+            <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
+                <Calendar size={14} className="text-purple-600" />
+                📅 Today's Meetings ({todayMeetings.length})
+            </h3>
+            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {todayMeetings.map((meeting) => (
+                    <div
+                        key={meeting.id}
+                        className="p-2 border border-purple-200 rounded bg-purple-50 hover:bg-purple-100 transition-colors text-xs"
+                    >
+                        <div className="flex items-start justify-between gap-1">
+                            <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-purple-900 truncate">{meeting.name}</p>
+                                <p className="text-purple-700">{convertTo12Hour(meeting.startTime)} - {convertTo12Hour(meeting.endTime)}</p>
+                                <p className="text-purple-600">{meeting.project}</p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+})()}
                                     {/* Available Tasks */}
                                     <div className="lg:col-span-2 space-y-1">
                                         <div className="bg-white rounded border shadow-sm p-2 border-gray-200">
