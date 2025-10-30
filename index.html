@@ -1332,16 +1332,12 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
     const [activeTable, setActiveTable] = useState('overview');
 
     // Update project when recon data changes
-    useEffect(() => {
-        // Only update if reconData has actually changed from project data
-        if (JSON.stringify(reconData) !== JSON.stringify(project.reconDocumentation || {})) {
-            const updatedProject = {
-                ...project,
-                reconDocumentation: reconData
-            };
-            onUpdate(updatedProject);
-        }
-    }, [reconData, project, onUpdate]);
+ useEffect(() => {
+    if (project.reconDocumentation) {
+        setReconData(project.reconDocumentation);
+    }
+}, [project.reconDocumentation]);
+
 
     const tableOptions = [
         { id: 'overview', label: 'Overview' },
@@ -2084,10 +2080,201 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
     );
 };
         const TimesheetApp = () => {
+             // Add these new states after your existing states
+    const [selectedTimezone, setSelectedTimezone] = useState('ist');
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Add useEffect to update time every minute
+   // Update time display based on mode
+useEffect(() => {
+    let interval;
+    if (isManualMode) {
+        // Update every second in manual mode for smooth time progression
+        interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+    } else {
+        // Update every minute in real-time mode
+        interval = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+    }
+    return () => clearInterval(interval);
+}, [isManualMode]);
+
+    // Function to get time in different timezone
+    const getTimeInTimezone = (timezone) => {
+    const baseTime = isManualMode && manualTime ? new Date(manualTime) : new Date();
+    const offset = TIMEZONES.find(tz => tz.id === timezone)?.offset || 0;
+    const utc = baseTime.getTime() + (baseTime.getTimezoneOffset() * 60000);
+    const tzTime = new Date(utc + (3600000 * offset));
+    return {
+        time: tzTime.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: true 
+        }),
+        date: tzTime.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        })
+    };
+};
+// Timezone Display Component with Manual Controls
+const TimezoneDisplay = ({ 
+    selectedTimezone, 
+    setSelectedTimezone, 
+    isManualMode, 
+    manualTime, 
+    setManualTimeHandler,
+    setManualTime,
+    setIsManualMode 
+}) => {
+    const istTime = getTimeInTimezone('ist');
+    const selectedTzTime = getTimeInTimezone(selectedTimezone);
+    const selectedTz = TIMEZONES.find(tz => tz.id === selectedTimezone);
+    
+    return (
+        <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+            {/* IST Time */}
+            <div className="flex items-center gap-1">
+                <Clock size={14} className="text-indigo-600" />
+                <span className="text-xs font-semibold text-indigo-700">IST:</span>
+                <span className="text-xs font-bold text-indigo-900">{istTime.time}</span>
+                {isManualMode && (
+                    <span className="text-xs font-bold text-orange-600 bg-orange-100 px-1 rounded">SIM</span>
+                )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-4 bg-indigo-300"></div>
+
+            {/* Selected Timezone */}
+            <div className="flex items-center gap-1">
+                <select
+                    value={selectedTimezone}
+                    onChange={(e) => setSelectedTimezone(e.target.value)}
+                    className="text-xs border-0 bg-transparent font-semibold text-indigo-700 focus:ring-1 focus:ring-indigo-500 rounded px-1"
+                >
+                    {TIMEZONES.map(tz => (
+                        <option key={tz.id} value={tz.id}>
+                            {tz.name}
+                        </option>
+                    ))}
+                </select>
+                <span className="text-xs font-bold text-indigo-900">
+                    {selectedTzTime.time}
+                </span>
+            </div>
+
+            {/* Manual Time Controls */}
+            <div className="flex items-center gap-1">
+                <button
+                    onClick={setManualTimeHandler}
+                    className="p-0.5 text-indigo-600 hover:bg-indigo-100 rounded transition-colors"
+                    title="Set simulation time"
+                >
+                    <Clock size={12} />
+                </button>
+                
+                {isManualMode && (
+                    <>
+                        <button
+                            onClick={() => {
+                                // Add 30 minutes
+                                setManualTime(prev => {
+                                    const newTime = new Date(prev);
+                                    newTime.setMinutes(newTime.getMinutes() + 30);
+                                    return newTime;
+                                });
+                            }}
+                            className="p-0.5 text-green-600 hover:bg-green-100 rounded transition-colors"
+                            title="+30 minutes"
+                        >
+                            <span className="text-xs font-bold">+30m</span>
+                        </button>
+                        
+                        <button
+                            onClick={() => {
+                                setManualTime(null);
+                                setIsManualMode(false);
+                            }}
+                            className="p-0.5 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            title="Reset to real time"
+                        >
+                            <RotateCcw size={12} />
+                        </button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+const setManualTimeHandler = () => {
+    const userInput = prompt(
+        "Set simulation time (leave empty for current time):\n\n" +
+        "Examples:\n" +
+        "• 14:30 (2:30 PM today)\n" + 
+        "• 2025-03-18 09:00 (specific date)\n" +
+        "• +2h (2 hours from now)\n" +
+        "• -30m (30 minutes ago)"
+    );
+    
+    if (userInput === null) return; // User cancelled
+    
+    if (userInput === '') {
+        // Reset to real time
+        setManualTime(null);
+        setIsManualMode(false);
+        return;
+    }
+    
+    let newTime;
+    
+    // Handle relative times
+    if (userInput.startsWith('+') || userInput.startsWith('-')) {
+        const now = new Date();
+        const match = userInput.match(/^([+-])(\d+)([hmd])$/);
+        if (match) {
+            const [, sign, amount, unit] = match;
+            const multiplier = sign === '+' ? 1 : -1;
+            const value = parseInt(amount) * multiplier;
+            
+            switch (unit) {
+                case 'h': now.setHours(now.getHours() + value); break;
+                case 'm': now.setMinutes(now.getMinutes() + value); break;
+                case 'd': now.setDate(now.getDate() + value); break;
+            }
+            newTime = now;
+        } else {
+            alert('Invalid format. Use like: +2h, -30m, +1d');
+            return;
+        }
+    } else if (userInput.includes('-')) {
+        // Specific date and time
+        newTime = new Date(userInput);
+    } else {
+        // Just time for today
+        const [hours, minutes] = userInput.split(':').map(Number);
+        newTime = new Date();
+        newTime.setHours(hours, minutes || 0, 0, 0);
+    }
+    
+    if (isNaN(newTime.getTime())) {
+        alert('Invalid date/time format');
+        return;
+    }
+    
+    setManualTime(newTime);
+    setIsManualMode(true);
+};
             // Cloud sync states
             const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
             const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_id') || null);
-            
+            // Manual time simulation states
+const [manualTime, setManualTime] = useState(null);
+const [isManualMode, setIsManualMode] = useState(false);
             // Main state
             const [activeTab, setActiveTab] = useState('timesheet');
             const [taskGroupBy, setTaskGroupBy] = useState('project');
@@ -3637,19 +3824,30 @@ const [meetings, setMeetings] = useState(() => {
                     <div className="max-w-7xl mx-auto">
                         {/* Header - Compact Toolbar */}
                         <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-                            <div className="flex items-center justify-between px-4 md:px-6 py-3 gap-4">
-                                {/* Logo/Title */}
-                                <div className="flex items-center gap-2 min-w-fit">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-lg flex items-center justify-center">
-                                        <span className="text-white font-bold text-lg">T</span>
-                                    </div>
-                                    <div className="hidden md:block">
-                                        <h1 className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent whitespace-nowrap">
-                                            Timesheet Manager
-                                        </h1>
-                                        <p className="text-xs text-gray-500">Project tracking</p>
-                                    </div>
-                                </div>
+    <div className="flex items-center justify-between px-4 md:px-6 py-3 gap-4">
+        {/* Logo/Title */}
+        <div className="flex items-center gap-2 min-w-fit">
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">T</span>
+            </div>
+            <div className="hidden md:block">
+                <h1 className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent whitespace-nowrap">
+                    Timesheet Manager
+                </h1>
+                <p className="text-xs text-gray-500">Project tracking</p>
+            </div>
+        </div>
+
+        {/* Timezone Display - NEW SECTION */}
+       <TimezoneDisplay 
+    selectedTimezone={selectedTimezone}
+    setSelectedTimezone={setSelectedTimezone}
+    isManualMode={isManualMode}
+    manualTime={manualTime}
+    setManualTimeHandler={setManualTimeHandler}
+    setManualTime={setManualTime}
+    setIsManualMode={setIsManualMode}
+/>
                                 
                                 {/* Buttons - Scrollable on mobile */}
                                 <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 flex-1 md:flex-none">
