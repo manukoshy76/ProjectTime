@@ -11,6 +11,7 @@
     <!-- Include SheetJS for Excel handling -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@kenjiuno/msgreader@3.0.545/dist/index.js"></script>
     <style>
         .line-clamp-3 {
             display: -webkit-box;
@@ -1707,42 +1708,52 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
         };
 const parseEmail = async (file) => {
     try {
-        const fileName = file.name.replace('.msg', '');
+        const fileName = file.name.replace('.msg', '').replace('.eml', '');
         
-        // Extract information from filename pattern like "RE_ JPM Recon Build"
-        let subject = fileName;
+        // Extract subject from filename
+        const subjectMatch = fileName.match(/RE_(.+)/i);
+        const subject = subjectMatch ? 'RE: ' + subjectMatch[1].replace(/_/g, ' ') : fileName;
+        
+        // Read file and extract From field
+        const text = await file.text();
+        
+        // Improved regex patterns for From field extraction
         let from = 'Unknown Sender';
         
-        // Common patterns in email filenames
-        const patterns = [
-            // Pattern: "RE_ Subject _ Sender"
-            /RE_([^_]+)_([^_]+)/i,
-            // Pattern: "RE_ Subject - Sender"  
-            /RE_([^_]+)[-_]([^.]+)/i,
-            // Pattern: "RE_ Subject"
-            /RE_([^.]+)/i,
-            // Pattern: "FW_ Subject _ Sender"
-            /FW_([^_]+)_([^_]+)/i,
+        // Try multiple patterns to extract From field
+        const fromPatterns = [
+            // Pattern for spaced-out headers (common in .msg files)
+            /F\s*r\s*o\s*m\s*:\s*([^<]*<[^>]+>)/i,
+            // Pattern for normal headers
+            /From:\s*([^<\r\n]+<[^>]+>)/i,
+            // Fallback pattern
+            /From:\s*([^\r\n]+)/i
         ];
         
-        for (const pattern of patterns) {
-            const match = fileName.match(pattern);
-            if (match) {
-                if (match[1]) {
-                    subject = 'RE: ' + match[1].trim().replace(/_/g, ' ');
-                }
-                if (match[2]) {
-                    from = match[2].trim().replace(/_/g, ' ');
-                }
+        for (const pattern of fromPatterns) {
+            const fromMatch = text.match(pattern);
+            if (fromMatch) {
+                // Clean up the extracted from field
+                from = fromMatch[1]
+                    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+                    .replace(/\s*<\s*/g, ' <') // Normalize space around <
+                    .replace(/\s*>\s*/g, '>') // Normalize space around >
+                    .trim();
                 break;
             }
         }
         
-        // If no pattern matched but filename starts with RE_, use basic extraction
-        if (fileName.startsWith('RE_') && from === 'Unknown Sender') {
-            const basicMatch = fileName.match(/RE_(.+)/);
-            if (basicMatch) {
-                subject = 'RE: ' + basicMatch[1].replace(/_/g, ' ');
+        // Also try to extract date if available
+        let date = new Date().toISOString().split('T')[0];
+        const dateMatch = text.match(/Date:\s*([^\r\n]+)/i);
+        if (dateMatch) {
+            try {
+                const parsedDate = new Date(dateMatch[1].trim());
+                if (!isNaN(parsedDate.getTime())) {
+                    date = parsedDate.toISOString().split('T')[0];
+                }
+            } catch (e) {
+                // Use default date if parsing fails
             }
         }
         
@@ -1750,10 +1761,10 @@ const parseEmail = async (file) => {
             id: Date.now(),
             subject: subject,
             from: from,
-            body: 'Drag & drop to import Outlook MSG files. Sender info can be added in notes.',
-            date: new Date().toISOString().split('T')[0],
+            body: 'Email file loaded',
+            date: date,
             read: false,
-            notes: 'Sender to be confirmed', // Default note
+            notes: '',
             fileName: file.name
         };
         
@@ -1763,9 +1774,9 @@ const parseEmail = async (file) => {
         console.log('Parse error:', error);
         return {
             id: Date.now(),
-            subject: file.name.replace('.msg', ''),
-            from: 'Outlook Message',
-            body: 'Email file loaded',
+            subject: file.name.replace('.msg', '').replace('.eml', ''),
+            from: 'Unknown Sender',
+            body: '',
             date: new Date().toISOString().split('T')[0],
             read: false,
             notes: '',
@@ -1773,7 +1784,6 @@ const parseEmail = async (file) => {
         };
     }
 };
-
         // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
 // Find the WeeklyCalendar component in your HTML and replace it with this code
 
@@ -2545,13 +2555,14 @@ useEffect(() => {
                 }
 
                 const data = {
-                    projects,
-                    timeEntries,
-                    tasks,
-                    todaysTasks,  // ADD THIS LINE
-    meetings, 
-                    updatedAt: new Date().toISOString()
-                };
+    projects,
+    timeEntries,
+    tasks,
+    todaysTasks,
+    meetings,
+    emails,  // ADD THIS LINE
+    updatedAt: new Date().toISOString()
+};
 
                 const gistData = {
                     files: {
@@ -2663,6 +2674,7 @@ useEffect(() => {
                         setTasks(data.tasks || []);
                          setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
     setMeetings(data.meetings || []); 
+    setEmails(data.emails || []);
                         alert('Data loaded from cloud!');
                     }
                     
@@ -2708,6 +2720,7 @@ useEffect(() => {
                     tasks,
                     todaysTasks,  // ADD THIS LINE
         meetings,
+        emails,
                     filter: {
                         dateRange: dateFilter,
                         project: filterProject,
@@ -2743,6 +2756,7 @@ useEffect(() => {
                             }
                             setTodaysTasks(parsed.todaysTasks || []);
     setMeetings(parsed.meetings || []);
+    setEmails(parsed.emails || []); 
                             alert('Import successful.');
                         }
                     } catch (err) {
@@ -5570,12 +5584,15 @@ useEffect(() => {
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-xs text-gray-600">From:</span>
                                         <input
-                                            type="text"
-                                            value={email.from}
-                                            onChange={(e) => setEmails(emails.map(e => e.id === email.id ? {...e, from: e.target.value} : e))}
-                                            className="text-xs border-b border-gray-300 px-1 py-0.5 focus:border-blue-500 focus:outline-none"
-                                            placeholder="Enter sender name"
-                                        />
+    type="text"
+    value={email.from}
+    onChange={(e) => {
+        const newFrom = e.target.value;
+        setEmails(emails.map(em => em.id === email.id ? {...em, from: newFrom} : em));
+    }}
+    className="text-xs border-b border-gray-300 px-1 py-0.5 focus:border-blue-500 focus:outline-none"
+    placeholder="Enter sender name"
+/>
                                     </div>
                                     <p className="text-gray-500 text-xs mt-1">{email.date}</p>
                                 </div>
