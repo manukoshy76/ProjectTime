@@ -1710,50 +1710,99 @@ const parseEmail = async (file) => {
     try {
         const fileName = file.name.replace('.msg', '').replace('.eml', '');
         
-        // Extract subject from filename
-        const subjectMatch = fileName.match(/RE_(.+)/i);
-        const subject = subjectMatch ? 'RE: ' + subjectMatch[1].replace(/_/g, ' ') : fileName;
-        
-        // Read file and extract From field
+        // Read file content
         const text = await file.text();
         
-        // Improved regex patterns for From field extraction
+        // Enhanced sender extraction with multiple fallback methods
         let from = 'Unknown Sender';
+        let subject = fileName;
+        let date = new Date().toISOString().split('T')[0];
         
-        // Try multiple patterns to extract From field
+        // Method 1: Try to extract From header with various patterns
         const fromPatterns = [
-            // Pattern for spaced-out headers (common in .msg files)
-            /F\s*r\s*o\s*m\s*:\s*([^<]*<[^>]+>)/i,
-            // Pattern for normal headers
-            /From:\s*([^<\r\n]+<[^>]+>)/i,
-            // Fallback pattern
-            /From:\s*([^\r\n]+)/i
+            /From:\s*([^<\r\n]+<[^>]+>)/i,                    // Name <email>
+            /From:\s*([^<\r\n]+)/i,                           // Just name or email
+            /F\s*r\s*o\s*m\s*:\s*([^<]*<[^>]+>)/i,           // Spaced-out headers
+            /F\s*r\s*o\s*m\s*:\s*([^\r\n]+)/i,               // Spaced-out just text
+            /\[mailto:[^\]]+\]\s*([^<\r\n]+)/i,              // Outlook format [mailto:...] Name
+            /Sent:\s*[^\n]*\n*.*From:\s*([^\r\n]+)/i,        // In "Sent: ... From: ..." pattern
+            /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/ // Fallback: just find any email
         ];
         
         for (const pattern of fromPatterns) {
-            const fromMatch = text.match(pattern);
-            if (fromMatch) {
-                // Clean up the extracted from field
-                from = fromMatch[1]
-                    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-                    .replace(/\s*<\s*/g, ' <') // Normalize space around <
-                    .replace(/\s*>\s*/g, '>') // Normalize space around >
-                    .trim();
-                break;
+            const match = text.match(pattern);
+            if (match && match[1]) {
+                const extracted = match[1].trim();
+                if (extracted && extracted !== '') {
+                    from = extracted
+                        .replace(/\s+/g, ' ')
+                        .replace(/\s*<\s*/g, ' <')
+                        .replace(/\s*>\s*/g, '>')
+                        .replace(/\[mailto:[^\]]+\]\s*/gi, '') // Remove mailto tags
+                        .trim();
+                    
+                    // If we found something meaningful, break
+                    if (from !== 'From:' && from.length > 3) {
+                        break;
+                    }
+                }
             }
         }
         
-        // Also try to extract date if available
-        let date = new Date().toISOString().split('T')[0];
-        const dateMatch = text.match(/Date:\s*([^\r\n]+)/i);
-        if (dateMatch) {
-            try {
-                const parsedDate = new Date(dateMatch[1].trim());
-                if (!isNaN(parsedDate.getTime())) {
-                    date = parsedDate.toISOString().split('T')[0];
+        // Method 2: Try to extract Subject
+        const subjectPatterns = [
+            /Subject:\s*([^\r\n]+)/i,
+            /S\s*u\s*b\s*j\s*e\s*c\s*t\s*:\s*([^\r\n]+)/i,
+            /RE:\s*([^\r\n]+)/i,
+            /FW:\s*([^\r\n]+)/i
+        ];
+        
+        for (const pattern of subjectPatterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+                const extracted = match[1].trim();
+                if (extracted && extracted !== '') {
+                    subject = extracted;
+                    break;
                 }
-            } catch (e) {
-                // Use default date if parsing fails
+            }
+        }
+        
+        // Method 3: Try to extract Date
+        const datePatterns = [
+            /Date:\s*([^\r\n]+)/i,
+            /Sent:\s*([^\r\n]+)/i,
+            /D\s*a\s*t\s*e\s*:\s*([^\r\n]+)/i
+        ];
+        
+        for (const pattern of datePatterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+                try {
+                    const parsedDate = new Date(match[1].trim());
+                    if (!isNaN(parsedDate.getTime())) {
+                        date = parsedDate.toISOString().split('T')[0];
+                        break;
+                    }
+                } catch (e) {
+                    // Continue to next pattern
+                }
+            }
+        }
+        
+        // Clean up the sender field - remove common prefixes and clean formatting
+        from = from
+            .replace(/^From:\s*/i, '')
+            .replace(/^Sent:\s*[^<]*\s*From:\s*/i, '')
+            .replace(/^\[[^\]]+\]\s*/, '')
+            .trim();
+        
+        // If sender is still generic, try to extract from filename
+        if (from === 'Unknown Sender' || from === 'From:' || from.length < 3) {
+            // Try to extract name from filename patterns
+            const nameMatch = fileName.match(/([A-Z][a-z]+_[A-Z][a-z]+)/); // First_Last pattern
+            if (nameMatch) {
+                from = nameMatch[1].replace('_', ' ');
             }
         }
         
@@ -1761,7 +1810,7 @@ const parseEmail = async (file) => {
             id: Date.now(),
             subject: subject,
             from: from,
-            body: 'Email file loaded',
+            body: 'Email content extracted',
             date: date,
             read: false,
             notes: '',
@@ -1772,6 +1821,7 @@ const parseEmail = async (file) => {
         
     } catch (error) {
         console.log('Parse error:', error);
+        // Fallback: use filename as subject
         return {
             id: Date.now(),
             subject: file.name.replace('.msg', '').replace('.eml', ''),
@@ -1784,6 +1834,15 @@ const parseEmail = async (file) => {
         };
     }
 };
+const editEmailSender = (emailId, currentFrom) => {
+    const newFrom = prompt('Edit sender:', currentFrom);
+    if (newFrom !== null && newFrom.trim() !== '') {
+        setEmails(emails.map(email => 
+            email.id === emailId ? { ...email, from: newFrom.trim() } : email
+        ));
+    }
+};
+        
         // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
 // Find the WeeklyCalendar component in your HTML and replace it with this code
 
@@ -5617,15 +5676,20 @@ useEffect(() => {
                                             <div className="font-semibold text-gray-800 truncate text-xs">
                                                 {email.subject}
                                             </div>
-                                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                                <span className="text-gray-600 truncate text-xs">
-                                                    {email.from}
-                                                </span>
-                                                <span className="text-gray-400">•</span>
-                                                <span className="text-gray-500 text-xs">
-                                                    {email.date}
-                                                </span>
-                                            </div>
+                                            {/* In the email item, replace the sender display section with: */}
+<div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+    <span 
+        onClick={() => editEmailSender(email.id, email.from)}
+        className="text-gray-600 truncate text-xs cursor-pointer hover:text-blue-600 hover:underline"
+        title="Click to edit sender"
+    >
+        {email.from}
+    </span>
+    <span className="text-gray-400">•</span>
+    <span className="text-gray-500 text-xs">
+        {email.date}
+    </span>
+</div>
                                         </div>
                                     </div>
                                     
