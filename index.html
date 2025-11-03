@@ -3861,11 +3861,9 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // Parse .msg and .eml emails (offline, no external libraries)
 // Helpers ---------------------------------------------------------
 
-const parseEmail = async (file) => {
+ const parseEmail = async (file) => {
           try {
             const fileName = file.name.replace('.msg', '').replace('.eml', '');
-            
-            // Check if it's an MSG file
             if (file.name.endsWith('.msg')) {
               return parseMSGFile(file, fileName);
             } else {
@@ -3889,26 +3887,18 @@ const parseEmail = async (file) => {
         const parseMSGFile = async (file, fileName) => {
           return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            
             reader.onload = (e) => {
               try {
                 const buffer = e.target.result;
-                
-                // ✅ Check if MSGReader is available
-                if (typeof window.MsgReader === 'undefined') {
+                if (typeof window.MSGReader === 'undefined') {
                   console.warn('MSGReader not loaded, using fallback');
                   return reject(new Error('MSGReader library not available'));
                 }
-                
-                // ✅ Use correct library name (MsgReader not MSGReader)
-                const msgReader = new window.MsgReader(buffer);
+                const msgReader = new window.MSGReader(buffer);
                 const fileData = msgReader.getFileData();
-                
                 if (fileData.error) {
                   throw new Error(fileData.error);
                 }
-                
-                // Extract sender
                 let from = 'Unknown Sender';
                 if (fileData.senderName && fileData.senderEmail) {
                   from = `${fileData.senderName} <${fileData.senderEmail}>`;
@@ -3917,19 +3907,13 @@ const parseEmail = async (file) => {
                 } else if (fileData.senderName) {
                   from = fileData.senderName;
                 }
-                
-                // Extract recipients
                 let recipients = [];
                 if (fileData.recipients && Array.isArray(fileData.recipients)) {
                   recipients = fileData.recipients.map(r => 
                     r.email ? (r.name ? `${r.name} <${r.email}>` : r.email) : r.name || ''
                   ).filter(r => r);
                 }
-                
-                // Extract subject
                 const subject = fileData.subject || fileName;
-                
-                // Extract date
                 let date = new Date().toISOString().split('T')[0];
                 if (fileData.headers) {
                   try {
@@ -3944,11 +3928,7 @@ const parseEmail = async (file) => {
                     console.log('Date parsing error:', e);
                   }
                 }
-                
-                // Extract body
                 const body = fileData.body || fileData.bodyHTML || '';
-                
-                // Extract attachments info
                 let attachmentsInfo = [];
                 if (fileData.attachments && Array.isArray(fileData.attachments)) {
                   attachmentsInfo = fileData.attachments.map(att => ({
@@ -3957,7 +3937,6 @@ const parseEmail = async (file) => {
                     mimeType: att.mimeType || 'application/octet-stream'
                   }));
                 }
-                
                 resolve({
                   id: Date.now() + Math.random(),
                   subject: subject,
@@ -3977,7 +3956,6 @@ const parseEmail = async (file) => {
                 reject(error);
               }
             };
-            
             reader.onerror = () => reject(new Error('Failed to read file'));
             reader.readAsArrayBuffer(file);
           });
@@ -3986,53 +3964,35 @@ const parseEmail = async (file) => {
         const parseEMLFile = async (file, fileName) => {
           try {
             const text = await file.text();
-            
             let from = 'Unknown Sender';
             let subject = fileName;
             let date = new Date().toISOString().split('T')[0];
             let body = '';
             let recipients = [];
-            
-            // Extract From header
             const fromPatterns = [
               /From:\s*([^<\r\n]+<[^>]+>)/i,
               /From:\s*([^<\r\n]+)/i,
               /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
             ];
-            
             for (const pattern of fromPatterns) {
               const match = text.match(pattern);
               if (match && match[1]) {
                 const extracted = match[1].trim();
                 if (extracted && extracted !== '') {
-                  from = extracted
-                    .replace(/\s+/g, ' ')
-                    .replace(/\s*<\s*/g, ' <')
-                    .replace(/\s*>\s*/g, '>')
-                    .trim();
-                  if (from !== 'From:' && from.length > 3) {
-                    break;
-                  }
+                  from = extracted.replace(/\s+/g, ' ').replace(/\s*<\s*/g, ' <').replace(/\s*>\s*/g, '>').trim();
+                  if (from !== 'From:' && from.length > 3) break;
                 }
               }
             }
-            
-            // Extract To header (recipients)
             const toMatch = text.match(/To:\s*([^\r\n]+)/i);
             if (toMatch && toMatch[1]) {
-              recipients = toMatch[1]
-                .split(/[,;]/)
-                .map(r => r.trim())
-                .filter(r => r);
+              recipients = toMatch[1].split(/[,;]/).map(r => r.trim()).filter(r => r);
             }
-            
-            // Extract Subject
             const subjectPatterns = [
               /Subject:\s*([^\r\n]+)/i,
               /RE:\s*([^\r\n]+)/i,
               /FW:\s*([^\r\n]+)/i
             ];
-            
             for (const pattern of subjectPatterns) {
               const match = text.match(pattern);
               if (match && match[1]) {
@@ -4043,13 +4003,10 @@ const parseEmail = async (file) => {
                 }
               }
             }
-            
-            // Extract Date
             const datePatterns = [
               /Date:\s*([^\r\n]+)/i,
               /Sent:\s*([^\r\n]+)/i
             ];
-            
             for (const pattern of datePatterns) {
               const match = text.match(pattern);
               if (match && match[1]) {
@@ -4059,33 +4016,20 @@ const parseEmail = async (file) => {
                     date = parsedDate.toISOString().split('T')[0];
                     break;
                   }
-                } catch (e) {
-                  // Continue to next pattern
-                }
+                } catch (e) {}
               }
             }
-            
-            // Extract body
             const bodyMatch = text.match(/\r?\n\r?\n([\s\S]*)/);
             if (bodyMatch && bodyMatch[1]) {
               body = bodyMatch[1].trim();
             }
-            
-            // Clean up from field
-            from = from
-              .replace(/^From:\s*/i, '')
-              .replace(/^Sent:\s*[^<]*\s*From:\s*/i, '')
-              .replace(/^\[[^\]]+\]\s*/, '')
-              .trim();
-            
-            // Fallback: extract name from filename
+            from = from.replace(/^From:\s*/i, '').replace(/^Sent:\s*[^<]*\s*From:\s*/i, '').replace(/^\[[^\]]+\]\s*/, '').trim();
             if (from === 'Unknown Sender' || from === 'From:' || from.length < 3) {
               const nameMatch = fileName.match(/([A-Z][a-z]+_[A-Z][a-z]+)/);
               if (nameMatch) {
                 from = nameMatch[1].replace('_', ' ');
               }
             }
-            
             return {
               id: Date.now() + Math.random(),
               subject: subject,
