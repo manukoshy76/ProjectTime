@@ -1714,78 +1714,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // Parse .msg and .eml emails (offline, no external libraries)
 // Helpers ---------------------------------------------------------
 
-const parseEmail = async (file) => {
-  const fileName = file.name.replace(/\.msg$/i, '').replace(/\.eml$/i, '');
-  const ext = file.name.split('.').pop().toLowerCase();
 
-  let email = {
-    id: Date.now(),
-    subject: fileName,
-    from: 'Unknown Sender',
-    body: '',
-    date: new Date().toISOString().split('T')[0],
-    read: false,
-    notes: '',
-    fileName: file.name,
-  };
-
-  // ✅ Case 1: .msg file using MSGReader
-  if (ext === "msg" && window.MSGReader) {
-    try {
-      const buffer = await file.arrayBuffer();
-      const msgReader = new MSGReader(buffer);
-      const fileData = msgReader.getFileData();
-
-      if (!fileData.error) {
-        // 📨 Sender
-        email.from = fileData.senderName
-          ? `${fileData.senderName} <${fileData.senderEmail}>`
-          : fileData.senderEmail || email.from;
-
-        // 🧾 Subject
-        email.subject = fileData.subject || email.subject;
-
-        // 📅 Date
-        try {
-          const dateHeader = fileData.headers?.match(/Date:\s*(.*)/i);
-          if (dateHeader && dateHeader[1]) {
-            const parsedDate = new Date(dateHeader[1]);
-            if (!isNaN(parsedDate.getTime())) {
-              email.date = parsedDate.toISOString().split('T')[0];
-            }
-          }
-        } catch (err) {}
-
-        // 💬 Body (prefer plain text, else HTML)
-        email.body = fileData.body || fileData.bodyHTML || '';
-
-        return email;
-      }
-    } catch (error) {
-      console.error("MSGReader parse failed:", error);
-    }
-  }
-
-  // ✅ Case 2: fallback for .eml or plain text files
-  try {
-    const text = await file.text();
-    const from = text.match(/^From:\s*(.*)$/im);
-    const subject = text.match(/^Subject:\s*(.*)$/im);
-    const date = text.match(/^Date:\s*(.*)$/im);
-
-    if (from) email.from = from[1].trim();
-    if (subject) email.subject = subject[1].trim();
-    if (date) {
-      const d = new Date(date[1]);
-      if (!isNaN(d.getTime())) email.date = d.toISOString().split('T')[0];
-    }
-    email.body = text.split("\n\n").slice(1).join("\n");
-  } catch (err) {
-    console.error("Fallback parse failed:", err);
-  }
-
-  return email;
-};
 
 
 
