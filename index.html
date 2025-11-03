@@ -1707,10 +1707,12 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             return minutesToTime(newMinutes);
         };
 // Works for .msg and .eml files using msgreader
+// ✅ Enhanced parseEmail – works for both .msg and .eml files
 const parseEmail = async (file) => {
   try {
     const fileName = file.name.replace('.msg', '').replace('.eml', '');
     const fileExtension = file.name.split('.').pop().toLowerCase();
+
     let email = {
       id: Date.now(),
       subject: fileName,
@@ -1725,7 +1727,7 @@ const parseEmail = async (file) => {
     if (fileExtension === 'msg') {
       // ✅ Use msgreader for .msg Outlook files
       const arrayBuffer = await file.arrayBuffer();
-      const reader = new MSGReader(arrayBuffer);
+      const reader = new window.MSGReader(arrayBuffer);
       const msgData = reader.getFileData();
 
       email.from = msgData.senderEmail || msgData.senderName || 'Unknown Sender';
@@ -1734,6 +1736,7 @@ const parseEmail = async (file) => {
       email.date = msgData.messageDeliveryTime
         ? new Date(msgData.messageDeliveryTime).toISOString().split('T')[0]
         : email.date;
+
     } else if (fileExtension === 'eml') {
       // ✅ Use text parsing for .eml
       const text = await file.text();
@@ -1748,6 +1751,8 @@ const parseEmail = async (file) => {
         if (!isNaN(d.getTime())) email.date = d.toISOString().split('T')[0];
       }
       email.body = text.split('\n\n').slice(1).join('\n');
+    } else {
+      console.warn(`Unsupported file type: ${fileExtension}`);
     }
 
     return email;
@@ -1765,6 +1770,15 @@ const parseEmail = async (file) => {
     };
   }
 };
+const handleFileDrop = async (files) => {
+  const parsedEmails = [];
+  for (const file of files) {
+    const parsed = await parseEmail(file);
+    parsedEmails.push(parsed);
+  }
+  setEmails(prev => [...prev, ...parsedEmails]);
+};
+
 
         
         // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
