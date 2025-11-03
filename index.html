@@ -1717,32 +1717,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // ✅ Updated parseEmail – handles .msg via binary decoding (no CDN) + .eml fallback
 // Parse .msg and .eml emails (offline, no external libraries)
 // Helpers ---------------------------------------------------------
-async function parseEmail(file) {
-    if (!file.name.endsWith(".msg")) {
-        alert("Please select a valid Outlook .msg file");
-        return;
-    }
 
-    const arrayBuffer = await file.arrayBuffer();
-
-    // ✅ Use MSGReader after DataStream is available
-    const reader = new MSGReader(arrayBuffer);
-    const msg = reader.getFileData();
-
-    console.log("From:", msg.senderEmail);
-    console.log("To:", msg.recipients.map(r => r.email).join(", "));
-    console.log("Subject:", msg.subject);
-    console.log("Body:", msg.body);
-    console.log("Attachments:", msg.attachments);
-
-    return {
-        from: msg.senderEmail,
-        to: msg.recipients.map(r => r.email).join(", "),
-        subject: msg.subject,
-        body: msg.body,
-        attachments: msg.attachments
-    };
-};
 
         
         // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
@@ -5632,6 +5607,34 @@ useEffect(() => {
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<TimesheetApp />);
+
+        async function parseEmail(file) {
+    if (!file.name.endsWith(".msg")) {
+        alert("Please select a valid Outlook .msg file");
+        return;
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    // ✅ MSGReader now works because DataStream is loaded first
+    const reader = new MSGReader(arrayBuffer);
+    const msg = reader.getFileData();
+
+    console.log("From:", msg.senderEmail);
+    console.log("To:", msg.recipients.map(r => r.email).join(", "));
+    console.log("Subject:", msg.subject);
+    console.log("Body:", msg.body);
+    console.log("Attachments:", msg.attachments);
+
+    return {
+        from: msg.senderEmail,
+        to: msg.recipients.map(r => r.email).join(", "),
+        subject: msg.subject,
+        body: msg.body,
+        attachments: msg.attachments
+    };
+}
+
     </script>
 </body>
 </html>
