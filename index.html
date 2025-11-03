@@ -1713,74 +1713,88 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // Helpers ---------------------------------------------------------
 
 const parseEmail = async (file) => {
-  const fileName = file.name.replace(/\.msg$/i, '').replace(/\.eml$/i, '');
-  const ext = file.name.split('.').pop().toLowerCase();
+  try {
+    const fileName = file.name.replace('.msg', '').replace('.eml', '');
+    const ext = file.name.split('.').pop().toLowerCase();
 
-  const email = {
-    id: Date.now(),
-    subject: fileName,
-    from: 'Unknown Sender',
-    body: '',
-    date: new Date().toISOString().split('T')[0],
-    read: false,
-    notes: '',
-    fileName: file.name
-  };
+    let email = {
+      id: Date.now(),
+      subject: fileName,
+      from: "Unknown Sender",
+      body: "",
+      date: new Date().toISOString().split("T")[0],
+      read: false,
+      notes: "",
+      fileName: file.name
+    };
 
-  // ✅ .msg with MSGReader (MOST ACCURATE)
-  if (ext === 'msg' && window.MSGReader) {
-    try {
+    // ✅ 1. Use MSGReader for .msg — most accurate
+    if (ext === "msg" && window.MSGReader) {
       const buffer = await file.arrayBuffer();
-      const msgReader = new window.MSGReader(buffer);
-      const data = msgReader.getFileData();
+      const reader = new window.MSGReader(buffer);
+      const data = reader.getFileData();
 
-      if (data.error) {
-        console.warn("MSGReader error fallback to text");
-      } else {
-        email.subject = data.subject || email.subject;
+      if (!data.error) {
+        // Build "Name <email>" if possible
+        let sender = "";
+        if (data.senderName && data.senderEmail) {
+          sender = `${data.senderName} <${data.senderEmail}>`;
+        } else if (data.senderEmail) {
+          sender = data.senderEmail;
+        } else {
+          sender = data.senderName || "Unknown Sender";
+        }
 
-        // Sender formatting just like the demo:
-        email.from = data.senderName
-          ? `${data.senderName} <${data.senderEmail}>`
-          : data.senderEmail || 'Unknown Sender';
-
-        // Date
-        try {
-          const parsed = new Date(data.headers?.match(/Date: (.*)/)?.[1]);
-          if (!isNaN(parsed.getTime())) {
-            email.date = parsed.toISOString().split('T')[0];
-          }
-        } catch (e) {}
-
-        // Body
-        email.body = data.body || data.bodyHTML || '';
+        email.subject = data.subject || fileName;
+        email.from = sender;
+        email.body = data.body || data.bodyHTML || "";
+        email.date = data.messageDeliveryTime
+          ? new Date(data.messageDeliveryTime).toISOString().split("T")[0]
+          : email.date;
 
         return email;
       }
-    } catch (err) {
-      console.error("MSGReader parse failed:", err);
-    }
-  }
-
-  // ✅ fallback: .eml or if MSGReader missing
-  if (ext === 'eml') {
-    const text = await file.text();
-    const from = text.match(/^From:\s*(.*)$/im);
-    const subject = text.match(/^Subject:\s*(.*)$/im);
-    const date = text.match(/^Date:\s*(.*)$/im);
-
-    email.from = from ? from[1].trim() : email.from;
-    email.subject = subject ? subject[1].trim() : email.subject;
-
-    if (date) {
-      const d = new Date(date[1]);
-      if (!isNaN(d.getTime())) email.date = d.toISOString().split('T')[0];
     }
 
-    email.body = text.split("\n\n").slice(1).join("\n");
-  }
+    // ✅ 2. .eml parsing fallback
+    if (ext === "eml" || file.type === "message/rfc822") {
+      const text = await file.text();
 
-  return email;
+      const subj = text.match(/Subject:\s*(.*)/i);
+      const from = text.match(/From:\s*(.*)/i);
+      const date = text.match(/Date:\s*(.*)/i);
+
+      if (subj) email.subject = subj[1].trim();
+      if (from) email.from = from[1].trim();
+
+      if (date) {
+        const parsed = new Date(date[1]);
+        if (!isNaN(parsed)) email.date = parsed.toISOString().split("T")[0];
+      }
+
+      email.body = text.split("\n\n").slice(1).join("\n");
+
+      return email;
+    }
+
+    // ✅ 3. Default fallback (rare)
+    const fallback = await file.text();
+    email.body = fallback.slice(0, 2000);
+    return email;
+
+  } catch (err) {
+    console.error("parseEmail error", err);
+    return {
+      id: Date.now(),
+      subject: file.name.replace(".msg", "").replace(".eml", ""),
+      from: "Unknown Sender",
+      body: "",
+      date: new Date().toISOString().split("T")[0],
+      read: false,
+      notes: "",
+      fileName: file.name
+    };
+  }
 };
 
 
