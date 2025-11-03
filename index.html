@@ -1706,142 +1706,66 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             const newMinutes = (minutes + diffMinutes + 1440) % 1440;
             return minutesToTime(newMinutes);
         };
+// Works for .msg and .eml files using msgreader
 const parseEmail = async (file) => {
-    try {
-        const fileName = file.name.replace('.msg', '').replace('.eml', '');
-        
-        // Read file content
-        const text = await file.text();
-        
-        // Enhanced sender extraction with multiple fallback methods
-        let from = 'Unknown Sender';
-        let subject = fileName;
-        let date = new Date().toISOString().split('T')[0];
-        
-        // Method 1: Try to extract From header with various patterns
-        const fromPatterns = [
-            /From:\s*([^<\r\n]+<[^>]+>)/i,                    // Name <email>
-            /From:\s*([^<\r\n]+)/i,                           // Just name or email
-            /F\s*r\s*o\s*m\s*:\s*([^<]*<[^>]+>)/i,           // Spaced-out headers
-            /F\s*r\s*o\s*m\s*:\s*([^\r\n]+)/i,               // Spaced-out just text
-            /\[mailto:[^\]]+\]\s*([^<\r\n]+)/i,              // Outlook format [mailto:...] Name
-            /Sent:\s*[^\n]*\n*.*From:\s*([^\r\n]+)/i,        // In "Sent: ... From: ..." pattern
-            /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/ // Fallback: just find any email
-        ];
-        
-        for (const pattern of fromPatterns) {
-            const match = text.match(pattern);
-            if (match && match[1]) {
-                const extracted = match[1].trim();
-                if (extracted && extracted !== '') {
-                    from = extracted
-                        .replace(/\s+/g, ' ')
-                        .replace(/\s*<\s*/g, ' <')
-                        .replace(/\s*>\s*/g, '>')
-                        .replace(/\[mailto:[^\]]+\]\s*/gi, '') // Remove mailto tags
-                        .trim();
-                    
-                    // If we found something meaningful, break
-                    if (from !== 'From:' && from.length > 3) {
-                        break;
-                    }
-                }
-            }
-        }
-        
-        // Method 2: Try to extract Subject
-        const subjectPatterns = [
-            /Subject:\s*([^\r\n]+)/i,
-            /S\s*u\s*b\s*j\s*e\s*c\s*t\s*:\s*([^\r\n]+)/i,
-            /RE:\s*([^\r\n]+)/i,
-            /FW:\s*([^\r\n]+)/i
-        ];
-        
-        for (const pattern of subjectPatterns) {
-            const match = text.match(pattern);
-            if (match && match[1]) {
-                const extracted = match[1].trim();
-                if (extracted && extracted !== '') {
-                    subject = extracted;
-                    break;
-                }
-            }
-        }
-        
-        // Method 3: Try to extract Date
-        const datePatterns = [
-            /Date:\s*([^\r\n]+)/i,
-            /Sent:\s*([^\r\n]+)/i,
-            /D\s*a\s*t\s*e\s*:\s*([^\r\n]+)/i
-        ];
-        
-        for (const pattern of datePatterns) {
-            const match = text.match(pattern);
-            if (match && match[1]) {
-                try {
-                    const parsedDate = new Date(match[1].trim());
-                    if (!isNaN(parsedDate.getTime())) {
-                        date = parsedDate.toISOString().split('T')[0];
-                        break;
-                    }
-                } catch (e) {
-                    // Continue to next pattern
-                }
-            }
-        }
-        
-        // Clean up the sender field - remove common prefixes and clean formatting
-        from = from
-            .replace(/^From:\s*/i, '')
-            .replace(/^Sent:\s*[^<]*\s*From:\s*/i, '')
-            .replace(/^\[[^\]]+\]\s*/, '')
-            .trim();
-        
-        // If sender is still generic, try to extract from filename
-        if (from === 'Unknown Sender' || from === 'From:' || from.length < 3) {
-            // Try to extract name from filename patterns
-            const nameMatch = fileName.match(/([A-Z][a-z]+_[A-Z][a-z]+)/); // First_Last pattern
-            if (nameMatch) {
-                from = nameMatch[1].replace('_', ' ');
-            }
-        }
-        
-        const email = {
-            id: Date.now(),
-            subject: subject,
-            from: from,
-            body: 'Email content extracted',
-            date: date,
-            read: false,
-            notes: '',
-            fileName: file.name
-        };
-        
-        return email;
-        
-    } catch (error) {
-        console.log('Parse error:', error);
-        // Fallback: use filename as subject
-        return {
-            id: Date.now(),
-            subject: file.name.replace('.msg', '').replace('.eml', ''),
-            from: 'Unknown Sender',
-            body: '',
-            date: new Date().toISOString().split('T')[0],
-            read: false,
-            notes: '',
-            fileName: file.name
-        };
+  try {
+    const fileName = file.name.replace('.msg', '').replace('.eml', '');
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    let email = {
+      id: Date.now(),
+      subject: fileName,
+      from: 'Unknown Sender',
+      body: '',
+      date: new Date().toISOString().split('T')[0],
+      read: false,
+      notes: '',
+      fileName: file.name
+    };
+
+    if (fileExtension === 'msg') {
+      // ✅ Use msgreader for .msg Outlook files
+      const arrayBuffer = await file.arrayBuffer();
+      const reader = new MSGReader(arrayBuffer);
+      const msgData = reader.getFileData();
+
+      email.from = msgData.senderEmail || msgData.senderName || 'Unknown Sender';
+      email.subject = msgData.subject || fileName;
+      email.body = msgData.body || msgData.bodyHTML || '';
+      email.date = msgData.messageDeliveryTime
+        ? new Date(msgData.messageDeliveryTime).toISOString().split('T')[0]
+        : email.date;
+    } else if (fileExtension === 'eml') {
+      // ✅ Use text parsing for .eml
+      const text = await file.text();
+      const fromMatch = text.match(/From:\s*(.*)/i);
+      const subjectMatch = text.match(/Subject:\s*(.*)/i);
+      const dateMatch = text.match(/Date:\s*(.*)/i);
+
+      email.from = fromMatch ? fromMatch[1].trim() : email.from;
+      email.subject = subjectMatch ? subjectMatch[1].trim() : email.subject;
+      if (dateMatch) {
+        const d = new Date(dateMatch[1]);
+        if (!isNaN(d.getTime())) email.date = d.toISOString().split('T')[0];
+      }
+      email.body = text.split('\n\n').slice(1).join('\n');
     }
+
+    return email;
+  } catch (error) {
+    console.error('Parse error:', error);
+    return {
+      id: Date.now(),
+      subject: file.name.replace('.msg', '').replace('.eml', ''),
+      from: 'Unknown Sender',
+      body: '',
+      date: new Date().toISOString().split('T')[0],
+      read: false,
+      notes: '',
+      fileName: file.name
+    };
+  }
 };
-const editEmailSender = (emailId, currentFrom) => {
-    const newFrom = prompt('Edit sender:', currentFrom);
-    if (newFrom !== null && newFrom.trim() !== '') {
-        setEmails(emails.map(email => 
-            email.id === emailId ? { ...email, from: newFrom.trim() } : email
-        ));
-    }
-};
+
         
         // REPLACEMENT CODE FOR WeeklyCalendar COMPONENT
 // Find the WeeklyCalendar component in your HTML and replace it with this code
