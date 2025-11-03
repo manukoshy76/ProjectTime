@@ -1717,7 +1717,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // ✅ Updated parseEmail – handles .msg via binary decoding (no CDN) + .eml fallback
 // Parse .msg and .eml emails (offline, no external libraries)
 // Helpers ---------------------------------------------------------
-sync function parseEmail(file) {
+async function parseEmail(file) {
     if (!file.name.endsWith(".msg")) {
         alert("Please select a valid Outlook .msg file");
         return;
