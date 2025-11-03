@@ -4780,11 +4780,12 @@ const [meetings, setMeetings] = useState(() => {
         return saved ? JSON.parse(saved) : [];
     });
 
-const [emails, setEmails] = React.useState([]);
-const [selectedEmail, setSelectedEmail] = React.useState(null);
-const [dragOver, setDragOver] = React.useState(false);
-const [loading, setLoading] = React.useState(false);
-const [error, setError] = React.useState('');
+    const [emails, setEmails] = useState(() => {
+    const saved = localStorage.getItem('emails_data');
+    return saved ? JSON.parse(saved) : [];
+});
+const [dragOver, setDragOver] = useState(false);
+const [emailNotes, setEmailNotes] = useState({});
 
 
             // Local storage effects
