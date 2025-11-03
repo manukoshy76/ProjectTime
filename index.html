@@ -12,6 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@kenjiuno/msgreader@3.0.545/dist/index.js"></script>
+    <script src="./js/msgreader.min.js"></script>
     <style>
         .line-clamp-3 {
             display: -webkit-box;
@@ -1713,90 +1714,77 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // Helpers ---------------------------------------------------------
 
 const parseEmail = async (file) => {
-  try {
-    const fileName = file.name.replace('.msg', '').replace('.eml', '');
-    const ext = file.name.split('.').pop().toLowerCase();
+  const fileName = file.name.replace(/\.msg$/i, '').replace(/\.eml$/i, '');
+  const ext = file.name.split('.').pop().toLowerCase();
 
-    let email = {
-      id: Date.now(),
-      subject: fileName,
-      from: "Unknown Sender",
-      body: "",
-      date: new Date().toISOString().split("T")[0],
-      read: false,
-      notes: "",
-      fileName: file.name
-    };
+  let email = {
+    id: Date.now(),
+    subject: fileName,
+    from: 'Unknown Sender',
+    body: '',
+    date: new Date().toISOString().split('T')[0],
+    read: false,
+    notes: '',
+    fileName: file.name,
+  };
 
-    // ✅ 1. Use MSGReader for .msg — most accurate
-    if (ext === "msg" && window.MSGReader) {
+  // ✅ Case 1: .msg file using MSGReader
+  if (ext === "msg" && window.MSGReader) {
+    try {
       const buffer = await file.arrayBuffer();
-      const reader = new window.MSGReader(buffer);
-      const data = reader.getFileData();
+      const msgReader = new MSGReader(buffer);
+      const fileData = msgReader.getFileData();
 
-      if (!data.error) {
-        // Build "Name <email>" if possible
-        let sender = "";
-        if (data.senderName && data.senderEmail) {
-          sender = `${data.senderName} <${data.senderEmail}>`;
-        } else if (data.senderEmail) {
-          sender = data.senderEmail;
-        } else {
-          sender = data.senderName || "Unknown Sender";
-        }
+      if (!fileData.error) {
+        // 📨 Sender
+        email.from = fileData.senderName
+          ? `${fileData.senderName} <${fileData.senderEmail}>`
+          : fileData.senderEmail || email.from;
 
-        email.subject = data.subject || fileName;
-        email.from = sender;
-        email.body = data.body || data.bodyHTML || "";
-        email.date = data.messageDeliveryTime
-          ? new Date(data.messageDeliveryTime).toISOString().split("T")[0]
-          : email.date;
+        // 🧾 Subject
+        email.subject = fileData.subject || email.subject;
+
+        // 📅 Date
+        try {
+          const dateHeader = fileData.headers?.match(/Date:\s*(.*)/i);
+          if (dateHeader && dateHeader[1]) {
+            const parsedDate = new Date(dateHeader[1]);
+            if (!isNaN(parsedDate.getTime())) {
+              email.date = parsedDate.toISOString().split('T')[0];
+            }
+          }
+        } catch (err) {}
+
+        // 💬 Body (prefer plain text, else HTML)
+        email.body = fileData.body || fileData.bodyHTML || '';
 
         return email;
       }
+    } catch (error) {
+      console.error("MSGReader parse failed:", error);
     }
-
-    // ✅ 2. .eml parsing fallback
-    if (ext === "eml" || file.type === "message/rfc822") {
-      const text = await file.text();
-
-      const subj = text.match(/Subject:\s*(.*)/i);
-      const from = text.match(/From:\s*(.*)/i);
-      const date = text.match(/Date:\s*(.*)/i);
-
-      if (subj) email.subject = subj[1].trim();
-      if (from) email.from = from[1].trim();
-
-      if (date) {
-        const parsed = new Date(date[1]);
-        if (!isNaN(parsed)) email.date = parsed.toISOString().split("T")[0];
-      }
-
-      email.body = text.split("\n\n").slice(1).join("\n");
-
-      return email;
-    }
-
-    // ✅ 3. Default fallback (rare)
-    const fallback = await file.text();
-    email.body = fallback.slice(0, 2000);
-    return email;
-
-  } catch (err) {
-    console.error("parseEmail error", err);
-    return {
-      id: Date.now(),
-      subject: file.name.replace(".msg", "").replace(".eml", ""),
-      from: "Unknown Sender",
-      body: "",
-      date: new Date().toISOString().split("T")[0],
-      read: false,
-      notes: "",
-      fileName: file.name
-    };
   }
-};
 
+  // ✅ Case 2: fallback for .eml or plain text files
+  try {
+    const text = await file.text();
+    const from = text.match(/^From:\s*(.*)$/im);
+    const subject = text.match(/^Subject:\s*(.*)$/im);
+    const date = text.match(/^Date:\s*(.*)$/im);
+
+    if (from) email.from = from[1].trim();
+    if (subject) email.subject = subject[1].trim();
+    if (date) {
+      const d = new Date(date[1]);
+      if (!isNaN(d.getTime())) email.date = d.toISOString().split('T')[0];
+    }
+    email.body = text.split("\n\n").slice(1).join("\n");
+  } catch (err) {
+    console.error("Fallback parse failed:", err);
+  }
+
+  return email;
+};
 
 
 
