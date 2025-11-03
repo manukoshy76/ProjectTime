@@ -1709,10 +1709,11 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // Works for .msg and .eml files using msgreader
 // ✅ Enhanced parseEmail – works for both .msg and .eml files
 // ✅ Updated parseEmail – handles .msg via binary decoding (no CDN) + .eml fallback
+// Parse .msg and .eml emails (offline, no external libraries)
 const parseEmail = async (file) => {
   try {
     const fileName = file.name.replace('.msg', '').replace('.eml', '');
-    const fileExtension = file.name.split('.').pop().toLowerCase();
+    const fileExt = file.name.split('.').pop().toLowerCase();
 
     let email = {
       id: Date.now(),
@@ -1725,32 +1726,27 @@ const parseEmail = async (file) => {
       fileName: file.name
     };
 
-    if (fileExtension === 'msg') {
-      // 📦 Binary parse method from Claude's working example
+    if (fileExt === 'msg') {
+      // 🧩 Works offline — decode binary .msg content
       const arrayBuffer = await file.arrayBuffer();
       const data = new Uint8Array(arrayBuffer);
 
-      // Decode both UTF-8 and UTF-16LE (some MSGs store mixed encodings)
       const utf8Text = new TextDecoder('utf-8', { fatal: false }).decode(data);
       const utf16Text = new TextDecoder('utf-16le', { fatal: false }).decode(data);
-      const combinedText = utf8Text + '\n' + utf16Text;
+      const combined = utf8Text + '\n' + utf16Text;
 
-      // Extract common headers (Subject / From / Date)
-      const subjectMatch = combinedText.match(/(?:Subject|Betreff|Assunto)[:\s]+([^\n\r]{2,200})/i);
-      const fromMatch = combinedText.match(/(?:From|Von|De)[:\s]+([^\n\r<]{2,200})(?:<|$)/i)
-                        || combinedText.match(/(?:From|Von|De)[:\s]+([^\n\r]{2,200})/i);
-      const dateMatch = combinedText.match(/(?:Date|Datum|Data|Sent)[:\s]+([^\n\r]{2,100})/i);
+      const subjMatch = combined.match(/(?:Subject|Betreff|Assunto)[:\s]+([^\n\r]{2,200})/i);
+      const fromMatch = combined.match(/(?:From|Von|De)[:\s]+([^\n\r<]{2,200})(?:<|$)/i)
+                      || combined.match(/(?:From|Von|De)[:\s]+([^\n\r]{2,200})/i);
+      const dateMatch = combined.match(/(?:Date|Datum|Data|Sent)[:\s]+([^\n\r]{2,100})/i);
 
-      email.subject = subjectMatch ? subjectMatch[1].trim().replace(/[\x00]/g, '') : email.subject;
+      email.subject = subjMatch ? subjMatch[1].trim().replace(/[\x00]/g, '') : email.subject;
       email.from = fromMatch ? fromMatch[1].trim().replace(/[\x00]/g, '') : email.from;
-      if (dateMatch) {
-        email.date = dateMatch[1].trim().replace(/[\x00]/g, '');
-      }
+      if (dateMatch) email.date = dateMatch[1].trim().replace(/[\x00]/g, '');
 
-      // Extract body (best-effort text region)
       const bodyMatch =
-        combinedText.match(/(?:Message-Body|Body|message-id[^\n]*\n\n)([\s\S]{1,1500})/i) ||
-        combinedText.match(/(?:\n\n)([\s\S]{1,1500})/i);
+        combined.match(/(?:Message-Body|Body|message-id[^\n]*\n\n)([\s\S]{1,1500})/i) ||
+        combined.match(/(?:\n\n)([\s\S]{1,1500})/i);
       if (bodyMatch) {
         email.body = bodyMatch[1]
           .split('\n')
@@ -1760,16 +1756,14 @@ const parseEmail = async (file) => {
           .replace(/[\x00]/g, '')
           .substring(0, 800);
       } else {
-        // fallback if no clean body found
-        const lines = combinedText
+        const lines = combined
           .split('\n')
           .filter(l => l.trim().length > 10 && l.trim().length < 300)
           .slice(0, 10);
         email.body = lines.join('\n').substring(0, 800) || '(No body content)';
       }
     } 
-    else if (fileExtension === 'eml') {
-      // Simple .eml header extraction fallback
+    else if (fileExt === 'eml') {
       const text = await file.text();
       const fromMatch = text.match(/From:\s*(.*)/i);
       const subjectMatch = text.match(/Subject:\s*(.*)/i);
@@ -1784,8 +1778,8 @@ const parseEmail = async (file) => {
     }
 
     return email;
-  } catch (error) {
-    console.error('Parse error:', error);
+  } catch (err) {
+    console.error('Parse error:', err);
     return {
       id: Date.now(),
       subject: file.name.replace('.msg', '').replace('.eml', ''),
@@ -1798,6 +1792,7 @@ const parseEmail = async (file) => {
     };
   }
 };
+
 
 
 
