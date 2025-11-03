@@ -12,8 +12,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@kenjiuno/msgreader@3.0.545/dist/index.js"></script>
-    <script src="./js/msgreader.min.js"></script>
-    <script src="./js/parseEmail.js"></script>
+<!-- 1️⃣ Load DataStream first -->
+<script src="./js/DataStream.js"></script>
+
+<!-- 2️⃣ Load msgreader second -->
+<script src="./js/msgreader.min.js"></script>
+
+<!-- 3️⃣ Load your parseEmail logic last -->
+<script src="./js/parseEmail.js"></script>
     <style>
         .line-clamp-3 {
             display: -webkit-box;
