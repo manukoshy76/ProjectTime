@@ -3864,31 +3864,205 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
  // ✅✅✅ PASTE THE 4 PARSING FUNCTIONS HERE ✅✅✅
         // THIS IS WHERE THEY GO!
         
-       async function parseEmail(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      try {
-        const arrayBuffer = e.target.result;
-        const msgReader = new MSGReader(arrayBuffer);
-        const msgData = msgReader.getFileData();
+              const parseEmail = async (file) => {
+          try {
+            const fileName = file.name.replace('.msg', '').replace('.eml', '');
+            if (file.name.endsWith('.msg')) {
+              return parseMSGFile(file, fileName);
+            } else {
+              return parseEMLFile(file, fileName);
+            }
+          } catch (error) {
+            console.error('Parse error:', error);
+            return {
+              id: Date.now() + Math.random(),
+              subject: file.name.replace('.msg', '').replace('.eml', ''),
+              from: 'Unknown Sender',
+              body: '',
+              date: new Date().toISOString().split('T')[0],
+              read: false,
+              notes: '',
+              fileName: file.name
+            };
+          }
+        };
 
-        resolve({
-          subject: msgData.subject || '',
-          sender: msgData.senderName || msgData.senderEmail || '',
-          recipients: msgData.recipients
-            ? msgData.recipients.map(r => r.name || r.email).join(', ')
-            : '',
-          body: msgData.body || msgData.bodyHTML || '',
-          attachments: msgData.attachments || []
-        });
-      } catch (err) {
-        reject(err);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
+        const parseMSGFile = async (file, fileName) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              try {
+                const buffer = e.target.result;
+                if (typeof window.MSGReader === 'undefined') {
+                  console.warn('MSGReader not loaded, using fallback');
+                  return reject(new Error('MSGReader library not available'));
+                }
+                const msgReader = new window.MSGReader(buffer);
+                const fileData = msgReader.getFileData();
+                if (fileData.error) {
+                  throw new Error(fileData.error);
+                }
+                let from = 'Unknown Sender';
+                if (fileData.senderName && fileData.senderEmail) {
+                  from = `${fileData.senderName} <${fileData.senderEmail}>`;
+                } else if (fileData.senderEmail) {
+                  from = fileData.senderEmail;
+                } else if (fileData.senderName) {
+                  from = fileData.senderName;
+                }
+                let recipients = [];
+                if (fileData.recipients && Array.isArray(fileData.recipients)) {
+                  recipients = fileData.recipients.map(r => 
+                    r.email ? (r.name ? `${r.name} <${r.email}>` : r.email) : r.name || ''
+                  ).filter(r => r);
+                }
+                const subject = fileData.subject || fileName;
+                let date = new Date().toISOString().split('T')[0];
+                if (fileData.headers) {
+                  try {
+                    const dateMatch = fileData.headers.match(/Date:\s*([^\r\n]+)/i);
+                    if (dateMatch && dateMatch[1]) {
+                      const parsedDate = new Date(dateMatch[1].trim());
+                      if (!isNaN(parsedDate.getTime())) {
+                        date = parsedDate.toISOString().split('T')[0];
+                      }
+                    }
+                  } catch (e) {
+                    console.log('Date parsing error:', e);
+                  }
+                }
+                const body = fileData.body || fileData.bodyHTML || '';
+                let attachmentsInfo = [];
+                if (fileData.attachments && Array.isArray(fileData.attachments)) {
+                  attachmentsInfo = fileData.attachments.map(att => ({
+                    fileName: att.fileName || 'Unknown',
+                    size: att.contentLength || 0,
+                    mimeType: att.mimeType || 'application/octet-stream'
+                  }));
+                }
+                resolve({
+                  id: Date.now() + Math.random(),
+                  subject: subject,
+                  from: from,
+                  to: recipients.join('; '),
+                  body: body.substring(0, 500) + (body.length > 500 ? '...' : ''),
+                  bodyFull: body,
+                  date: date,
+                  read: false,
+                  notes: '',
+                  fileName: file.name,
+                  attachments: attachmentsInfo,
+                  headers: fileData.headers || ''
+                });
+              } catch (error) {
+                console.error('MSG parsing error:', error);
+                reject(error);
+              }
+            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsArrayBuffer(file);
+          });
+        };
+
+        const parseEMLFile = async (file, fileName) => {
+          try {
+            const text = await file.text();
+            let from = 'Unknown Sender';
+            let subject = fileName;
+            let date = new Date().toISOString().split('T')[0];
+            let body = '';
+            let recipients = [];
+            const fromPatterns = [
+              /From:\s*([^<\r\n]+<[^>]+>)/i,
+              /From:\s*([^<\r\n]+)/i,
+              /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+            ];
+            for (const pattern of fromPatterns) {
+              const match = text.match(pattern);
+              if (match && match[1]) {
+                const extracted = match[1].trim();
+                if (extracted && extracted !== '') {
+                  from = extracted.replace(/\s+/g, ' ').replace(/\s*<\s*/g, ' <').replace(/\s*>\s*/g, '>').trim();
+                  if (from !== 'From:' && from.length > 3) break;
+                }
+              }
+            }
+            const toMatch = text.match(/To:\s*([^\r\n]+)/i);
+            if (toMatch && toMatch[1]) {
+              recipients = toMatch[1].split(/[,;]/).map(r => r.trim()).filter(r => r);
+            }
+            const subjectPatterns = [
+              /Subject:\s*([^\r\n]+)/i,
+              /RE:\s*([^\r\n]+)/i,
+              /FW:\s*([^\r\n]+)/i
+            ];
+            for (const pattern of subjectPatterns) {
+              const match = text.match(pattern);
+              if (match && match[1]) {
+                const extracted = match[1].trim();
+                if (extracted && extracted !== '') {
+                  subject = extracted;
+                  break;
+                }
+              }
+            }
+            const datePatterns = [
+              /Date:\s*([^\r\n]+)/i,
+              /Sent:\s*([^\r\n]+)/i
+            ];
+            for (const pattern of datePatterns) {
+              const match = text.match(pattern);
+              if (match && match[1]) {
+                try {
+                  const parsedDate = new Date(match[1].trim());
+                  if (!isNaN(parsedDate.getTime())) {
+                    date = parsedDate.toISOString().split('T')[0];
+                    break;
+                  }
+                } catch (e) {}
+              }
+            }
+            const bodyMatch = text.match(/\r?\n\r?\n([\s\S]*)/);
+            if (bodyMatch && bodyMatch[1]) {
+              body = bodyMatch[1].trim();
+            }
+            from = from.replace(/^From:\s*/i, '').replace(/^Sent:\s*[^<]*\s*From:\s*/i, '').replace(/^\[[^\]]+\]\s*/, '').trim();
+            if (from === 'Unknown Sender' || from === 'From:' || from.length < 3) {
+              const nameMatch = fileName.match(/([A-Z][a-z]+_[A-Z][a-z]+)/);
+              if (nameMatch) {
+                from = nameMatch[1].replace('_', ' ');
+              }
+            }
+            return {
+              id: Date.now() + Math.random(),
+              subject: subject,
+              from: from,
+              to: recipients.join('; '),
+              body: body.substring(0, 500) + (body.length > 500 ? '...' : ''),
+              bodyFull: body,
+              date: date,
+              read: false,
+              notes: '',
+              fileName: file.name,
+              attachments: [],
+              headers: ''
+            };
+          } catch (error) {
+            console.error('EML parsing error:', error);
+            throw error;
+          }
+        };
+
+        const editEmailSender = (emailId, currentFrom, setEmails, emails) => {
+          const newFrom = prompt('Edit sender:', currentFrom);
+          if (newFrom !== null && newFrom.trim() !== '') {
+            setEmails(emails.map(email =>
+              email.id === emailId
+                ? { ...email, from: newFrom.trim() }
+                : email
+            ));
+          }
+        };
 
 
         
