@@ -1714,249 +1714,248 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
 // Parse .msg and .eml emails (offline, no external libraries)
 // Helpers ---------------------------------------------------------
 const parseEmail = async (file) => {
-  try {
-    const fileName = file.name.replace('.msg', '').replace('.eml', '');
-    
-    // Check if it's an MSG file
-    if (file.name.endsWith('.msg')) {
-      return parseMSGFile(file, fileName);
-    } else {
-      return parseEMLFile(file, fileName);
-    }
-  } catch (error) {
-    console.log('Parse error:', error);
-    return {
-      id: Date.now(),
-      subject: file.name.replace('.msg', '').replace('.eml', ''),
-      from: 'Unknown Sender',
-      body: '',
-      date: new Date().toISOString().split('T')[0],
-      read: false,
-      notes: '',
-      fileName: file.name
-    };
-  }
-};
-
-const parseMSGFile = async (file, fileName) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      try {
-        const buffer = e.target.result;
-        const msgReader = new MSGReader(buffer);
-        const fileData = msgReader.getFileData();
-        
-        if (fileData.error) {
-          throw new Error(fileData.error);
-        }
-        
-        // Extract sender
-        let from = 'Unknown Sender';
-        if (fileData.senderName && fileData.senderEmail) {
-          from = `${fileData.senderName} <${fileData.senderEmail}>`;
-        } else if (fileData.senderEmail) {
-          from = fileData.senderEmail;
-        } else if (fileData.senderName) {
-          from = fileData.senderName;
-        }
-        
-        // Extract recipients
-        let recipients = [];
-        if (fileData.recipients && Array.isArray(fileData.recipients)) {
-          recipients = fileData.recipients.map(r => 
-            r.email ? (r.name ? `${r.name} <${r.email}>` : r.email) : r.name || ''
-          ).filter(r => r);
-        }
-        
-        // Extract subject
-        const subject = fileData.subject || fileName;
-        
-        // Extract date
-        let date = new Date().toISOString().split('T')[0];
-        if (fileData.headers) {
           try {
-            const dateMatch = fileData.headers.match(/Date:\s*([^\r\n]+)/i);
-            if (dateMatch && dateMatch[1]) {
-              const parsedDate = new Date(dateMatch[1].trim());
-              if (!isNaN(parsedDate.getTime())) {
-                date = parsedDate.toISOString().split('T')[0];
+            const fileName = file.name.replace('.msg', '').replace('.eml', '');
+            
+            // Check if it's an MSG file
+            if (file.name.endsWith('.msg')) {
+              return parseMSGFile(file, fileName);
+            } else {
+              return parseEMLFile(file, fileName);
+            }
+          } catch (error) {
+            console.log('Parse error:', error);
+            return {
+              id: Date.now(),
+              subject: file.name.replace('.msg', '').replace('.eml', ''),
+              from: 'Unknown Sender',
+              body: '',
+              date: new Date().toISOString().split('T')[0],
+              read: false,
+              notes: '',
+              fileName: file.name
+            };
+          }
+        };
+
+        const parseMSGFile = async (file, fileName) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+              try {
+                const buffer = e.target.result;
+                const msgReader = new MSGReader(buffer);
+                const fileData = msgReader.getFileData();
+                
+                if (fileData.error) {
+                  throw new Error(fileData.error);
+                }
+                
+                // Extract sender
+                let from = 'Unknown Sender';
+                if (fileData.senderName && fileData.senderEmail) {
+                  from = `${fileData.senderName} <${fileData.senderEmail}>`;
+                } else if (fileData.senderEmail) {
+                  from = fileData.senderEmail;
+                } else if (fileData.senderName) {
+                  from = fileData.senderName;
+                }
+                
+                // Extract recipients
+                let recipients = [];
+                if (fileData.recipients && Array.isArray(fileData.recipients)) {
+                  recipients = fileData.recipients.map(r => 
+                    r.email ? (r.name ? `${r.name} <${r.email}>` : r.email) : r.name || ''
+                  ).filter(r => r);
+                }
+                
+                // Extract subject
+                const subject = fileData.subject || fileName;
+                
+                // Extract date
+                let date = new Date().toISOString().split('T')[0];
+                if (fileData.headers) {
+                  try {
+                    const dateMatch = fileData.headers.match(/Date:\s*([^\r\n]+)/i);
+                    if (dateMatch && dateMatch[1]) {
+                      const parsedDate = new Date(dateMatch[1].trim());
+                      if (!isNaN(parsedDate.getTime())) {
+                        date = parsedDate.toISOString().split('T')[0];
+                      }
+                    }
+                  } catch (e) {
+                    console.log('Date parsing error:', e);
+                  }
+                }
+                
+                // Extract body
+                const body = fileData.body || fileData.bodyHTML || '';
+                
+                // Extract attachments info
+                let attachmentsInfo = [];
+                if (fileData.attachments && Array.isArray(fileData.attachments)) {
+                  attachmentsInfo = fileData.attachments.map(att => ({
+                    fileName: att.fileName || 'Unknown',
+                    size: att.contentLength || 0,
+                    mimeType: att.mimeType || 'application/octet-stream'
+                  }));
+                }
+                
+                resolve({
+                  id: Date.now(),
+                  subject: subject,
+                  from: from,
+                  to: recipients.join('; '),
+                  body: body.substring(0, 500) + (body.length > 500 ? '...' : ''),
+                  bodyFull: body,
+                  date: date,
+                  read: false,
+                  notes: '',
+                  fileName: file.name,
+                  attachments: attachmentsInfo,
+                  headers: fileData.headers || ''
+                });
+              } catch (error) {
+                console.log('MSG parsing error:', error);
+                reject(error);
+              }
+            };
+            
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsArrayBuffer(file);
+          });
+        };
+
+        const parseEMLFile = async (file, fileName) => {
+          const text = await file.text();
+          
+          // Enhanced sender extraction with multiple fallback methods
+          let from = 'Unknown Sender';
+          let subject = fileName;
+          let date = new Date().toISOString().split('T')[0];
+          let body = '';
+          let recipients = [];
+          
+          // Extract From header
+          const fromPatterns = [
+            /From:\s*([^<\r\n]+<[^>]+>)/i,
+            /From:\s*([^<\r\n]+)/i,
+            /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+          ];
+          
+          for (const pattern of fromPatterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+              const extracted = match[1].trim();
+              if (extracted && extracted !== '') {
+                from = extracted
+                  .replace(/\s+/g, ' ')
+                  .replace(/\s*<\s*/g, ' <')
+                  .replace(/\s*>\s*/g, '>')
+                  .trim();
+                if (from !== 'From:' && from.length > 3) {
+                  break;
+                }
               }
             }
-          } catch (e) {
-            console.log('Date parsing error:', e);
           }
-        }
-        
-        // Extract body
-        const body = fileData.body || fileData.bodyHTML || '';
-        
-        // Extract attachments info
-        let attachmentsInfo = [];
-        if (fileData.attachments && Array.isArray(fileData.attachments)) {
-          attachmentsInfo = fileData.attachments.map(att => ({
-            fileName: att.fileName || 'Unknown',
-            size: att.contentLength || 0,
-            mimeType: att.mimeType || 'application/octet-stream'
-          }));
-        }
-        
-        resolve({
-          id: Date.now(),
-          subject: subject,
-          from: from,
-          to: recipients.join('; '),
-          body: body.substring(0, 500) + (body.length > 500 ? '...' : ''),
-          bodyFull: body,
-          date: date,
-          read: false,
-          notes: '',
-          fileName: file.name,
-          attachments: attachmentsInfo,
-          headers: fileData.headers || ''
-        });
-      } catch (error) {
-        console.log('MSG parsing error:', error);
-        reject(error);
-      }
-    };
-    
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsArrayBuffer(file);
-  });
-};
+          
+          // Extract To header (recipients)
+          const toMatch = text.match(/To:\s*([^\r\n]+)/i);
+          if (toMatch && toMatch[1]) {
+            recipients = toMatch[1]
+              .split(/[,;]/)
+              .map(r => r.trim())
+              .filter(r => r);
+          }
+          
+          // Extract Subject
+          const subjectPatterns = [
+            /Subject:\s*([^\r\n]+)/i,
+            /RE:\s*([^\r\n]+)/i,
+            /FW:\s*([^\r\n]+)/i
+          ];
+          
+          for (const pattern of subjectPatterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+              const extracted = match[1].trim();
+              if (extracted && extracted !== '') {
+                subject = extracted;
+                break;
+              }
+            }
+          }
+          
+          // Extract Date
+          const datePatterns = [
+            /Date:\s*([^\r\n]+)/i,
+            /Sent:\s*([^\r\n]+)/i
+          ];
+          
+          for (const pattern of datePatterns) {
+            const match = text.match(pattern);
+            if (match && match[1]) {
+              try {
+                const parsedDate = new Date(match[1].trim());
+                if (!isNaN(parsedDate.getTime())) {
+                  date = parsedDate.toISOString().split('T')[0];
+                  break;
+                }
+              } catch (e) {
+                // Continue to next pattern
+              }
+            }
+          }
+          
+          // Extract body (simplified - gets content after headers)
+          const bodyMatch = text.match(/\r?\n\r?\n([\s\S]*)/);
+          if (bodyMatch && bodyMatch[1]) {
+            body = bodyMatch[1].trim();
+          }
+          
+          // Clean up from field
+          from = from
+            .replace(/^From:\s*/i, '')
+            .replace(/^Sent:\s*[^<]*\s*From:\s*/i, '')
+            .replace(/^\[[^\]]+\]\s*/, '')
+            .trim();
+          
+          // Fallback: extract name from filename
+          if (from === 'Unknown Sender' || from === 'From:' || from.length < 3) {
+            const nameMatch = fileName.match(/([A-Z][a-z]+_[A-Z][a-z]+)/);
+            if (nameMatch) {
+              from = nameMatch[1].replace('_', ' ');
+            }
+          }
+          
+          return {
+            id: Date.now(),
+            subject: subject,
+            from: from,
+            to: recipients.join('; '),
+            body: body.substring(0, 500) + (body.length > 500 ? '...' : ''),
+            bodyFull: body,
+            date: date,
+            read: false,
+            notes: '',
+            fileName: file.name,
+            attachments: [],
+            headers: ''
+          };
+        };
 
-const parseEMLFile = async (file, fileName) => {
-  const text = await file.text();
-  
-  // Enhanced sender extraction with multiple fallback methods
-  let from = 'Unknown Sender';
-  let subject = fileName;
-  let date = new Date().toISOString().split('T')[0];
-  let body = '';
-  let recipients = [];
-  
-  // Extract From header
-  const fromPatterns = [
-    /From:\s*([^<\r\n]+<[^>]+>)/i,
-    /From:\s*([^<\r\n]+)/i,
-    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
-  ];
-  
-  for (const pattern of fromPatterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) {
-      const extracted = match[1].trim();
-      if (extracted && extracted !== '') {
-        from = extracted
-          .replace(/\s+/g, ' ')
-          .replace(/\s*<\s*/g, ' <')
-          .replace(/\s*>\s*/g, '>')
-          .trim();
-        if (from !== 'From:' && from.length > 3) {
-          break;
-        }
-      }
-    }
-  }
-  
-  // Extract To header (recipients)
-  const toMatch = text.match(/To:\s*([^\r\n]+)/i);
-  if (toMatch && toMatch[1]) {
-    recipients = toMatch[1]
-      .split(/[,;]/)
-      .map(r => r.trim())
-      .filter(r => r);
-  }
-  
-  // Extract Subject
-  const subjectPatterns = [
-    /Subject:\s*([^\r\n]+)/i,
-    /RE:\s*([^\r\n]+)/i,
-    /FW:\s*([^\r\n]+)/i
-  ];
-  
-  for (const pattern of subjectPatterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) {
-      const extracted = match[1].trim();
-      if (extracted && extracted !== '') {
-        subject = extracted;
-        break;
-      }
-    }
-  }
-  
-  // Extract Date
-  const datePatterns = [
-    /Date:\s*([^\r\n]+)/i,
-    /Sent:\s*([^\r\n]+)/i
-  ];
-  
-  for (const pattern of datePatterns) {
-    const match = text.match(pattern);
-    if (match && match[1]) {
-      try {
-        const parsedDate = new Date(match[1].trim());
-        if (!isNaN(parsedDate.getTime())) {
-          date = parsedDate.toISOString().split('T')[0];
-          break;
-        }
-      } catch (e) {
-        // Continue to next pattern
-      }
-    }
-  }
-  
-  // Extract body (simplified - gets content after headers)
-  const bodyMatch = text.match(/\r?\n\r?\n([\s\S]*)/);
-  if (bodyMatch && bodyMatch[1]) {
-    body = bodyMatch[1].trim();
-  }
-  
-  // Clean up from field
-  from = from
-    .replace(/^From:\s*/i, '')
-    .replace(/^Sent:\s*[^<]*\s*From:\s*/i, '')
-    .replace(/^\[[^\]]+\]\s*/, '')
-    .trim();
-  
-  // Fallback: extract name from filename
-  if (from === 'Unknown Sender' || from === 'From:' || from.length < 3) {
-    const nameMatch = fileName.match(/([A-Z][a-z]+_[A-Z][a-z]+)/);
-    if (nameMatch) {
-      from = nameMatch[1].replace('_', ' ');
-    }
-  }
-  
-  return {
-    id: Date.now(),
-    subject: subject,
-    from: from,
-    to: recipients.join('; '),
-    body: body.substring(0, 500) + (body.length > 500 ? '...' : ''),
-    bodyFull: body,
-    date: date,
-    read: false,
-    notes: '',
-    fileName: file.name,
-    attachments: [],
-    headers: ''
-  };
-};
-
-const editEmailSender = (emailId, currentFrom) => {
-  const newFrom = prompt('Edit sender:', currentFrom);
-  if (newFrom !== null && newFrom.trim() !== '') {
-    setEmails(emails.map(email =>
-      email.id === emailId
-        ? { ...email, from: newFrom.trim() }
-        : email
-    ));
-  }
-};
-
+        const editEmailSender = (emailId, currentFrom, setEmails, emails) => {
+          const newFrom = prompt('Edit sender:', currentFrom);
+          if (newFrom !== null && newFrom.trim() !== '') {
+            setEmails(emails.map(email =>
+              email.id === emailId
+                ? { ...email, from: newFrom.trim() }
+                : email
+            ));
+          }
+        };
 
 
         
@@ -5703,184 +5702,135 @@ useEffect(() => {
                             </div>
                         )}
 {activeTab === 'emails' && (
-    <div className="space-y-2">
-        {/* Compact Drag & Drop */}
-        <div 
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => {
-                e.preventDefault();
-                setDragOver(false);
-                const files = Array.from(e.dataTransfer.files);
-                files.forEach(async (file) => {
-                    if (file.name.endsWith('.msg') || file.type === 'message/rfc822') {
-                        const email = await parseEmail(file);
-                        setEmails(prev => [email, ...prev]);
-                    }
-                });
-            }}
-            className={`border-2 border-dashed rounded p-2 text-center transition-all cursor-pointer ${
-                dragOver ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300 bg-gray-50'
-            }`}
-            onClick={() => fileInputRef.current?.click()}
-        >
-            <div className="flex items-center justify-center gap-2 text-xs">
-                <Mail size={14} className="text-indigo-600" />
-                <span className="font-semibold text-gray-700">Drop emails here or click to browse</span>
-            </div>
-            <input
-                type="file"
-                ref={fileInputRef}
-                onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                        const file = e.target.files[0];
-                        parseEmail(file).then(email => setEmails(prev => [email, ...prev]));
-                    }
-                }}
-                accept=".msg,.eml"
-                style={{ display: 'none' }}
-            />
-        </div>
+                  <div className="space-y-4">
+                    {/* Drag & Drop Area */}
+                    <div 
+                      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                      onDragLeave={() => setDragOver(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setDragOver(false);
+                        const files = Array.from(e.dataTransfer.files);
+                        files.forEach(async (file) => {
+                          if (file.name.endsWith('.msg') || file.name.endsWith('.eml')) {
+                            try {
+                              const email = await parseEmail(file);
+                              setEmails(prev => [email, ...prev]);
+                            } catch (err) {
+                              console.error('Error parsing email:', err);
+                              alert('Error parsing email file');
+                            }
+                          }
+                        });
+                      }}
+                      className={`border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer ${
+                        dragOver 
+                          ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' 
+                          : 'border-gray-400 bg-gray-50 dark:bg-gray-800'
+                      }`}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <div className="flex items-center justify-center gap-3 flex-col">
+                        <svg className="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <div>
+                          <span className="font-semibold text-gray-800 dark:text-white">Drop emails here</span>
+                          <p className="text-gray-600 dark:text-gray-400 text-sm">or click to browse</p>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-500">Supports .msg and .eml files</p>
+                      </div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            const file = e.target.files[0];
+                            parseEmail(file).then(email => setEmails(prev => [email, ...prev]));
+                          }
+                        }}
+                        accept=".msg,.eml"
+                        style={{ display: 'none' }}
+                      />
+                    </div>
 
-        {/* Compact Email List */}
-        <div className="bg-white rounded border shadow-sm p-1 border-gray-200">
-            <div className="flex items-center justify-between p-1 border-b border-gray-100">
-                <h3 className="text-xs font-bold text-gray-800 flex items-center gap-1">
-                    <Mail size={12} className="text-indigo-600" />
-                    Emails ({emails.length})
-                </h3>
-                {emails.length > 0 && (
-                    <button
-                        onClick={() => {
-                            if (window.confirm('Clear all emails?')) {
+                    {/* Email List */}
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4">
+                      <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-white">
+                          Emails ({emails.length})
+                        </h2>
+                        {emails.length > 0 && (
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Clear all emails?')) {
                                 setEmails([]);
                                 setEmailNotes({});
-                            }
-                        }}
-                        className="text-xs text-red-600 hover:text-red-800 px-1 py-0.5 hover:bg-red-50 rounded"
-                    >
-                        Clear All
-                    </button>
-                )}
-            </div>
+                              }
+                            }}
+                            className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm"
+                          >
+                            Clear All
+                          </button>
+                        )}
+                      </div>
 
-            {emails.length === 0 ? (
-                <div className="text-center py-3 text-gray-500">
-                    <p className="text-xs">No emails loaded yet</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Drop .msg or .eml files above</p>
-                </div>
-            ) : (
-                <div className="max-h-64 overflow-y-auto">
-                    {emails.map(email => (
-                        <div 
-                            key={email.id} 
-                            className={`p-1.5 border-b border-gray-100 text-xs hover:bg-gray-50 transition-colors ${
-                                email.read ? 'bg-gray-50' : 'bg-blue-50'
-                            }`}
-                        >
-                            <div className="flex items-start justify-between gap-1">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-start gap-1 mb-0.5">
-                                        <input
-                                            type="checkbox"
-                                            checked={email.read}
-                                            onChange={() => setEmails(emails.map(e => 
-                                                e.id === email.id ? {...e, read: !e.read} : e
-                                            ))}
-                                            className="mt-0.5 flex-shrink-0"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <div className="font-semibold text-gray-800 truncate text-xs">
-                                                {email.subject}
-                                            </div>
-                                            {/* In the email item, replace the sender display section with: */}
-<div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-    <span 
-        onClick={() => editEmailSender(email.id, email.from)}
-        className="text-gray-600 truncate text-xs cursor-pointer hover:text-blue-600 hover:underline"
-        title="Click to edit sender"
-    >
-        {email.from}
-    </span>
-    <span className="text-gray-400">•</span>
-    <span className="text-gray-500 text-xs">
-        {email.date}
-    </span>
-</div>
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Quick Actions */}
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <button
-                                            onClick={() => {
-                                                const note = prompt('Add notes:', emailNotes[email.id] || '');
-                                                if (note !== null) {
-                                                    setEmailNotes({...emailNotes, [email.id]: note});
-                                                }
-                                            }}
-                                            className={`px-1.5 py-0.5 rounded text-xs flex items-center gap-0.5 ${
-                                                emailNotes[email.id] 
-                                                    ? 'bg-green-100 text-green-700' 
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                            }`}
-                                        >
-                                            <FileText size={10} />
-                                            {emailNotes[email.id] ? 'Noted' : 'Add Note'}
-                                        </button>
-                                        
-                                        <button
-                                            onClick={() => {
-                                                const emailData = emails.find(e => e.id === email.id);
-                                                const note = emailNotes[email.id] ? `\nNotes: ${emailNotes[email.id]}` : '';
-                                                alert(`📧 ${emailData.subject}\nFrom: ${emailData.from}\nDate: ${emailData.date}${note}`);
-                                            }}
-                                            className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 flex items-center gap-0.5"
-                                        >
-                                            <ExternalLink size={10} />
-                                            View
-                                        </button>
-                                        
-                                        <button
-                                            onClick={() => setEmails(emails.filter(e => e.id !== email.id))}
-                                            className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 flex items-center gap-0.5 ml-auto"
-                                        >
-                                            <Trash2 size={10} />
-                                        </button>
-                                    </div>
+                      {emails.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                          <p className="text-sm">No emails loaded yet</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {emails.map(email => (
+                            <div 
+                              key={email.id} 
+                              className={`p-3 rounded-lg border transition-all ${
+                                email.read 
+                                  ? 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700' 
+                                  : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-start gap-3 flex-1">
+                                  <input
+                                    type="checkbox"
+                                    checked={email.read}
+                                    onChange={() => setEmails(emails.map(e => 
+                                      e.id === email.id ? {...e, read: !e.read} : e
+                                    ))}
+                                    className="mt-1"
+                                  />
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-800 dark:text-white truncate">
+                                      {email.subject}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 hover:underline"
+                                      onClick={() => editEmailSender(email.id, email.from, setEmails, emails)}>
+                                      {email.from}
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                                      {email.date}
+                                    </p>
+                                  </div>
                                 </div>
+                                <button
+                                  onClick={() => setEmails(emails.filter(e => e.id !== email.id))}
+                                  className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
+                          ))}
                         </div>
-                    ))}
-                </div>
-            )}
-        </div>
-
-        {/* Quick Stats */}
-        {emails.length > 0 && (
-            <div className="bg-white rounded border shadow-sm p-1 border-gray-200">
-                <div className="grid grid-cols-3 gap-1 text-xs">
-                    <div className="text-center p-1 bg-blue-50 rounded">
-                        <div className="font-bold text-blue-700">{emails.length}</div>
-                        <div className="text-blue-600">Total</div>
+                      )}
                     </div>
-                    <div className="text-center p-1 bg-green-50 rounded">
-                        <div className="font-bold text-green-700">
-                            {emails.filter(e => e.read).length}
-                        </div>
-                        <div className="text-green-600">Read</div>
-                    </div>
-                    <div className="text-center p-1 bg-orange-50 rounded">
-                        <div className="font-bold text-orange-700">
-                            {Object.keys(emailNotes).length}
-                        </div>
-                        <div className="text-orange-600">Noted</div>
-                    </div>
-                </div>
+                  </div>
+                )}
+              </div>
             </div>
-        )}
-    </div>
-)}
+          );
+        };
 
 {activeTab === 'weekly-calendar' && (
     <div className="p-6">
