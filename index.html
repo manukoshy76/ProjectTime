@@ -4482,6 +4482,18 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
              // Add these new states after your existing states
     const [selectedTimezone, setSelectedTimezone] = useState('ist');
     const [currentTime, setCurrentTime] = useState(new Date());
+const [showExportMenu, setShowExportMenu] = useState(false);
+const exportRef = useRef(null);
+
+useEffect(() => {
+  const handler = (e) => {
+    if (exportRef.current && !exportRef.current.contains(e.target)) {
+      setShowExportMenu(false);
+    }
+  };
+  document.addEventListener("mousedown", handler);
+  return () => document.removeEventListener("mousedown", handler);
+}, []);
 
     // Add useEffect to update time every minute
    // Update time display based on mode
@@ -7869,51 +7881,150 @@ useEffect(() => {
                                 </div>
                             </div>
                         )}
+
 {activeTab === 'emails' && (
   <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-4">
     <div className="max-w-7xl mx-auto">
-
-      {/* Header */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-4xl font-bold text-white">📧 Email Organizer</h1>
           <p className="text-gray-400 mt-1">Drag emails to projects. Inbox for unassigned emails.</p>
         </div>
 
-        {/* Top controls: Collapse all + Export */}
         <div className="flex gap-2 items-center">
           <button
             onClick={() => {
-              // toggle collapseAll
               window.emailUI = window.emailUI || {};
               window.emailUI.collapseAll = !window.emailUI.collapseAll;
-              // if collapseAll set, mark each project collapsed
               if (window.emailUI.collapseAll) {
                 window.emailUI.collapsed = {};
                 projects.forEach(p => window.emailUI.collapsed[p.id] = true);
               } else {
                 window.emailUI.collapsed = {};
               }
-              setEmails(prev => [...prev]); // trigger re-render
+              setEmails(prev => [...prev]);
             }}
             className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm"
           >
             { (window.emailUI && window.emailUI.collapseAll) ? 'Expand all' : 'Collapse all' }
           </button>
 
-          <div className="relative">
-            <button className="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20 text-sm">Export</button>
-            <div className="absolute right-0 mt-2 w-44 bg-white rounded shadow z-20">
-              <button
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-                onClick={() => {
-                  // Export All
-                  const csvHeader = ['id','subject','from','to','date','projectId','projectName','priority','tags','fileName'].join(',');
-                  const rows = emails.map(em => {
+          <div className="relative" ref={exportRef}>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowExportMenu(prev => !prev);
+              }}
+              className="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20 text-sm"
+            >
+              Export
+            </button>
+
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded shadow-lg z-50">
+                <button
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    const csvHeader = ['id','subject','from','to','date','projectId','projectName','priority','tags','fileName'].join(',');
+                    const rows = emails.map(em => {
+                      const proj = projects.find(p=>p.id===em.projectId);
+                      const projectName = proj ? proj.name.replace(/,/g,'') : '';
+                      const tags = (em.tags || []).join('|').replace(/,/g,'');
+                      return [
+                        `"${em.id}"`,
+                        `"${(em.subject||'').replace(/"/g,'""')}"`,
+                        `"${(em.from||'').replace(/"/g,'""')}"`,
+                        `"${(em.to||'').replace(/"/g,'""')}"`,
+                        `"${em.date||''}"`,
+                        `"${em.projectId||''}"`,
+                        `"${projectName}"`,
+                        `"${em.priority||''}"`,
+                        `"${tags}"`,
+                        `"${em.fileName||''}"`
+                      ].join(',');
+                    });
+                    const csv = [csvHeader, ...rows].join('\n');
+                    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `emails_all_${new Date().toISOString().slice(0,10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  Export All (CSV)
+                </button>
+
+                <button
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    const zip = new JSZip();
+                    projects.forEach(p => {
+                      const projectEmails = emails.filter(em => em.projectId === p.id);
+                      const csvHeader = ['id','subject','from','to','date','priority','tags','fileName'].join(',');
+                      const rows = projectEmails.map(em => {
+                        const tags = (em.tags || []).join('|').replace(/,/g,'');
+                        return [
+                          `"${em.id}"`,
+                          `"${(em.subject||'').replace(/"/g,'""')}"`,
+                          `"${(em.from||'').replace(/"/g,'""')}"`,
+                          `"${(em.to||'').replace(/"/g,'""')}"`,
+                          `"${em.date||''}"`,
+                          `"${em.priority||''}"`,
+                          `"${tags}"`,
+                          `"${em.fileName||''}"`
+                        ].join(',');
+                      });
+                      const csv = [csvHeader, ...rows].join('\n');
+                      zip.file(`${p.name.replace(/\s+/g,'_') || p.id}.csv`, csv);
+                    });
+
+                    const unassigned = emails.filter(em => !em.projectId);
+                    if (unassigned.length > 0) {
+                      const csvHeader = ['id','subject','from','to','date','priority','tags','fileName'].join(',');
+                      const rows = unassigned.map(em => {
+                        const tags = (em.tags || []).join('|').replace(/,/g,'');
+                        return [
+                          `"${em.id}"`,
+                          `"${(em.subject||'').replace(/"/g,'""')}"`,
+                          `"${(em.from||'').replace(/"/g,'""')}"`,
+                          `"${(em.to||'').replace(/"/g,'""')}"`,
+                          `"${em.date||''}"`,
+                          `"${em.priority||''}"`,
+                          `"${tags}"`,
+                          `"${em.fileName||''}"`
+                        ].join(',');
+                      });
+                      const csv = [csvHeader, ...rows].join('\n');
+                      zip.file(`unassigned.csv`, csv);
+                    }
+                    zip.generateAsync({type:"blob"}).then(function(content) {
+                      const url = URL.createObjectURL(content);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `emails_by_project_${new Date().toISOString().slice(0,10)}.zip`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    });
+                  }}
+                >
+                  Export By Project (ZIP)
+                </button>
+
+                <button
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                  onClick={() => {
+                    setShowExportMenu(false);
+                    if (!selectedEmail) return alert('Select an email first');
+                    const em = selectedEmail;
+                    const csvHeader = ['id','subject','from','to','date','projectId','projectName','priority','tags','fileName'].join(',');
                     const proj = projects.find(p=>p.id===em.projectId);
                     const projectName = proj ? proj.name.replace(/,/g,'') : '';
                     const tags = (em.tags || []).join('|').replace(/,/g,'');
-                    return [
+                    const row = [
                       `"${em.id}"`,
                       `"${(em.subject||'').replace(/"/g,'""')}"`,
                       `"${(em.from||'').replace(/"/g,'""')}"`,
@@ -7925,131 +8036,31 @@ useEffect(() => {
                       `"${tags}"`,
                       `"${em.fileName||''}"`
                     ].join(',');
-                  });
-                  const csv = [csvHeader, ...rows].join('\n');
-                  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `emails_all_${new Date().toISOString().slice(0,10)}.csv`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                Export All (CSV)
-              </button>
-
-              <button
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-                onClick={() => {
-                  // Export By Project (ZIP of CSVs) using JSZip (already included)
-                  const zip = new JSZip();
-                  projects.forEach(p => {
-                    const projectEmails = emails.filter(em => em.projectId === p.id);
-                    const csvHeader = ['id','subject','from','to','date','priority','tags','fileName'].join(',');
-                    const rows = projectEmails.map(em => {
-                      const tags = (em.tags || []).join('|').replace(/,/g,'');
-                      return [
-                        `"${em.id}"`,
-                        `"${(em.subject||'').replace(/"/g,'""')}"`,
-                        `"${(em.from||'').replace(/"/g,'""')}"`,
-                        `"${(em.to||'').replace(/"/g,'""')}"`,
-                        `"${em.date||''}"`,
-                        `"${em.priority||''}"`,
-                        `"${tags}"`,
-                        `"${em.fileName||''}"`
-                      ].join(',');
-                    });
-                    const csv = [csvHeader, ...rows].join('\n');
-                    zip.file(`${p.name.replace(/\s+/g,'_') || p.id}.csv`, csv);
-                  });
-                  // Also include unassigned
-                  const unassigned = emails.filter(em => !em.projectId);
-                  if (unassigned.length > 0) {
-                    const csvHeader = ['id','subject','from','to','date','priority','tags','fileName'].join(',');
-                    const rows = unassigned.map(em => {
-                      const tags = (em.tags || []).join('|').replace(/,/g,'');
-                      return [
-                        `"${em.id}"`,
-                        `"${(em.subject||'').replace(/"/g,'""')}"`,
-                        `"${(em.from||'').replace(/"/g,'""')}"`,
-                        `"${(em.to||'').replace(/"/g,'""')}"`,
-                        `"${em.date||''}"`,
-                        `"${em.priority||''}"`,
-                        `"${tags}"`,
-                        `"${em.fileName||''}"`
-                      ].join(',');
-                    });
-                    const csv = [csvHeader, ...rows].join('\n');
-                    zip.file(`unassigned.csv`, csv);
-                  }
-                  zip.generateAsync({type:"blob"}).then(function(content) {
-                    const url = URL.createObjectURL(content);
+                    const csv = [csvHeader, row].join('\n');
+                    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+                    const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `emails_by_project_${new Date().toISOString().slice(0,10)}.zip`;
+                    a.download = `email_${em.id}_${new Date().toISOString().slice(0,10)}.csv`;
                     a.click();
                     URL.revokeObjectURL(url);
-                  });
-                }}
-              >
-                Export By Project (ZIP)
-              </button>
-
-              <button
-                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
-                onClick={() => {
-                  // Export Selected
-                  if (!selectedEmail) {
-                    alert('Select an email first');
-                    return;
-                  }
-                  const em = selectedEmail;
-                  const csvHeader = ['id','subject','from','to','date','projectId','projectName','priority','tags','fileName'].join(',');
-                  const proj = projects.find(p=>p.id===em.projectId);
-                  const projectName = proj ? proj.name.replace(/,/g,'') : '';
-                  const tags = (em.tags || []).join('|').replace(/,/g,'');
-                  const row = [
-                    `"${em.id}"`,
-                    `"${(em.subject||'').replace(/"/g,'""')}"`,
-                    `"${(em.from||'').replace(/"/g,'""')}"`,
-                    `"${(em.to||'').replace(/"/g,'""')}"`,
-                    `"${em.date||''}"`,
-                    `"${em.projectId||''}"`,
-                    `"${projectName}"`,
-                    `"${em.priority||''}"`,
-                    `"${tags}"`,
-                    `"${em.fileName||''}"`
-                  ].join(',');
-                  const csv = [csvHeader, row].join('\n');
-                  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `email_${em.id}_${new Date().toISOString().slice(0,10)}.csv`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                Export Selected
-              </button>
-            </div>
+                  }}
+                >
+                  Export Selected
+                </button>
+              </div>
+            )}
           </div>
-
         </div>
       </div>
-
-      {/* Make sure default fields exist */}
       {emails.forEach(em => {
         if (em.projectId === undefined) em.projectId = null;
         if (!em.priority) em.priority = em.priority || 'Medium';
         if (!Array.isArray(em.tags)) em.tags = em.tags || [];
       })}
 
-      {/* Drag-and-drop helpers (global so handlers inside JSX can use) */}
       {(() => {
         window.emailUI = window.emailUI || { inboxSearch: '', collapsed: {}, collapseAll: false };
-        // drag start
         window.dragEmailStart = (e, id) => {
           try { e.dataTransfer.setData("emailId", id); } catch(_) {}
         };
@@ -8072,11 +8083,7 @@ useEffect(() => {
       })()}
 
       <div className="grid grid-cols-12 gap-4 mt-4">
-
-        {/* LEFT COLUMN — Upload + Inbox */}
         <div className="col-span-3 flex flex-col gap-4">
-
-          {/* Upload Area */}
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -8111,7 +8118,6 @@ useEffect(() => {
             />
           </div>
 
-          {/* Inbox Search */}
           <div className="bg-white/6 p-3 rounded">
             <input
               placeholder="Search Inbox (subject / from)..."
@@ -8119,14 +8125,12 @@ useEffect(() => {
               onChange={(e) => {
                 window.emailUI = window.emailUI || {};
                 window.emailUI.inboxSearch = e.target.value;
-                // force re-render
                 setEmails(prev => [...prev]);
               }}
               className="w-full px-3 py-2 rounded bg-gray-700 text-white text-sm"
             />
           </div>
 
-          {/* Inbox */}
           <div className="bg-white/10 backdrop-blur-sm p-3 rounded-lg h-[70vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-white font-semibold">📥 Inbox (Unassigned)</h2>
@@ -8154,7 +8158,6 @@ useEffect(() => {
                   onClick={()=>setSelectedEmail(email)}
                   className="p-3 mb-2 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-indigo-700 transition flex items-start gap-2"
                 >
-                  {/* Priority dot */}
                   <div title={`Priority: ${email.priority || 'Medium'}`} className="mt-1">
                     {(() => {
                       const pr = (email.priority || 'Medium').toLowerCase();
@@ -8170,7 +8173,6 @@ useEffect(() => {
                     </div>
                     <div className="text-xs text-gray-300 truncate">{email.from}</div>
 
-                    {/* tags small */}
                     <div className="mt-2 flex gap-1 flex-wrap">
                       {(email.tags || []).map((t, idx) => (
                         <div key={idx} className="text-xs bg-indigo-600/60 px-2 py-0.5 rounded text-white">{t}</div>
@@ -8180,11 +8182,9 @@ useEffect(() => {
                 </div>
               ));
             })()}
-
           </div>
         </div>
 
-        {/* MIDDLE COLUMN — Projects */}
         <div className="col-span-4 h-[82vh] overflow-y-auto space-y-3 pr-2">
           <h2 className="text-white font-bold">📂 Projects</h2>
 
@@ -8199,13 +8199,12 @@ useEffect(() => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
-                      window.emailUI = window.emailUI || {collapsed:{}};
+                      window.emailUI = window.emailUI || {collapsed:{}}; 
                       window.emailUI.collapsed = window.emailUI.collapsed || {};
                       window.emailUI.collapsed[project.id] = !window.emailUI.collapsed[project.id];
                       setEmails(prev => [...prev]);
                     }}
                     className="text-sm text-gray-200 px-2 py-1 rounded hover:bg-gray-700"
-                    title="Toggle collapse"
                   >
                     { window.emailUI && window.emailUI.collapsed && window.emailUI.collapsed[project.id] ? '▸' : '▾' }
                   </button>
@@ -8214,21 +8213,17 @@ useEffect(() => {
                   <div className="text-xs text-gray-300 ml-2">({emails.filter(e => e.projectId === project.id).length})</div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      // quick assign all unassigned to this project
-                      if (!confirm(`Assign all unassigned emails to "${project.name}"?`)) return;
-                      setEmails(prev => prev.map(em => em.projectId ? em : {...em, projectId: project.id}));
-                    }}
-                    className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500"
-                  >
-                    Assign all
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    if (!confirm(`Assign all unassigned emails to "${project.name}"?`)) return;
+                    setEmails(prev => prev.map(em => em.projectId ? em : {...em, projectId: project.id}));
+                  }}
+                  className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500"
+                >
+                  Assign all
+                </button>
               </div>
 
-              {/* Contents (collapsible) */}
               {(!window.emailUI?.collapsed?.[project.id]) && (
                 <div className="mt-3 space-y-2">
                   {emails.filter(e => e.projectId === project.id).length === 0 ? (
@@ -8245,7 +8240,6 @@ useEffect(() => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
-                              {/* priority dot */}
                               <div>
                                 {(() => {
                                   const pr = (email.priority || 'Medium').toLowerCase();
@@ -8261,7 +8255,6 @@ useEffect(() => {
 
                           <div className="text-xs text-gray-300 truncate">{email.from}</div>
 
-                          {/* tags */}
                           <div className="mt-2 flex gap-1 flex-wrap">
                             {(email.tags || []).map((t, idx) => (
                               <div key={idx} className="text-xs bg-indigo-600/60 px-2 py-0.5 rounded text-white">{t}</div>
@@ -8273,7 +8266,6 @@ useEffect(() => {
                           <button
                             onClick={(e)=>{ e.stopPropagation(); window.unassignEmail(email.id); }}
                             className="text-red-400 hover:text-red-600 text-lg font-bold"
-                            title="Unassign"
                           >
                             ×
                           </button>
@@ -8290,13 +8282,9 @@ useEffect(() => {
                   )}
                 </div>
               )}
-
             </div>
           ))}
-
         </div>
-
-        {/* RIGHT COLUMN — Email Viewer */}
         <div className="col-span-5">
           {selectedEmail ? (
             <div className="bg-white/6 rounded-lg p-4 h-[82vh] overflow-y-auto">
@@ -8311,7 +8299,6 @@ useEffect(() => {
                 </div>
 
                 <div className="w-48 space-y-2">
-                  {/* Project display & unassign */}
                   <div className="bg-gray-800 p-2 rounded">
                     <div className="text-xs text-gray-300">Project</div>
                     <div className="mt-1 flex gap-2 items-center">
@@ -8320,7 +8307,6 @@ useEffect(() => {
                         onChange={(e) => {
                           const pid = e.target.value || null;
                           setEmails(prev => prev.map(em => em.id === selectedEmail.id ? {...em, projectId: pid} : em));
-                          // reflect in selectedEmail
                           setSelectedEmail(prev => ({...prev, projectId: pid}));
                         }}
                         className="w-full text-sm px-2 py-1 rounded bg-gray-700 text-white"
@@ -8331,7 +8317,6 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  {/* Priority selector */}
                   <div className="bg-gray-800 p-2 rounded">
                     <div className="text-xs text-gray-300">Priority</div>
                     <select
@@ -8349,7 +8334,6 @@ useEffect(() => {
                     </select>
                   </div>
 
-                  {/* Tags (predefined only) */}
                   <div className="bg-gray-800 p-2 rounded">
                     <div className="text-xs text-gray-300 mb-1">Tags</div>
                     <div className="flex gap-1 flex-wrap">
@@ -8388,7 +8372,6 @@ useEffect(() => {
                     </div>
                   </div>
 
-                  {/* Delete / Export single */}
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
@@ -8400,9 +8383,9 @@ useEffect(() => {
                     >
                       Delete
                     </button>
+
                     <button
                       onClick={() => {
-                        // quick export selected as CSV
                         const em = selectedEmail;
                         const csvHeader = ['id','subject','from','to','date','projectId','projectName','priority','tags','fileName'].join(',');
                         const proj = projects.find(p=>p.id===em.projectId);
@@ -8434,7 +8417,6 @@ useEffect(() => {
                       Export
                     </button>
                   </div>
-
                 </div>
               </div>
 
@@ -8448,11 +8430,11 @@ useEffect(() => {
             </div>
           )}
         </div>
-
       </div>
     </div>
   </div>
 )}
+
 
 {activeTab === 'weekly-calendar' && (
     <div className="p-6">
