@@ -4492,23 +4492,18 @@ const [hideEmptyProjects, setHideEmptyProjects] = useState(false);
 // SMALLER BOXES - EASY TO LOOK AT
 // ============================================
 
-const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails }) => {
+const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails, projectNotes, setProjectNotes }) => {
     const today = new Date().toISOString().split('T')[0];
     
     // State for notes
-    const [projectNotes, setProjectNotes] = React.useState(() => {
-        const saved = localStorage.getItem('projectNotes');
-        return saved ? JSON.parse(saved) : {};
-    });
+  
     
     const [editingNote, setEditingNote] = React.useState(null);
     const [noteFilter, setNoteFilter] = React.useState('');
     const [selectedProjectFilter, setSelectedProjectFilter] = React.useState('all');
     
     // Save notes to localStorage whenever they change
-    React.useEffect(() => {
-        localStorage.setItem('projectNotes', JSON.stringify(projectNotes));
-    }, [projectNotes]);
+   
     
     // ========== NOTES FUNCTIONS ==========
     
@@ -5230,6 +5225,15 @@ const [meetings, setMeetings] = useState(() => {
         const saved = localStorage.getItem('meetings_calendar');
         return saved ? JSON.parse(saved) : [];
     });
+const [projectNotes, setProjectNotes] = useState(() => {
+    const saved = localStorage.getItem('projectNotes');
+    return saved ? JSON.parse(saved) : {};
+});
+
+// Save projectNotes to localStorage
+useEffect(() => {
+    localStorage.setItem('projectNotes', JSON.stringify(projectNotes));
+}, [projectNotes]);
 
     const [emails, setEmails] = useState(() => {
     const saved = localStorage.getItem('emails_data');
@@ -5310,13 +5314,14 @@ useEffect(() => {
                     }
                 }
 
-                const data = {
+    const data = {
     projects,
     timeEntries,
     tasks,
     todaysTasks,
     meetings,
-    emails,  // ADD THIS LINE
+    emails,
+    projectNotes,  // <-- ADD THIS LINE
     updatedAt: new Date().toISOString()
 };
 
@@ -5397,56 +5402,48 @@ useEffect(() => {
             };
 
             const loadFromGist = async () => {
-    let token = GIST_TOKEN;
+                let token = GIST_TOKEN;
+                if (!token) {
+                    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
+                    if (!token) {
+                        alert('Cloud sync cancelled. Please enter token to enable cloud features.');
+                        return;
+                    }
+                }
 
-    if (!token) {
-        token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
-        if (!token) {
-            alert('Cloud sync cancelled. Please enter token to enable cloud features.');
-            return;
-        }
-    }
+                if (!gistId) {
+                    alert('No cloud data found. Please save data to cloud first.');
+                    return;
+                }
 
-    if (!gistId) {
-        alert('No cloud data found. Please save data to cloud first.');
-        return;
-    }
+                try {
+                    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        headers: {
+                            'Authorization': `token ${token}`
+                        }
+                    });
 
-    try {
-        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-            headers: { 'Authorization': `token ${token}` }
-        });
+                    if (!response.ok) throw new Error('Failed to load from Gist');
+                    
+                    const gist = await response.json();
+                    const content = gist.files['timesheet-data.json'].content;
+                    const data = JSON.parse(content);
 
-        if (!response.ok) throw new Error('Failed to load from Gist');
-
-        const gist = await response.json();
-
-        // 🔥 FIX 1 — Check filename
-        const file = gist.files['timesheet-data.json'];
-        if (!file) {
-            throw new Error('timesheet-data.json not found in gist. Check filename.');
-        }
-
-        // Read content
-        const data = JSON.parse(file.content);
-
-        if (window.confirm('Load cloud data? This will replace your current data.')) {
-            setProjects(data.projects || []);
-            setTimeEntries(data.timeEntries || []);
-            setTasks(data.tasks || []);
-            setTodaysTasks(data.todaysTasks || []);
-            setMeetings(data.meetings || []);
-            setEmails(data.emails || []);
-            alert('Data loaded from cloud!');
-        }
-
-    } catch (error) {
-        // 🔥 FIX 2 — log error
-        console.error("Gist Load Error:", error);
-        alert('Failed to load from cloud: ' + error.message);
-    }
-};
-
+                    if (window.confirm('Load cloud data? This will replace your current data.')) {
+                        setProjects(data.projects || []);
+                        setTimeEntries(data.timeEntries || []);
+                        setTasks(data.tasks || []);
+                         setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
+    setMeetings(data.meetings || []); 
+    setEmails(data.emails || []);
+    setProjectNotes(data.projectNotes || {});  // <-- ADD THIS LINE
+                        alert('Data loaded from cloud!');
+                    }
+                    
+                } catch (error) {
+                    alert('Failed to load from cloud: ' + error.message);
+                }
+            };
 
             const setGistIdManually = () => {
                 const id = prompt('Enter your Gist ID (you can find this in the URL of your Gist):');
@@ -5480,19 +5477,20 @@ useEffect(() => {
 
             const exportJSON = () => {
                 const data = {
-                    projects,
-                    timeEntries: filteredTimeEntries,
-                    tasks,
-                    todaysTasks,  // ADD THIS LINE
-        meetings,
-        emails,
-                    filter: {
-                        dateRange: dateFilter,
-                        project: filterProject,
-                        searchTerm: searchTerm
-                    },
-                    exportedAt: new Date().toISOString()
-                };
+    projects,
+    timeEntries: filteredTimeEntries,
+    tasks,
+    todaysTasks,
+    meetings,
+    emails,
+    projectNotes,  // <-- ADD THIS LINE
+    filter: {
+        dateRange: dateFilter,
+        project: filterProject,
+        searchTerm: searchTerm
+    },
+    exportedAt: new Date().toISOString()
+};
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -5522,6 +5520,7 @@ useEffect(() => {
                             setTodaysTasks(parsed.todaysTasks || []);
     setMeetings(parsed.meetings || []);
     setEmails(parsed.emails || []); 
+    setProjectNotes(parsed.projectNotes || {});  // <-- ADD THIS LINE
                             alert('Import successful.');
                         }
                     } catch (err) {
@@ -6829,6 +6828,8 @@ useEffect(() => {
         timeEntries={timeEntries}
         meetings={meetings}
         emails={emails}
+        projectNotes={projectNotes}      // <-- ADD THIS
+        setProjectNotes={setProjectNotes} // <-- ADD THIS
     />
 )}
                             {activeTab === 'today-focus' && (
@@ -8927,3 +8928,4 @@ useEffect(() => {
     </script>
 </body>
 </html>
+
