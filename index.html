@@ -5397,47 +5397,56 @@ useEffect(() => {
             };
 
             const loadFromGist = async () => {
-                let token = GIST_TOKEN;
-                if (!token) {
-                    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
-                    if (!token) {
-                        alert('Cloud sync cancelled. Please enter token to enable cloud features.');
-                        return;
-                    }
-                }
+    let token = GIST_TOKEN;
 
-                if (!gistId) {
-                    alert('No cloud data found. Please save data to cloud first.');
-                    return;
-                }
+    if (!token) {
+        token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
+        if (!token) {
+            alert('Cloud sync cancelled. Please enter token to enable cloud features.');
+            return;
+        }
+    }
 
-                try {
-                    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-                        headers: {
-                            'Authorization': `token ${token}`
-                        }
-                    });
+    if (!gistId) {
+        alert('No cloud data found. Please save data to cloud first.');
+        return;
+    }
 
-                    if (!response.ok) throw new Error('Failed to load from Gist');
-                    
-                    const gist = await response.json();
-                    const content = gist.files['timesheet-data.json'].content;
-                    const data = JSON.parse(content);
+    try {
+        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
 
-                    if (window.confirm('Load cloud data? This will replace your current data.')) {
-                        setProjects(data.projects || []);
-                        setTimeEntries(data.timeEntries || []);
-                        setTasks(data.tasks || []);
-                         setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
-    setMeetings(data.meetings || []); 
-    setEmails(data.emails || []);
-                        alert('Data loaded from cloud!');
-                    }
-                    
-                } catch (error) {
-                    alert('Failed to load from cloud: ' + error.message);
-                }
-            };
+        if (!response.ok) throw new Error('Failed to load from Gist');
+
+        const gist = await response.json();
+
+        // 🔥 FIX 1 — Check filename
+        const file = gist.files['timesheet-data.json'];
+        if (!file) {
+            throw new Error('timesheet-data.json not found in gist. Check filename.');
+        }
+
+        // Read content
+        const data = JSON.parse(file.content);
+
+        if (window.confirm('Load cloud data? This will replace your current data.')) {
+            setProjects(data.projects || []);
+            setTimeEntries(data.timeEntries || []);
+            setTasks(data.tasks || []);
+            setTodaysTasks(data.todaysTasks || []);
+            setMeetings(data.meetings || []);
+            setEmails(data.emails || []);
+            alert('Data loaded from cloud!');
+        }
+
+    } catch (error) {
+        // 🔥 FIX 2 — log error
+        console.error("Gist Load Error:", error);
+        alert('Failed to load from cloud: ' + error.message);
+    }
+};
+
 
             const setGistIdManually = () => {
                 const id = prompt('Enter your Gist ID (you can find this in the URL of your Gist):');
