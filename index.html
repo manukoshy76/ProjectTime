@@ -5316,24 +5316,15 @@ useEffect(() => {
     tasks,
     todaysTasks,
     meetings,
-    emails,  // ADD THIS LINE
-    projectNotes,  
+    emails,
+    projectNotes,  // ADD THIS LINE
     updatedAt: new Date().toISOString()
 };
 
                 const gistData = {
                     files: {
                         'timesheet-data.json': {
-                            content: JSON.stringify({
-    projects,
-    timeEntries,
-    tasks,
-    todaysTasks,
-    meetings,
-    emails,
-    projectNotes     // <-- ADD THIS
-})
-
+                            content: JSON.stringify(data, null, 2)
                         }
                     },
                     description: 'Timesheet Manager Data',
@@ -5525,6 +5516,7 @@ useEffect(() => {
                             setTodaysTasks(parsed.todaysTasks || []);
     setMeetings(parsed.meetings || []);
     setEmails(parsed.emails || []); 
+    etEmails(parsed.projectNotes || []); 
                             alert('Import successful.');
                         }
                     } catch (err) {
