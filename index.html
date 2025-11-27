@@ -5316,8 +5316,7 @@ useEffect(() => {
     tasks,
     todaysTasks,
     meetings,
-    emails,
-    projectNotes,  // ADD THIS LINE
+    emails,  // ADD THIS LINE
     updatedAt: new Date().toISOString()
 };
 
@@ -5432,7 +5431,6 @@ useEffect(() => {
                          setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
     setMeetings(data.meetings || []); 
     setEmails(data.emails || []);
-    setProjectNotes(data.projectNotes || {});
                         alert('Data loaded from cloud!');
                     }
                     
@@ -5479,7 +5477,6 @@ useEffect(() => {
                     todaysTasks,  // ADD THIS LINE
         meetings,
         emails,
-        projectNotes,
                     filter: {
                         dateRange: dateFilter,
                         project: filterProject,
@@ -5516,7 +5513,6 @@ useEffect(() => {
                             setTodaysTasks(parsed.todaysTasks || []);
     setMeetings(parsed.meetings || []);
     setEmails(parsed.emails || []); 
-    etEmails(parsed.projectNotes || []); 
                             alert('Import successful.');
                         }
                     } catch (err) {
