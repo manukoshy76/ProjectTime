@@ -4492,17 +4492,23 @@ const [hideEmptyProjects, setHideEmptyProjects] = useState(false);
 // SMALLER BOXES - EASY TO LOOK AT
 // ============================================
 
-const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails, projectNotes, setProjectNotes }) => {
+const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails }) => {
     const today = new Date().toISOString().split('T')[0];
     
-
+    // State for notes
+    const [projectNotes, setProjectNotes] = React.useState(() => {
+        const saved = localStorage.getItem('projectNotes');
+        return saved ? JSON.parse(saved) : {};
+    });
     
     const [editingNote, setEditingNote] = React.useState(null);
     const [noteFilter, setNoteFilter] = React.useState('');
     const [selectedProjectFilter, setSelectedProjectFilter] = React.useState('all');
     
     // Save notes to localStorage whenever they change
-
+    React.useEffect(() => {
+        localStorage.setItem('projectNotes', JSON.stringify(projectNotes));
+    }, [projectNotes]);
     
     // ========== NOTES FUNCTIONS ==========
     
@@ -5231,10 +5237,7 @@ const [meetings, setMeetings] = useState(() => {
 });
 const [dragOver, setDragOver] = useState(false);
 const [emailNotes, setEmailNotes] = useState({});
-const [projectNotes, setProjectNotes] = useState(() => {
-    const saved = localStorage.getItem('projectNotes');
-    return saved ? JSON.parse(saved) : {};
-});
+
 
           const [selectedEmail, setSelectedEmail] = React.useState(null);
         
@@ -5281,9 +5284,6 @@ const [projectNotes, setProjectNotes] = useState(() => {
 useEffect(() => {
     localStorage.setItem('email_notes', JSON.stringify(emailNotes));
 }, [emailNotes]);
-useEffect(() => {
-    localStorage.setItem('projectNotes', JSON.stringify(projectNotes));
-}, [projectNotes]);
             // Cloud sync functions (same as before)
             const setupGistToken = () => {
                 if (!GIST_TOKEN) {
@@ -5316,8 +5316,7 @@ useEffect(() => {
     tasks,
     todaysTasks,
     meetings,
-    emails,
-    projectNotes,  // ← ADD THIS LINE
+    emails,  // ADD THIS LINE
     updatedAt: new Date().toISOString()
 };
 
@@ -5427,12 +5426,11 @@ useEffect(() => {
 
                     if (window.confirm('Load cloud data? This will replace your current data.')) {
                         setProjects(data.projects || []);
-setTimeEntries(data.timeEntries || []);
-setTasks(data.tasks || []);
-setTodaysTasks(data.todaysTasks || []);
-setMeetings(data.meetings || []);
-setEmails(data.emails || []);
-setProjectNotes(data.projectNotes || {});
+                        setTimeEntries(data.timeEntries || []);
+                        setTasks(data.tasks || []);
+                         setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
+    setMeetings(data.meetings || []); 
+    setEmails(data.emails || []);
                         alert('Data loaded from cloud!');
                     }
                     
@@ -5472,30 +5470,29 @@ setProjectNotes(data.projectNotes || {});
             };
 
             const exportJSON = () => {
-    const data = {
-        projects,
-        timeEntries: filteredTimeEntries,
-        tasks,
-        todaysTasks,
+                const data = {
+                    projects,
+                    timeEntries: filteredTimeEntries,
+                    tasks,
+                    todaysTasks,  // ADD THIS LINE
         meetings,
         emails,
-        projectNotes,
-        filter: {
-            dateFilter,
-            filterProject,
-            searchTerm
-        },
-        exportedAt: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const filterLabel = dateFilter === 'all' ? 'all' : dateFilter;
-    a.download = `timesheet_${filterLabel}_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-};
+                    filter: {
+                        dateRange: dateFilter,
+                        project: filterProject,
+                        searchTerm: searchTerm
+                    },
+                    exportedAt: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const filterLabel = dateFilter === 'all' ? 'all' : dateFilter;
+                a.download = `timesheet_${filterLabel}_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            };
 
             const handleImportFile = (e) => {
                 const file = e.target.files && e.target.files[0];
@@ -5509,12 +5506,13 @@ setProjectNotes(data.projectNotes || {});
                         }
                         if (window.confirm('This will overwrite your current projects, time entries, AND tasks. Continue?')) {
                             setProjects(parsed.projects || []);
-setTimeEntries(parsed.timeEntries || []);
-if (Array.isArray(parsed.tasks)) setTasks(parsed.tasks);
-setTodaysTasks(parsed.todaysTasks || []);
-setMeetings(parsed.meetings || []);
-setEmails(parsed.emails || []);
-setProjectNotes(parsed.projectNotes || {});
+                            setTimeEntries(parsed.timeEntries || []);
+                            if (Array.isArray(parsed.tasks)) {
+                                setTasks(parsed.tasks);
+                            }
+                            setTodaysTasks(parsed.todaysTasks || []);
+    setMeetings(parsed.meetings || []);
+    setEmails(parsed.emails || []); 
                             alert('Import successful.');
                         }
                     } catch (err) {
@@ -6822,8 +6820,6 @@ setProjectNotes(parsed.projectNotes || {});
         timeEntries={timeEntries}
         meetings={meetings}
         emails={emails}
-        projectNotes={projectNotes}
-        setProjectNotes={setProjectNotes}
     />
 )}
                             {activeTab === 'today-focus' && (
