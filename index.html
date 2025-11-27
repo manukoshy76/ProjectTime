@@ -4487,405 +4487,7 @@ const exportRef = useRef(null);
 const [projectSearch, setProjectSearch] = useState("");
 const [projectSort, setProjectSort] = useState("high"); // "high" or "low"
 const [hideEmptyProjects, setHideEmptyProjects] = useState(false);
-// ============================================
-// COMPACT NOTES SmartSummaryTab
-// SMALLER BOXES - EASY TO LOOK AT
-// ============================================
 
-const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails }) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    // State for notes
-    const [projectNotes, setProjectNotes] = React.useState(() => {
-        const saved = localStorage.getItem('projectNotes');
-        return saved ? JSON.parse(saved) : {};
-    });
-    
-    const [editingNote, setEditingNote] = React.useState(null);
-    const [noteFilter, setNoteFilter] = React.useState('');
-    const [selectedProjectFilter, setSelectedProjectFilter] = React.useState('all');
-    
-    // Save notes to localStorage whenever they change
-    React.useEffect(() => {
-        localStorage.setItem('projectNotes', JSON.stringify(projectNotes));
-    }, [projectNotes]);
-    
-    // ========== NOTES FUNCTIONS ==========
-    
-    const addOrUpdateNote = (projectName, noteData) => {
-        setProjectNotes(prev => ({
-            ...prev,
-            [projectName]: {
-                ...prev[projectName],
-                ...noteData,
-                lastUpdated: new Date().toISOString()
-            }
-        }));
-    };
-    
-    const deleteNote = (projectName) => {
-        if (confirm(`Delete all notes for ${projectName}?`)) {
-            const newNotes = { ...projectNotes };
-            delete newNotes[projectName];
-            setProjectNotes(newNotes);
-        }
-    };
-    
-    // Filter notes by project and search
-    const filteredNotes = Object.entries(projectNotes).filter(([projectName, note]) => {
-        // Filter by selected project
-        if (selectedProjectFilter !== 'all' && projectName !== selectedProjectFilter) {
-            return false;
-        }
-        
-        // Filter by search text
-        if (!noteFilter) return true;
-        const searchLower = noteFilter.toLowerCase();
-        return (
-            projectName.toLowerCase().includes(searchLower) ||
-            (note.workingOn || '').toLowerCase().includes(searchLower) ||
-            (note.passwords || '').toLowerCase().includes(searchLower) ||
-            (note.lookAt || '').toLowerCase().includes(searchLower) ||
-            (note.generalNotes || '').toLowerCase().includes(searchLower)
-        );
-    });
-    
-    // Follow-ups due today or overdue
-    const urgentFollowUps = Object.entries(projectNotes)
-        .filter(([_, note]) => {
-            if (!note.followUpDate) return false;
-            return note.followUpDate <= today;
-        })
-        .map(([projectName, note]) => ({ projectName, ...note }));
-
-    // Get list of projects that have notes
-    const projectsWithNotes = Object.keys(projectNotes);
-
-    return (
-        <div className="p-3 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
-
-            {/* Urgent Follow-ups Alert - Compact */}
-            {urgentFollowUps.length > 0 && (
-                <div className="bg-red-50 border-2 border-red-300 rounded p-2 shadow-sm">
-                    <h3 className="text-xs font-bold text-red-800 mb-1">🔔 Urgent Follow-ups ({urgentFollowUps.length})</h3>
-                    <div className="space-y-1">
-                        {urgentFollowUps.map(item => (
-                            <div key={item.projectName} className="bg-white p-1.5 rounded border border-red-200 text-xs">
-                                <div className="font-semibold text-red-900">{item.projectName}</div>
-                                <div className="text-xs text-red-700">{new Date(item.followUpDate).toLocaleDateString()} • {item.followUpNote}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* Compact Add & Filter Section */}
-            <div className="bg-white rounded border-2 border-gray-300 p-2.5 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    {/* Add Note */}
-                    <div>
-                        <label className="text-xs font-semibold text-gray-600 block mb-0.5">Add Note</label>
-                        <select
-                            className="w-full px-2 py-1.5 border-2 border-indigo-300 rounded text-xs focus:border-indigo-500 focus:outline-none"
-                            onChange={(e) => {
-                                if (e.target.value) {
-                                    setEditingNote({ projectName: e.target.value, isNew: true });
-                                    e.target.value = '';
-                                }
-                            }}
-                        >
-                            <option value="">Select project...</option>
-                            {projects.map(p => (
-                                <option key={p.id} value={p.name}>{p.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Filter by Project */}
-                    <div>
-                        <label className="text-xs font-semibold text-gray-600 block mb-0.5">Filter</label>
-                        <select
-                            value={selectedProjectFilter}
-                            onChange={(e) => setSelectedProjectFilter(e.target.value)}
-                            className="w-full px-2 py-1.5 border-2 border-gray-300 rounded text-xs focus:border-gray-500 focus:outline-none"
-                        >
-                            <option value="all">All ({projectsWithNotes.length})</option>
-                            {projectsWithNotes.map(projName => (
-                                <option key={projName} value={projName}>{projName}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Search */}
-                    <div>
-                        <label className="text-xs font-semibold text-gray-600 block mb-0.5">Search</label>
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={noteFilter}
-                            onChange={(e) => setNoteFilter(e.target.value)}
-                            className="w-full px-2 py-1.5 border-2 border-gray-300 rounded text-xs focus:border-gray-500 focus:outline-none"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Notes List - COMPACT GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                {filteredNotes.length === 0 && !editingNote && (
-                    <div className="col-span-full text-center py-8 text-gray-400 bg-gray-50 rounded border-2 border-dashed border-gray-300">
-                        <div className="text-3xl mb-1">📝</div>
-                        <div className="text-xs">
-                            {selectedProjectFilter !== 'all' 
-                                ? `No notes for ${selectedProjectFilter}` 
-                                : 'No notes yet. Add one above!'}
-                        </div>
-                    </div>
-                )}
-
-                {/* Editing a new note */}
-                {editingNote?.isNew && (
-                    <div className="col-span-full bg-blue-50 border-2 border-blue-300 rounded p-3 shadow-md">
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-bold text-sm text-gray-800">{editingNote.projectName}</h3>
-                            <button
-                                onClick={() => setEditingNote(null)}
-                                className="text-gray-500 hover:text-gray-700 text-lg font-bold"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div>
-                                <label className="text-xs font-bold text-gray-700 block mb-0.5">🚀 Working On</label>
-                                <textarea
-                                    onBlur={(e) => addOrUpdateNote(editingNote.projectName, { workingOn: e.target.value })}
-                                    placeholder="Current tasks..."
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                    rows="2"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-xs font-bold text-gray-700 block mb-0.5">🔑 Passwords</label>
-                                <textarea
-                                    onBlur={(e) => addOrUpdateNote(editingNote.projectName, { passwords: e.target.value })}
-                                    placeholder="Login IDs, passwords..."
-                                    className="w-full px-2 py-1.5 border border-yellow-300 rounded text-xs font-mono bg-yellow-50"
-                                    rows="2"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-xs font-bold text-gray-700 block mb-0.5">👀 To Check</label>
-                                <textarea
-                                    onBlur={(e) => addOrUpdateNote(editingNote.projectName, { lookAt: e.target.value })}
-                                    placeholder="Things to look at..."
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                    rows="2"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-xs font-bold text-gray-700 block mb-0.5">📅 Follow-up Date</label>
-                                    <input
-                                        type="date"
-                                        onBlur={(e) => addOrUpdateNote(editingNote.projectName, { followUpDate: e.target.value })}
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-xs font-bold text-gray-700 block mb-0.5">📌 Follow-up Note</label>
-                                    <input
-                                        type="text"
-                                        onBlur={(e) => addOrUpdateNote(editingNote.projectName, { followUpNote: e.target.value })}
-                                        placeholder="What to follow up..."
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-xs font-bold text-gray-700 block mb-0.5">📄 General Notes</label>
-                                <textarea
-                                    onBlur={(e) => addOrUpdateNote(editingNote.projectName, { generalNotes: e.target.value })}
-                                    placeholder="Other notes..."
-                                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                    rows="2"
-                                />
-                            </div>
-
-                            <div className="flex justify-end">
-                                <button
-                                    onClick={() => setEditingNote(null)}
-                                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs font-semibold"
-                                >
-                                    ✓ Done
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Notes Grid Cards */}
-                {filteredNotes.map(([projectName, note]) => (
-                    <div key={projectName} className="bg-white border-2 border-gray-300 rounded hover:shadow-md transition-all h-fit">
-                        {editingNote?.projectName === projectName && !editingNote?.isNew ? (
-                            // Edit Mode - Full Width
-                            <div className="p-3 space-y-2">
-                                <div className="flex justify-between items-center mb-1">
-                                    <h3 className="font-bold text-sm text-gray-800">{projectName}</h3>
-                                    <button
-                                        onClick={() => setEditingNote(null)}
-                                        className="text-gray-500 hover:text-gray-700 text-lg font-bold"
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-gray-700 block mb-0.5">🚀 Working On</label>
-                                    <textarea
-                                        defaultValue={note.workingOn || ''}
-                                        onBlur={(e) => addOrUpdateNote(projectName, { workingOn: e.target.value })}
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                        rows="2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-gray-700 block mb-0.5">🔑 Passwords</label>
-                                    <textarea
-                                        defaultValue={note.passwords || ''}
-                                        onBlur={(e) => addOrUpdateNote(projectName, { passwords: e.target.value })}
-                                        className="w-full px-2 py-1.5 border border-yellow-300 rounded text-xs font-mono bg-yellow-50"
-                                        rows="2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-gray-700 block mb-0.5">👀 To Check</label>
-                                    <textarea
-                                        defaultValue={note.lookAt || ''}
-                                        onBlur={(e) => addOrUpdateNote(projectName, { lookAt: e.target.value })}
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                        rows="2"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-700 block mb-0.5">📅 Follow-up Date</label>
-                                        <input
-                                            type="date"
-                                            defaultValue={note.followUpDate || ''}
-                                            onBlur={(e) => addOrUpdateNote(projectName, { followUpDate: e.target.value })}
-                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-gray-700 block mb-0.5">📌 Follow-up Note</label>
-                                        <input
-                                            type="text"
-                                            defaultValue={note.followUpNote || ''}
-                                            onBlur={(e) => addOrUpdateNote(projectName, { followUpNote: e.target.value })}
-                                            className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-xs font-bold text-gray-700 block mb-0.5">📄 General Notes</label>
-                                    <textarea
-                                        defaultValue={note.generalNotes || ''}
-                                        onBlur={(e) => addOrUpdateNote(projectName, { generalNotes: e.target.value })}
-                                        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs"
-                                        rows="2"
-                                    />
-                                </div>
-
-                                <div className="flex justify-between pt-1">
-                                    <button
-                                        onClick={() => deleteNote(projectName)}
-                                        className="px-2 py-0.5 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
-                                    >
-                                        Delete
-                                    </button>
-                                    <button
-                                        onClick={() => setEditingNote(null)}
-                                        className="px-2 py-0.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs"
-                                    >
-                                        Done
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            // View Mode - Compact Card
-                            <div onClick={() => setEditingNote({ projectName })} className="cursor-pointer p-2.5">
-                                <div className="flex justify-between items-start mb-1.5 gap-2">
-                                    <h3 className="font-bold text-sm text-gray-800 leading-tight">{projectName}</h3>
-                                    {note.followUpDate && (
-                                        <span className={`text-xs px-1.5 py-0.5 rounded font-semibold whitespace-nowrap ${
-                                            note.followUpDate <= today 
-                                                ? 'bg-red-100 text-red-700' 
-                                                : 'bg-blue-100 text-blue-700'
-                                        }`}>
-                                            {new Date(note.followUpDate).toLocaleDateString()}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="space-y-1 text-xs">
-                                    {note.workingOn && (
-                                        <div className="bg-blue-50 p-1.5 rounded border-l-2 border-blue-400">
-                                            <span className="font-semibold text-blue-700">🚀</span>
-                                            <p className="text-gray-800 text-xs line-clamp-2">{note.workingOn}</p>
-                                        </div>
-                                    )}
-                                    {note.passwords && (
-                                        <div className="bg-yellow-50 p-1.5 rounded border-l-2 border-yellow-400">
-                                            <span className="font-semibold text-yellow-800">🔑</span>
-                                            <p className="text-gray-800 text-xs line-clamp-2 font-mono">{note.passwords}</p>
-                                        </div>
-                                    )}
-                                    {note.lookAt && (
-                                        <div className="bg-purple-50 p-1.5 rounded border-l-2 border-purple-400">
-                                            <span className="font-semibold text-purple-700">👀</span>
-                                            <p className="text-gray-800 text-xs line-clamp-2">{note.lookAt}</p>
-                                        </div>
-                                    )}
-                                    {note.followUpNote && (
-                                        <div className="bg-red-50 p-1.5 rounded border-l-2 border-red-400">
-                                            <span className="font-semibold text-red-700">📌</span>
-                                            <p className="text-gray-800 text-xs line-clamp-2">{note.followUpNote}</p>
-                                        </div>
-                                    )}
-                                    {note.generalNotes && (
-                                        <div className="bg-gray-50 p-1.5 rounded border-l-2 border-gray-400">
-                                            <span className="font-semibold text-gray-700">📄</span>
-                                            <p className="text-gray-800 text-xs line-clamp-2">{note.generalNotes}</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="mt-1 text-xs text-indigo-600 font-semibold text-center opacity-60">
-                                    Click to edit
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-        </div>
-    );
-};
-
-// ============================================
-// END OF COMPACT NOTES SmartSummaryTab
-// ============================================
 useEffect(() => {
   const handler = (e) => {
     if (exportRef.current && !exportRef.current.contains(e.target)) {
@@ -5397,56 +4999,47 @@ useEffect(() => {
             };
 
             const loadFromGist = async () => {
-    let token = GIST_TOKEN;
+                let token = GIST_TOKEN;
+                if (!token) {
+                    token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
+                    if (!token) {
+                        alert('Cloud sync cancelled. Please enter token to enable cloud features.');
+                        return;
+                    }
+                }
 
-    if (!token) {
-        token = prompt('Please enter your GitHub Personal Access Token for cloud sync:');
-        if (!token) {
-            alert('Cloud sync cancelled. Please enter token to enable cloud features.');
-            return;
-        }
-    }
+                if (!gistId) {
+                    alert('No cloud data found. Please save data to cloud first.');
+                    return;
+                }
 
-    if (!gistId) {
-        alert('No cloud data found. Please save data to cloud first.');
-        return;
-    }
+                try {
+                    const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+                        headers: {
+                            'Authorization': `token ${token}`
+                        }
+                    });
 
-    try {
-        const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-            headers: { 'Authorization': `token ${token}` }
-        });
+                    if (!response.ok) throw new Error('Failed to load from Gist');
+                    
+                    const gist = await response.json();
+                    const content = gist.files['timesheet-data.json'].content;
+                    const data = JSON.parse(content);
 
-        if (!response.ok) throw new Error('Failed to load from Gist');
-
-        const gist = await response.json();
-
-        // 🔥 FIX 1 — Check filename
-        const file = gist.files['timesheet-data.json'];
-        if (!file) {
-            throw new Error('timesheet-data.json not found in gist. Check filename.');
-        }
-
-        // Read content
-        const data = JSON.parse(file.content);
-
-        if (window.confirm('Load cloud data? This will replace your current data.')) {
-            setProjects(data.projects || []);
-            setTimeEntries(data.timeEntries || []);
-            setTasks(data.tasks || []);
-            setTodaysTasks(data.todaysTasks || []);
-            setMeetings(data.meetings || []);
-            setEmails(data.emails || []);
-            alert('Data loaded from cloud!');
-        }
-
-    } catch (error) {
-        // 🔥 FIX 2 — log error
-        console.error("Gist Load Error:", error);
-        alert('Failed to load from cloud: ' + error.message);
-    }
-};
-
+                    if (window.confirm('Load cloud data? This will replace your current data.')) {
+                        setProjects(data.projects || []);
+                        setTimeEntries(data.timeEntries || []);
+                        setTasks(data.tasks || []);
+                         setTodaysTasks(data.todaysTasks || []);  // ADD THIS LINE
+    setMeetings(data.meetings || []); 
+    setEmails(data.emails || []);
+                        alert('Data loaded from cloud!');
+                    }
+                    
+                } catch (error) {
+                    alert('Failed to load from cloud: ' + error.message);
+                }
+            };
 
             const setGistIdManually = () => {
                 const id = prompt('Enter your Gist ID (you can find this in the URL of your Gist):');
@@ -5814,7 +5407,6 @@ useEffect(() => {
                 });
 
                 const dashboardTabs = [
-                    { id: 'summary', label: "📝 Smart Update", icon: ListCheck }, // <--- New Tab
                     { id: 'overview', label: 'Overview', icon: BarChart3 },
                     { id: 'tasks', label: 'Tasks', icon: CheckSquare },
                     { id: 'communications', label: 'Communications', icon: MessageCircle },
@@ -6792,7 +6384,6 @@ useEffect(() => {
                             {/* Navigation Tabs */}
                             <div className="flex gap-1 border-t border-gray-200 overflow-x-auto px-4 md:px-6">
                                 {[
-                                    { id: 'summary', label: "📝 Smart Update", icon: ListCheck }, // <--- New Tab
                                     { id: 'today-focus', label: "📋 Today's Focus", icon: Target },
                                     { id: 'timesheet', label: 'Timesheet', icon: Clock },
                                     { id: 'projects', label: 'Projects', icon: Target },
@@ -6822,15 +6413,6 @@ useEffect(() => {
 
                         {/* Main Content */}
                         <div className="p-4 md:p-6">
-                            {activeTab === 'summary' && (
-    <SmartSummaryTab 
-        projects={projects}
-        tasks={tasks}
-        timeEntries={timeEntries}
-        meetings={meetings}
-        emails={emails}
-    />
-)}
                             {activeTab === 'today-focus' && (
                                 <div className="space-y-2">
                                 <div className="flex items-center justify-between p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded border border-indigo-200">
