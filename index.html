@@ -5317,13 +5317,23 @@ useEffect(() => {
     todaysTasks,
     meetings,
     emails,  // ADD THIS LINE
+    projectNotes,  
     updatedAt: new Date().toISOString()
 };
 
                 const gistData = {
                     files: {
                         'timesheet-data.json': {
-                            content: JSON.stringify(data, null, 2)
+                            content: JSON.stringify({
+    projects,
+    timeEntries,
+    tasks,
+    todaysTasks,
+    meetings,
+    emails,
+    projectNotes     // <-- ADD THIS
+})
+
                         }
                     },
                     description: 'Timesheet Manager Data',
