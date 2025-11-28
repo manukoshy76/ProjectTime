@@ -4479,6 +4479,105 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
     );
 };
         const TimesheetApp = () => {
+            // ============================================
+            // LOGIN CREDENTIALS - CHANGE THESE TO YOUR OWN
+            // ============================================
+            const APP_USERNAME = "manu";  // Change this to your username
+            const APP_PASSWORD = "2354";  // Change this to your password
+            
+            // ============================================
+            // GITHUB GIST CREDENTIALS - PASTE YOUR VALUES HERE
+            // ============================================
+            const HARDCODED_GIST_TOKEN = "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";  // Paste your GitHub token
+            const HARDCODED_GIST_ID = "541fc5162231726b3a3e50eb27636f61";  // Paste your Gist ID
+            
+            // ============================================
+            // LOGIN STATE
+            // ============================================
+            const [isLoggedIn, setIsLoggedIn] = useState(() => {
+                // Check if already logged in (session storage)
+                return sessionStorage.getItem('timesheet_logged_in') === 'true';
+            });
+            const [loginUsername, setLoginUsername] = useState('');
+            const [loginPassword, setLoginPassword] = useState('');
+            const [loginError, setLoginError] = useState('');
+            
+            const handleLogin = () => {
+                if (loginUsername === APP_USERNAME && loginPassword === APP_PASSWORD) {
+                    setIsLoggedIn(true);
+                    sessionStorage.setItem('timesheet_logged_in', 'true');
+                    setLoginError('');
+                } else {
+                    setLoginError('Invalid username or password');
+                }
+            };
+            
+            const handleLogout = () => {
+                setIsLoggedIn(false);
+                sessionStorage.removeItem('timesheet_logged_in');
+            };
+            
+            // ============================================
+            // LOGIN SCREEN
+            // ============================================
+            if (!isLoggedIn) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900 flex items-center justify-center p-4">
+                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/20">
+                            <div className="text-center mb-8">
+                                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                    <span className="text-white font-bold text-2xl">T</span>
+                                </div>
+                                <h1 className="text-2xl font-bold text-white">Timesheet Manager</h1>
+                                <p className="text-gray-400 mt-2">Please login to continue</p>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">Username</label>
+                                    <input
+                                        type="text"
+                                        value={loginUsername}
+                                        onChange={(e) => setLoginUsername(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        placeholder="Enter username"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                                    <input
+                                        type="password"
+                                        value={loginPassword}
+                                        onChange={(e) => setLoginPassword(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        placeholder="Enter password"
+                                    />
+                                </div>
+                                
+                                {loginError && (
+                                    <div className="bg-red-500/20 border border-red-500/50 text-red-300 px-4 py-2 rounded-lg text-sm">
+                                        {loginError}
+                                    </div>
+                                )}
+                                
+                                <button
+                                    onClick={handleLogin}
+                                    className="w-full py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg"
+                                >
+                                    Login
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+            
+            // ============================================
+            // MAIN APP (after login)
+            // ============================================
              // Add these new states after your existing states
     const [selectedTimezone, setSelectedTimezone] = useState('ist');
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -5077,9 +5176,9 @@ const setManualTimeHandler = () => {
     setManualTime(newTime);
     setIsManualMode(true);
 };
-            // Cloud sync states
-            const [GIST_TOKEN, setGistToken] = useState(() => localStorage.getItem('timesheet_gist_token') || '');
-            const [gistId, setGistId] = useState(() => localStorage.getItem('timesheet_gist_id') || null);
+            // Cloud sync states - Using hardcoded values (no more prompts!)
+            const [GIST_TOKEN, setGistToken] = useState(HARDCODED_GIST_TOKEN);
+            const [gistId, setGistId] = useState(HARDCODED_GIST_ID);
             // Manual time simulation states
 const [manualTime, setManualTime] = useState(null);
 const [isManualMode, setIsManualMode] = useState(false);
@@ -6777,6 +6876,15 @@ useEffect(() => {
                                     >
                                         <Key size={14} />
                                         <span className="hidden sm:inline">ID</span>
+                                    </button>
+
+                                    <button
+                                        onClick={handleLogout}
+                                        className="px-2.5 py-1.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
+                                        title="Logout"
+                                    >
+                                        <X size={14} />
+                                        <span className="hidden sm:inline">Logout</span>
                                     </button>
 
                                     <input
