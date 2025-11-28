@@ -4487,6 +4487,7 @@ const exportRef = useRef(null);
 const [projectSearch, setProjectSearch] = useState("");
 const [projectSort, setProjectSort] = useState("high"); // "high" or "low"
 const [hideEmptyProjects, setHideEmptyProjects] = useState(false);
+const [hideEmptyTimelineProjects, setHideEmptyTimelineProjects] = useState(false);
 // ============================================
 // COMPACT NOTES SmartSummaryTab
 // SMALLER BOXES - EASY TO LOOK AT
@@ -7419,13 +7420,27 @@ useEffect(() => {
                                                 <option value="priority">By Priority</option>
                                                 <option value="date">By Date</option>
                                             </select>
+                                            <label className="flex items-center gap-1 text-gray-600 text-xs ml-2">
+    <input
+        type="checkbox"
+        checked={hideEmptyTimelineProjects}
+        onChange={() => setHideEmptyTimelineProjects(!hideEmptyTimelineProjects)}
+        className="rounded"
+    />
+    Hide empty
+</label>
                                         </div>
                                     </div>
 
                                     <div className="space-y-4">
                                         {taskGroupBy === 'project' && (
                                             <>
-                                                {projects.map(project => {
+                                                {projects.filter(project => {
+    if (hideEmptyTimelineProjects) {
+        return tasks.some(task => task.project === project.name);
+    }
+    return true;
+}).map(project => {
                                                     const projectTasks = tasks.filter(task => task.project === project.name);
                                                     const sortedTasks = [...projectTasks].sort((a, b) => {
                                                         if (a.dueDate && b.dueDate) {
@@ -8928,4 +8943,3 @@ useEffect(() => {
     </script>
 </body>
 </html>
-
