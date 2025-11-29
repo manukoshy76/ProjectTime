@@ -3029,7 +3029,7 @@ if (typeof module === 'object' && module && module.exports) {
                                     onClick={() => setActiveTab('subtasks')}
                                     className={`flex-1 px-6 py-3 font-semibold border-b-2 transition-all ${
                                         activeTab === 'subtasks'
-                                            ? 'border-slate-600 text-slate-700'
+                                            ? 'border-indigo-600 text-indigo-600'
                                             : 'border-transparent text-gray-600 hover:text-gray-800'
                                     }`}
                                 >
@@ -3039,7 +3039,7 @@ if (typeof module === 'object' && module && module.exports) {
                                     onClick={() => setActiveTab('status')}
                                     className={`flex-1 px-6 py-3 font-semibold border-b-2 transition-all ${
                                         activeTab === 'status'
-                                            ? 'border-slate-600 text-slate-700'
+                                            ? 'border-indigo-600 text-indigo-600'
                                             : 'border-transparent text-gray-600 hover:text-gray-800'
                                     }`}
                                 >
@@ -3104,7 +3104,7 @@ if (typeof module === 'object' && module && module.exports) {
                                         />
                                         <button
                                             onClick={addSubtask}
-                                            className="px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700"
+                                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                                         >
                                             <Plus size={18} />
                                         </button>
@@ -3123,7 +3123,7 @@ if (typeof module === 'object' && module && module.exports) {
                                                         type="checkbox"
                                                         checked={subtask.done}
                                                         onChange={() => toggleSubtask(subtask.id)}
-                                                        className="h-5 w-5 text-slate-700 rounded focus:ring-indigo-500 cursor-pointer"
+                                                        className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
                                                     />
                                                     <span className={`flex-1 ${subtask.done ? 'line-through text-gray-400' : 'text-gray-800'}`}>
                                                         {subtask.title}
@@ -3153,7 +3153,7 @@ if (typeof module === 'object' && module && module.exports) {
                                                 onClick={() => updateTaskStatus(option.value)}
                                                 className={`p-4 rounded-lg border-2 text-left transition-all ${
                                                     updatedTask.status === option.value
-                                                        ? 'border-indigo-500 bg-slate-50'
+                                                        ? 'border-indigo-500 bg-indigo-50'
                                                         : 'border-gray-200 bg-white hover:border-gray-300'
                                                 }`}
                                             >
@@ -3287,7 +3287,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             <div className="bg-white rounded-lg shadow-sm p-2 border border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                     <h3 className="font-bold text-sm text-gray-800 flex items-center gap-1">
-                        <Plus size={14} className="text-slate-700" />
+                        <Plus size={14} className="text-indigo-600" />
                         Quick Add Task
                     </h3>
                 </div>
@@ -3347,7 +3347,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             {/* Task List */}
             <div className="bg-white rounded-lg shadow-sm p-2 border border-gray-200">
                 <h3 className="text-sm font-bold text-gray-800 mb-2 flex items-center gap-1">
-                    <ListCheck size={14} className="text-slate-700" />
+                    <ListCheck size={14} className="text-indigo-600" />
                     Task List ({tasks.length})
                 </h3>
 
@@ -3368,7 +3368,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
                                 <div
                                     key={task.id}
                                     onClick={() => setSelectedTask(task)}
-                                    className={`flex items-start justify-between border rounded p-1.5 transition-colors cursor-pointer hover:bg-slate-50 text-xs ${
+                                    className={`flex items-start justify-between border rounded p-1.5 transition-colors cursor-pointer hover:bg-indigo-50 text-xs ${
                                         task.status === 'completed' ? 'bg-green-50 border-green-200' : getPriorityColor(task.priority)
                                     }`}
                                 >
@@ -3655,7 +3655,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
                         <h4 className="text-xs font-semibold text-gray-800">Project Overview</h4>
                         <button
                             onClick={() => addTableRow('overview')}
-                            className="px-2 py-0.5 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                            className="px-2 py-0.5 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                         >
                             <Plus size={10} />
                             Add Line
@@ -3691,7 +3691,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
                     <h4 className="text-xs font-semibold text-gray-800">{tableOptions.find(t => t.id === activeTable)?.label}</h4>
                     <button
                         onClick={() => addTableRow(activeTable)}
-                        className="px-2 py-0.5 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                        className="px-2 py-0.5 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                     >
                         <Plus size={10} />
                         Add Row
@@ -3744,7 +3744,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
             <div className="bg-white rounded shadow p-2 border border-gray-200">
                 <div className="flex justify-between items-center mb-2">
                     <h3 className="text-sm font-bold text-gray-800 flex items-center gap-1">
-                        <FileText size={14} className="text-slate-700" />
+                        <FileText size={14} className="text-indigo-600" />
                         Reconciliation Documentation
                     </h3>
                     <div className="flex gap-1">
@@ -3787,7 +3787,7 @@ const ToDoTab = ({ projects, tasks, setTasks, selectedTask, setSelectedTask }) =
                                 onClick={() => setActiveTable(table.id)}
                                 className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${
                                     activeTable === table.id
-                                        ? 'bg-slate-600 text-white'
+                                        ? 'bg-indigo-600 text-white'
                                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                 }`}
                             >
@@ -4245,7 +4245,7 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                            <Calendar size={24} className="text-slate-700" />
+                            <Calendar size={24} className="text-indigo-600" />
                             Weekly Calendar (IST: 1 PM - 10:30 PM)
                         </h2>
                     </div>
@@ -4256,7 +4256,7 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
                         >
                             ← Prev Week
                         </button>
-                        <span className="text-sm font-semibold text-gray-700 px-3 py-2 bg-slate-50 rounded border border-slate-200">
+                        <span className="text-sm font-semibold text-gray-700 px-3 py-2 bg-indigo-50 rounded border border-indigo-200">
                             {currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </span>
                         <button
@@ -4272,7 +4272,7 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
                                 setEditingMeeting(null);
                                 setShowMeetingModal(true);
                             }}
-                            className="px-4 py-2 bg-slate-700 text-white rounded font-medium text-sm flex items-center gap-2"
+                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded font-medium text-sm flex items-center gap-2"
                         >
                             <Plus size={16} />
                             Add Meeting
@@ -4297,16 +4297,16 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
         const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
 
         return (
-            <div key={dayIndex} className={`rounded shadow overflow-hidden border ${today ? 'border-indigo-500 bg-slate-50' : 'border-gray-300 bg-white'}`}>
+            <div key={dayIndex} className={`rounded shadow overflow-hidden border ${today ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 bg-white'}`}>
                 {/* Day Header - Compact */}
-                <div className={`px-2.5 py-2 ${today ? 'bg-slate-600 text-white' : 'bg-gray-100'}`}>
+                <div className={`px-2.5 py-2 ${today ? 'bg-indigo-600 text-white' : 'bg-gray-100'}`}>
                     <div className="flex items-center justify-between">
                         <div>
                             <p className={`font-bold text-base ${today ? 'text-white' : 'text-gray-800'}`}>{date.getDate()}</p>
-                            <p className={`text-xs font-semibold ${today ? 'text-slate-300' : 'text-gray-600'}`}>{dayName}</p>
+                            <p className={`text-xs font-semibold ${today ? 'text-indigo-100' : 'text-gray-600'}`}>{dayName}</p>
                         </div>
                         {today && (
-                            <div className="text-xs bg-white text-slate-700 px-1.5 py-0.5 rounded font-bold">TODAY</div>
+                            <div className="text-xs bg-white text-indigo-600 px-1.5 py-0.5 rounded font-bold">TODAY</div>
                         )}
                     </div>
                 </div>
@@ -4375,7 +4375,7 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
             {showMeetingModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
-                        <div className="bg-slate-700 p-6 rounded-t-lg">
+                        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 p-6 rounded-t-lg">
                             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                                 <Plus size={24} />
                                 {editingMeeting ? 'Edit Meeting' : 'New Meeting'}
@@ -4441,8 +4441,8 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
                             </div>
 
                             {editingForm.startTime && editingForm.endTime && (
-                                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
-                                    <p className="text-sm text-slate-700">
+                                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                                    <p className="text-sm text-indigo-800">
                                         <span className="font-bold">Duration:</span> {(() => {
                                             const mins = getDurationMinutes(editingForm.startTime, editingForm.endTime);
                                             const hours = Math.floor(mins / 60);
@@ -4467,7 +4467,7 @@ const WeeklyCalendar = ({ projects, meetings, setMeetings }) => {
                             </button>
                             <button
                                 onClick={addOrUpdateMeeting}
-                                className="px-6 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 font-medium"
+                                className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 font-medium"
                             >
                                 {editingMeeting ? 'Update' : 'Add'} Meeting
                             </button>
@@ -4716,7 +4716,7 @@ const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails, proje
                             <div className="flex justify-end">
                                 <button
                                     onClick={() => setEditingNote(null)}
-                                    className="px-3 py-1 bg-slate-600 text-white rounded hover:bg-slate-700 text-xs font-semibold"
+                                    className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs font-semibold"
                                 >
                                     ✓ Done
                                 </button>
@@ -4811,7 +4811,7 @@ const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails, proje
                                     </button>
                                     <button
                                         onClick={() => setEditingNote(null)}
-                                        className="px-2 py-0.5 bg-slate-600 text-white rounded hover:bg-slate-700 text-xs"
+                                        className="px-2 py-0.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-xs"
                                     >
                                         Done
                                     </button>
@@ -4866,7 +4866,7 @@ const SmartSummaryTab = ({ projects, tasks, timeEntries, meetings, emails, proje
                                     )}
                                 </div>
 
-                                <div className="mt-1 text-xs text-slate-700 font-semibold text-center opacity-60">
+                                <div className="mt-1 text-xs text-indigo-600 font-semibold text-center opacity-60">
                                     Click to edit
                                 </div>
                             </div>
@@ -4944,10 +4944,10 @@ const TimezoneDisplay = ({
     const selectedTz = TIMEZONES.find(tz => tz.id === selectedTimezone);
     
     return (
-        <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg border border-slate-200">
+        <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
             {/* IST Time */}
             <div className="flex items-center gap-1">
-                <Clock size={14} className="text-slate-700" />
+                <Clock size={14} className="text-indigo-600" />
                 <span className="text-xs font-semibold text-indigo-700">IST:</span>
                 <span className="text-xs font-bold text-indigo-900">{istTime.time}</span>
                 {isManualMode && (
@@ -4980,7 +4980,7 @@ const TimezoneDisplay = ({
             <div className="flex items-center gap-1">
                 <button
                     onClick={setManualTimeHandler}
-                    className="p-0.5 text-slate-700 hover:bg-indigo-100 rounded transition-colors"
+                    className="p-0.5 text-indigo-600 hover:bg-indigo-100 rounded transition-colors"
                     title="Set simulation time"
                 >
                     <Clock size={12} />
@@ -5222,7 +5222,6 @@ const [isManualMode, setIsManualMode] = useState(false);
 
             // Refs
             const fileInputRef = useRef(null);
-            const emailFileInputRef = useRef(null);
 const [meetings, setMeetings] = useState(() => {
         const saved = localStorage.getItem('meetings_calendar');
         return saved ? JSON.parse(saved) : [];
@@ -5991,7 +5990,7 @@ useEffect(() => {
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
                             {/* Header */}
-                            <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gray-50">
+                            <div className="flex items-center justify-between p-3 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-blue-50">
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={onClose}
@@ -6012,7 +6011,7 @@ useEffect(() => {
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => editProject(project)}
-                                        className="px-3 py-1.5 text-sm bg-slate-600 text-white rounded hover:bg-slate-700 flex items-center gap-1"
+                                        className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700 flex items-center gap-1"
                                     >
                                         <Edit2 size={14} />
                                         Edit
@@ -6031,7 +6030,7 @@ useEffect(() => {
             onClick={() => setActiveSection(tab.id)}
             className={`px-2 py-1 text-xs font-semibold flex items-center gap-1 border-b-2 transition-all whitespace-nowrap ${
                                                     activeSection === tab.id
-                                                        ? 'border-slate-600 text-slate-700 bg-slate-50'
+                                                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50'
                                                         : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                                                 }`}
                                             >
@@ -6057,49 +6056,49 @@ useEffect(() => {
                                 {activeSection === 'overview' && (
     <div className="space-y-2">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-            <div className="bg-slate-700 rounded shadow p-2 text-white">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded shadow p-2 text-white">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-slate-300 text-xs font-medium">Hours</p>
+                        <p className="text-blue-100 text-xs font-medium">Hours</p>
                         <p className="text-xl font-bold mt-0.5">{stats.actual.toFixed(1)}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">of {project.estimatedHours}h</p>
+                        <p className="text-xs text-blue-200 mt-0.5">of {project.estimatedHours}h</p>
                     </div>
-                    <Clock size={20} className="text-slate-400" />
+                    <Clock size={20} className="text-blue-200" />
                 </div>
             </div>
             
-            <div className="bg-slate-600 rounded shadow p-2 text-white">
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded shadow p-2 text-white">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-slate-300 text-xs font-medium">Progress</p>
+                        <p className="text-green-100 text-xs font-medium">Progress</p>
                         <p className="text-xl font-bold mt-0.5">{stats.progress.toFixed(0)}%</p>
-                        <p className="text-xs text-slate-400 mt-0.5">{stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h rem` : 'Over'}</p>
+                        <p className="text-xs text-green-200 mt-0.5">{stats.remaining > 0 ? `${stats.remaining.toFixed(1)}h rem` : 'Over'}</p>
                     </div>
-                    <TrendingUp size={20} className="text-slate-400" />
+                    <TrendingUp size={20} className="text-green-200" />
                 </div>
             </div>
             
-            <div className="bg-slate-600 rounded shadow p-2 text-white">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded shadow p-2 text-white">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-slate-300 text-xs font-medium">Counterparties</p>
+                        <p className="text-purple-100 text-xs font-medium">Counterparties</p>
                         <p className="text-xl font-bold mt-0.5">{project.counterparties}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">External</p>
+                        <p className="text-xs text-purple-200 mt-0.5">External</p>
                     </div>
-                    <Users size={20} className="text-slate-400" />
+                    <Users size={20} className="text-purple-200" />
                 </div>
             </div>
 
-            <div className="bg-slate-700 rounded shadow p-2 text-white">
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow p-2 text-white">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-slate-300 text-xs font-medium">Tasks</p>
+                        <p className="text-orange-100 text-xs font-medium">Tasks</p>
                         <p className="text-xl font-bold mt-0.5">{stats.projectTasks.length}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-orange-200 mt-0.5">
                             {stats.pendingTasks} pending
                         </p>
                     </div>
-                    <CheckSquare size={20} className="text-slate-400" />
+                    <CheckSquare size={20} className="text-orange-200" />
                 </div>
             </div>
         </div>
@@ -6137,9 +6136,9 @@ useEffect(() => {
                     <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                         <div
                             className={`progress-bar h-1.5 rounded-full transition-all ${
-                                stats.progress > 100 ? 'bg-red-500' : 
-                                stats.progress > 80 ? 'bg-yellow-500' : 
-                                'bg-slate-600'
+                                stats.progress > 100 ? 'bg-gradient-to-r from-red-500 to-red-600' : 
+                                stats.progress > 80 ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 
+                                'bg-gradient-to-r from-indigo-500 to-blue-600'
                             }`}
                             style={{ width: `${Math.min(stats.progress, 100)}%` }}
                         />
@@ -6176,22 +6175,22 @@ useEffect(() => {
                                 {/* Tasks Section */}
                                {activeSection === 'tasks' && (
     <div className="space-y-2">
-        <div className="bg-slate-700 rounded shadow p-2 text-white">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded shadow p-2 text-white">
             <div className="flex items-center justify-between">
                 <div>
-                    <p className="text-slate-300 text-xs font-medium">Tasks</p>
+                    <p className="text-orange-100 text-xs font-medium">Tasks</p>
                     <p className="text-xl font-bold mt-0.5">{stats.projectTasks.length}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-orange-200 mt-0.5">
                         {stats.pendingTasks} pending
                     </p>
                 </div>
-                <CheckSquare size={20} className="text-slate-400" />
+                <CheckSquare size={20} className="text-orange-200" />
             </div>
         </div>
 
         <div className="bg-white rounded shadow p-2 border border-gray-200">
             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                <Plus size={14} className="text-slate-700" />
+                <Plus size={14} className="text-indigo-600" />
                 Add Task
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-1.5 mb-2">
@@ -6229,7 +6228,7 @@ useEffect(() => {
 
         <div className="bg-white rounded shadow p-2 border border-gray-200">
             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                <ListCheck size={14} className="text-slate-700" />
+                <ListCheck size={14} className="text-indigo-600" />
                 Tasks ({stats.projectTasks.length})
             </h3>
 
@@ -6264,7 +6263,7 @@ useEffect(() => {
                                 <div
                                     key={task.id}
                                     onClick={() => setSelectedTask(task)}
-                                    className={`flex items-start justify-between border rounded p-1.5 transition-colors cursor-pointer hover:bg-slate-50 text-xs ${
+                                    className={`flex items-start justify-between border rounded p-1.5 transition-colors cursor-pointer hover:bg-indigo-50 text-xs ${
                                         task.status === 'completed' ? 'bg-green-50 border-green-200' : 'border-gray-200 bg-white'
                                     }`}
                                 >
@@ -6336,7 +6335,7 @@ useEffect(() => {
     <div className="space-y-2">
         <div className="bg-white rounded shadow p-2 border border-gray-200">
             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                <MessageCircle size={14} className="text-slate-700" />
+                <MessageCircle size={14} className="text-indigo-600" />
                 Add
             </h3>
             <div className="space-y-1">
@@ -6368,7 +6367,7 @@ useEffect(() => {
                 />
                 <button
                     onClick={addCommunication}
-                    className="px-2 py-1 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                 >
                     <Plus size={12} />
                     Add
@@ -6420,7 +6419,7 @@ useEffect(() => {
     <div className="space-y-2">
         <div className="bg-white rounded shadow p-2 border border-gray-200">
             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                <Folder size={14} className="text-slate-700" />
+                <Folder size={14} className="text-indigo-600" />
                 Add File
             </h3>
             <div className="space-y-1">
@@ -6446,7 +6445,7 @@ useEffect(() => {
                 </div>
                 <button
                     onClick={addFile}
-                    className="px-2 py-1 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                 >
                     <Plus size={12} />
                     Add
@@ -6463,7 +6462,7 @@ useEffect(() => {
                     {project.files.map(file => (
                         <div key={file.id} className="border border-gray-200 rounded p-1.5 text-xs">
                             <div className="flex items-start gap-1.5 mb-0.5">
-                                <FileText size={14} className="text-slate-700 flex-shrink-0" />
+                                <FileText size={14} className="text-indigo-600 flex-shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <div className="font-semibold text-gray-800 truncate text-xs">{file.name}</div>
                                     <div className="text-xs text-gray-500">{file.type}</div>
@@ -6488,7 +6487,7 @@ useEffect(() => {
     <div className="space-y-2">
         <div className="bg-white rounded shadow p-2 border border-gray-200">
             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                <Link size={14} className="text-slate-700" />
+                <Link size={14} className="text-indigo-600" />
                 Add Link
             </h3>
             <div className="space-y-1">
@@ -6515,7 +6514,7 @@ useEffect(() => {
                 />
                 <button
                     onClick={addLink}
-                    className="px-2 py-1 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                 >
                     <Plus size={12} />
                     Add
@@ -6549,7 +6548,7 @@ useEffect(() => {
                                 href={link.url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="text-slate-700 hover:text-slate-700 text-xs flex items-center gap-0.5"
+                                className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center gap-0.5"
                             >
                                 {link.url}
                                 <ExternalLink size={10} />
@@ -6567,7 +6566,7 @@ useEffect(() => {
     <div className="space-y-2">
         <div className="bg-white rounded shadow p-2 border border-gray-200">
             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                <Users size={14} className="text-slate-700" />
+                <Users size={14} className="text-indigo-600" />
                 Add Member
             </h3>
             <div className="space-y-1">
@@ -6596,7 +6595,7 @@ useEffect(() => {
                 />
                 <button
                     onClick={addTeamMember}
-                    className="px-2 py-1 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                    className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                 >
                     <Plus size={12} />
                     Add
@@ -6625,7 +6624,7 @@ useEffect(() => {
                                 </button>
                             </div>
                             {member.email && (
-                                <div className="text-slate-700 text-xs flex items-center gap-0.5">
+                                <div className="text-indigo-600 text-xs flex items-center gap-0.5">
                                     <Mail size={12} />
                                     {member.email}
                                 </div>
@@ -6659,9 +6658,9 @@ useEffect(() => {
                             {filteredTimeEntries
                                 .filter(entry => entry.project === project.name)
                                 .map(entry => (
-                                    <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
+                                    <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
                                         <td className="px-1.5 py-1 text-xs text-gray-900 font-medium">{entry.date}</td>
-                                        <td className="px-1.5 py-1 text-xs font-bold text-slate-700">{entry.hours}h</td>
+                                        <td className="px-1.5 py-1 text-xs font-bold text-indigo-600">{entry.hours}h</td>
                                         <td className="px-1.5 py-1 text-xs text-gray-700">{entry.task}</td>
                                     </tr>
                                 ))
@@ -6684,25 +6683,25 @@ useEffect(() => {
             };
 
             return (
-                <div className="min-h-screen bg-gray-50">
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
                     <div className="max-w-7xl mx-auto">
                         {/* Header - Compact Toolbar */}
                         <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-    <div className="flex items-center justify-between px-3 md:px-6 py-2 md:py-3 gap-2 md:gap-4">
+    <div className="flex items-center justify-between px-4 md:px-6 py-3 gap-4">
         {/* Logo/Title */}
         <div className="flex items-center gap-2 min-w-fit">
-            <div className="w-7 h-7 md:w-8 md:h-8 bg-slate-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-base md:text-lg">T</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">T</span>
             </div>
             <div className="hidden md:block">
-                <h1 className="text-sm font-bold text-slate-800 whitespace-nowrap">
+                <h1 className="text-sm font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent whitespace-nowrap">
                     Timesheet Manager
                 </h1>
                 <p className="text-xs text-gray-500">Project tracking</p>
             </div>
         </div>
 
-        {/* Timezone Display */}
+        {/* Timezone Display - NEW SECTION */}
        <TimezoneDisplay 
     selectedTimezone={selectedTimezone}
     setSelectedTimezone={setSelectedTimezone}
@@ -6713,15 +6712,15 @@ useEffect(() => {
     setIsManualMode={setIsManualMode}
 />
                                 
-                                {/* Buttons - Simplified */}
-                                <div className="flex gap-1 md:gap-1.5 overflow-x-auto pb-1 md:pb-0 flex-1 md:flex-none">
+                                {/* Buttons - Scrollable on mobile */}
+                                <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 flex-1 md:flex-none">
                                     <button
                                         onClick={() => {
                                             setNewProject({ name: '', status: 'Active', owner: 'Manu Koshy', counterparties: 0, estimatedHours: 0, notes: '', secondaryOwner: '', isManagedOps: true });
                                             setEditingProject(null);
                                             setShowProjectModal(true);
                                         }}
-                                        className="px-2 py-1.5 text-xs bg-slate-700 hover:bg-slate-800 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                     >
                                         <Plus size={14} />
                                         <span className="hidden sm:inline">New</span>
@@ -6729,7 +6728,7 @@ useEffect(() => {
 
                                     <button
                                         onClick={exportToCSV}
-                                        className="px-2 py-1.5 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-indigo-500 hover:bg-indigo-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                     >
                                         <Download size={14} />
                                         <span className="hidden sm:inline">CSV</span>
@@ -6737,7 +6736,7 @@ useEffect(() => {
 
                                     <button
                                         onClick={exportJSON}
-                                        className="px-2 py-1.5 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-sky-500 hover:bg-sky-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                         title="Export JSON"
                                     >
                                         <Download size={14} />
@@ -6746,7 +6745,7 @@ useEffect(() => {
 
                                     <button
                                         onClick={() => fileInputRef.current && fileInputRef.current.click()}
-                                        className="px-2 py-1.5 text-xs bg-slate-500 hover:bg-slate-600 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-yellow-500 hover:bg-yellow-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                         title="Import JSON"
                                     >
                                         <Download size={14} />
@@ -6755,7 +6754,7 @@ useEffect(() => {
 
                                     <button
                                         onClick={saveToGist}
-                                        className="px-2 py-1.5 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                         title="Save to cloud"
                                     >
                                         <Cloud size={14} />
@@ -6764,7 +6763,7 @@ useEffect(() => {
 
                                     <button
                                         onClick={loadFromGist}
-                                        className="px-2 py-1.5 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-teal-500 hover:bg-teal-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                         title="Load from cloud"
                                     >
                                         <DownloadCloud size={14} />
@@ -6773,7 +6772,7 @@ useEffect(() => {
 
                                     <button
                                         onClick={setGistIdManually}
-                                        className="px-2 py-1.5 text-xs bg-slate-500 hover:bg-slate-600 text-white rounded flex items-center gap-1 whitespace-nowrap flex-shrink-0"
+                                        className="px-2.5 py-1.5 text-xs bg-gray-500 hover:bg-gray-600 text-white rounded-md flex items-center gap-1 shadow-sm transition-all hover:shadow-md whitespace-nowrap flex-shrink-0 font-medium"
                                         title="Set Gist ID"
                                     >
                                         <Key size={14} />
@@ -6790,42 +6789,39 @@ useEffect(() => {
                                 </div>
                             </div>
 
-                            {/* Navigation Tabs - Mobile Responsive */}
-                            <div className="border-t border-gray-200 overflow-x-auto">
-                                <div className="flex gap-0.5 px-2 md:px-6 min-w-max md:min-w-0">
-                                    {[
-                                        { id: 'summary', label: "Smart Update", shortLabel: "Update", icon: ListCheck },
-                                        { id: 'today-focus', label: "Today's Focus", shortLabel: "Focus", icon: Target },
-                                        { id: 'timesheet', label: 'Timesheet', shortLabel: "Time", icon: Clock },
-                                        { id: 'projects', label: 'Projects', shortLabel: "Proj", icon: Target },
-                                        { id: 'todo', label: 'To-Do', shortLabel: "ToDo", icon: CheckSquare },
-                                        { id: 'weekly-calendar', label: 'Calendar', shortLabel: "Cal", icon: Calendar },
-                                        { id: 'todo-timeline', label: 'Timeline', shortLabel: "TL", icon: Calendar },
-                                        { id: 'emails', label: 'Emails', shortLabel: "Mail", icon: Mail }
-                                    ].map(tab => {
-                                        const Icon = tab.icon;
-                                        return (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => setActiveTab(tab.id)}
-                                                className={`px-2 md:px-3 py-2 text-xs md:text-sm font-medium flex items-center gap-1 md:gap-2 border-b-2 transition-all whitespace-nowrap ${
-                                                    activeTab === tab.id
-                                                        ? 'border-slate-700 text-slate-800 bg-slate-50'
-                                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                                }`}
-                                            >
-                                                <Icon size={14} />
-                                                <span className="hidden md:inline">{tab.label}</span>
-                                                <span className="md:hidden">{tab.shortLabel}</span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
+                            {/* Navigation Tabs */}
+                            <div className="flex gap-1 border-t border-gray-200 overflow-x-auto px-4 md:px-6">
+                                {[
+                                    { id: 'summary', label: "📝 Smart Update", icon: ListCheck }, // <--- New Tab
+                                    { id: 'today-focus', label: "📋 Today's Focus", icon: Target },
+                                    { id: 'timesheet', label: 'Timesheet', icon: Clock },
+                                    { id: 'projects', label: 'Projects', icon: Target },
+                                    { id: 'todo', label: 'To-Do', icon: CheckSquare },
+                                    { id: 'weekly-calendar', label: '📅 Weekly Calendar', icon: Calendar },
+                                    { id: 'todo-timeline', label: 'Task Timeline', icon: Calendar },
+                                    { id: 'emails', label: '📧 Emails', icon: Mail }
+                                ].map(tab => {
+                                    const Icon = tab.icon;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTab(tab.id)}
+                                            className={`px-4 py-2.5 text-sm font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap ${
+                                                activeTab === tab.id
+                                                    ? 'border-indigo-600 text-indigo-600'
+                                                    : 'border-transparent text-gray-600 hover:text-gray-800'
+                                            }`}
+                                        >
+                                            <Icon size={16} />
+                                            {tab.label}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
 
                         {/* Main Content */}
-                        <div className="p-3 md:p-6">
+                        <div className="p-4 md:p-6">
                             {activeTab === 'summary' && (
     <SmartSummaryTab 
         projects={projects}
@@ -6839,13 +6835,13 @@ useEffect(() => {
 )}
                             {activeTab === 'today-focus' && (
                                 <div className="space-y-2">
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded border border-slate-200">
+                                <div className="flex items-center justify-between p-2 bg-gradient-to-r from-indigo-50 to-blue-50 rounded border border-indigo-200">
                                     <div>
                                         <h2 className="text-base font-bold text-gray-800">Today's Focus</h2>
                                         <p className="text-xs text-gray-500">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-lg font-bold text-slate-700">{todaysTasks.filter(t => t.completed).length}/{todaysTasks.length}</p>
+                                        <p className="text-lg font-bold text-indigo-600">{todaysTasks.filter(t => t.completed).length}/{todaysTasks.length}</p>
                                         <p className="text-xs text-gray-500">Done</p>
                                     </div>
                                 </div>
@@ -6894,7 +6890,7 @@ useEffect(() => {
                                     <div className="lg:col-span-2 space-y-1">
                                         <div className="bg-white rounded border shadow-sm p-2 border-gray-200">
                                             <h3 className="text-xs font-bold text-gray-800 mb-1.5 flex items-center gap-1">
-                                                <CheckSquare size={14} className="text-slate-700" />
+                                                <CheckSquare size={14} className="text-indigo-600" />
                                                 Available
                                             </h3>
                                             <div className="space-y-1.5 max-h-48 overflow-y-auto">
@@ -6918,7 +6914,7 @@ useEffect(() => {
                                                                 };
                                                                 setTodaysTasks([...todaysTasks, newTodayTask]);
                                                             }}
-                                                            className="p-2 border border-gray-200 rounded hover:border-slate-400 hover:bg-slate-50 cursor-pointer transition-all group text-xs"
+                                                            className="p-2 border border-gray-200 rounded hover:border-indigo-400 hover:bg-indigo-50 cursor-pointer transition-all group text-xs"
                                                         >
                                                             <div className="flex items-start justify-between gap-1">
                                                                 <div className="flex-1 min-w-0">
@@ -6933,7 +6929,7 @@ useEffect(() => {
                                                                     {task.priority}
                                                                 </span>
                                                             </div>
-                                                            <div className="mt-1 text-xs text-gray-400 group-hover:text-slate-700">+ Add</div>
+                                                            <div className="mt-1 text-xs text-gray-400 group-hover:text-indigo-600">+ Add</div>
                                                         </div>
                                                     ))
                                                 )}
@@ -6991,7 +6987,7 @@ useEffect(() => {
                                                                         }}
                                                                         className={`p-0.5 rounded transition-all ${
                                                                             reminders[task.id]
-                                                                                ? 'bg-indigo-100 text-slate-700 hover:bg-indigo-200'
+                                                                                ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200'
                                                                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                                         }`}
                                                                         title="Set reminder"
@@ -7017,7 +7013,7 @@ useEffect(() => {
                                             <h4 className="font-semibold text-xs text-gray-800 mb-1">Progress</h4>
                                             <div className="w-full bg-gray-200 rounded-full h-2">
                                                 <div
-                                                    className="bg-slate-500 h-2 rounded-full transition-all duration-500"
+                                                    className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-500"
                                                     style={{
                                                         width: todaysTasks.length > 0 
                                                             ? `${(todaysTasks.filter(t => t.completed).length / todaysTasks.length) * 100}%`
@@ -7050,45 +7046,45 @@ useEffect(() => {
                             <div className="space-y-3">
                                 {/* Compact Stats Cards */}
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    <div className="bg-slate-700 rounded-lg shadow p-3 text-white">
+                                    <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg shadow p-3 text-white">
                                         <div className="flex items-center justify-between">
                                             <div className="min-w-0">
-                                                <p className="text-slate-300 text-xs font-medium">Total Hours</p>
+                                                <p className="text-indigo-100 text-xs font-medium">Total Hours</p>
                                                 <p className="text-2xl font-bold">{totalHours.toFixed(1)}</p>
                                             </div>
-                                            <Clock size={20} className="text-slate-400 flex-shrink-0" />
+                                            <Clock size={20} className="text-indigo-200 flex-shrink-0" />
                                         </div>
                                     </div>
                                     
-                                    <div className="bg-slate-600 rounded-lg shadow p-3 text-white">
+                                    <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow p-3 text-white">
                                         <div className="flex items-center justify-between">
                                             <div className="min-w-0">
-                                                <p className="text-slate-300 text-xs font-medium">Active</p>
+                                                <p className="text-green-100 text-xs font-medium">Active</p>
                                                 <p className="text-2xl font-bold">
                                                     {projects.filter(p => p.status === 'Active').length}
                                                 </p>
                                             </div>
-                                            <Target size={20} className="text-slate-400 flex-shrink-0" />
+                                            <Target size={20} className="text-green-200 flex-shrink-0" />
                                         </div>
                                     </div>
                                     
-                                    <div className="bg-slate-600 rounded-lg shadow p-3 text-white">
+                                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow p-3 text-white">
                                         <div className="flex items-center justify-between">
                                             <div className="min-w-0">
-                                                <p className="text-slate-300 text-xs font-medium">Projects</p>
+                                                <p className="text-purple-100 text-xs font-medium">Projects</p>
                                                 <p className="text-2xl font-bold">{projects.length}</p>
                                             </div>
-                                            <BarChart3 size={20} className="text-slate-400 flex-shrink-0" />
+                                            <BarChart3 size={20} className="text-purple-200 flex-shrink-0" />
                                         </div>
                                     </div>
                                     
-                                    <div className="bg-slate-700 rounded-lg shadow p-3 text-white">
+                                    <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow p-3 text-white">
                                         <div className="flex items-center justify-between">
                                             <div className="min-w-0">
-                                                <p className="text-slate-300 text-xs font-medium">Entries</p>
+                                                <p className="text-orange-100 text-xs font-medium">Entries</p>
                                                 <p className="text-2xl font-bold">{filteredTimeEntries.length}</p>
                                             </div>
-                                            <FileText size={20} className="text-slate-400 flex-shrink-0" />
+                                            <FileText size={20} className="text-orange-200 flex-shrink-0" />
                                         </div>
                                     </div>
                                 </div>
@@ -7148,7 +7144,7 @@ useEffect(() => {
                                 <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
-                                            <Plus size={16} className="text-slate-700" />
+                                            <Plus size={16} className="text-indigo-600" />
                                             <h3 className="font-bold text-sm text-gray-800">Quick Add</h3>
                                         </div>
                                         <button
@@ -7157,7 +7153,7 @@ useEffect(() => {
                                                 setEditingEntry(null);
                                                 setShowEntryModal(true);
                                             }}
-                                            className="px-2 py-1 bg-slate-600 text-white rounded text-xs hover:bg-slate-700 flex items-center gap-1"
+                                            className="px-2 py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 flex items-center gap-1"
                                         >
                                             <Plus size={12} />
                                             Details
@@ -7198,7 +7194,7 @@ useEffect(() => {
                                     </div>
                                     <button
                                         onClick={addOrUpdateEntry}
-                                        className="mt-2 px-3 py-1 bg-slate-700 text-white rounded text-xs hover:bg-slate-800 flex items-center gap-1"
+                                        className="mt-2 px-3 py-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded text-xs hover:from-indigo-700 hover:to-blue-700 flex items-center gap-1"
                                     >
                                         <Plus size={12} />
                                         Add Entry
@@ -7207,7 +7203,7 @@ useEffect(() => {
 
                                 <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
                                     <h3 className="font-bold text-sm text-gray-800 mb-2 flex items-center gap-2">
-                                        <FileText size={16} className="text-slate-700" />
+                                        <FileText size={16} className="text-indigo-600" />
                                         Time Entries ({filteredTimeEntries.length})
                                     </h3>
                                     <div className="overflow-x-auto">
@@ -7227,15 +7223,15 @@ useEffect(() => {
                                                 {filteredTimeEntries.map(entry => {
                                                     const dayOfWeek = new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short' });
                                                     return (
-                                                    <tr key={entry.id} className="hover:bg-slate-50 transition-colors">
+                                                    <tr key={entry.id} className="hover:bg-indigo-50 transition-colors">
                                                         <td className="px-2 py-1 text-xs text-gray-900 font-medium">{entry.date}</td>
                                                         <td className="px-2 py-1 text-xs font-semibold text-gray-700">{dayOfWeek}</td>
                                                         <td className="px-2 py-1 text-xs">
-                                                            <span className="px-2 py-0.5 bg-indigo-100 text-slate-700 rounded text-xs font-semibold border border-slate-200">
+                                                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-xs font-semibold border border-indigo-200">
                                                                 {entry.project}
                                                             </span>
                                                         </td>
-                                                        <td className="px-2 py-1 text-xs font-bold text-slate-700">{entry.hours}h</td>
+                                                        <td className="px-2 py-1 text-xs font-bold text-indigo-600">{entry.hours}h</td>
                                                         <td className="px-2 py-1 text-xs text-gray-700">{entry.task}</td>
                                                         <td className="px-2 py-1 text-xs text-gray-500">{entry.notes || '-'}</td>
                                                         <td className="px-2 py-1 text-xs">
@@ -7302,7 +7298,7 @@ useEffect(() => {
                                 <div className="bg-white rounded border shadow-sm p-2 border-gray-200">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-xs">
-                                            <thead className="bg-gray-50">
+                                            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                                                 <tr>
                                                     <th className="px-2 py-1.5 text-left text-xs font-bold text-gray-700">Name</th>
                                                     <th className="px-2 py-1.5 text-left text-xs font-bold text-gray-700">Status</th>
@@ -7324,7 +7320,7 @@ useEffect(() => {
                                                         completedTasks: tasks.filter(task => task.project === project.name && task.status === 'completed').length
                                                     };
                                                     return (
-                                                        <tr key={project.id} className="hover:bg-slate-50 transition-colors">
+                                                        <tr key={project.id} className="hover:bg-indigo-50 transition-colors">
                                                             <td className="px-2 py-1.5 text-xs font-semibold text-gray-900 truncate">{project.name}</td>
                                                             <td className="px-2 py-1.5 text-xs">
                                                                 <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold border ${getStatusColor(project.status)}`}>
@@ -7340,14 +7336,14 @@ useEffect(() => {
                                                                     <div className="w-full bg-gray-200 rounded-full h-1 overflow-hidden">
                                                                         <div
                                                                             className={`h-1 rounded-full transition-all ${
-                                                                                stats.progress > 100 ? 'bg-red-500' : stats.progress > 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                                                                stats.progress > 100 ? 'bg-red-500' : stats.progress > 80 ? 'bg-yellow-500' : 'bg-gradient-to-r from-green-500 to-green-600'
                                                                             }`}
                                                                             style={{ width: `${Math.min(stats.progress, 100)}%` }}
                                                                         />
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-2 py-1.5 text-xs font-medium text-slate-700 whitespace-nowrap">{stats.actual.toFixed(1)}h</td>
+                                                            <td className="px-2 py-1.5 text-xs font-medium text-indigo-600 whitespace-nowrap">{stats.actual.toFixed(1)}h</td>
                                                             <td className="px-2 py-1.5 text-xs text-gray-700 whitespace-nowrap">{project.estimatedHours}h</td>
                                                             <td className="px-2 py-1.5 text-xs">
                                                                 <span className={stats.remaining < 0 ? 'text-red-600 font-semibold' : 'text-gray-700'}>
@@ -7363,7 +7359,7 @@ useEffect(() => {
                                                                 <div className="flex justify-center gap-1">
                                                                     <button
                                                                         onClick={() => openProjectDashboard(project)}
-                                                                        className="p-0.5 text-slate-700 hover:bg-slate-50 rounded transition-colors"
+                                                                        className="p-0.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
                                                                         title="View Details"
                                                                     >
                                                                         <ExternalLink size={14} />
@@ -7410,7 +7406,7 @@ useEffect(() => {
                                 <div className="bg-white rounded border shadow p-3 border-gray-200">
                                     <div className="flex items-center justify-between mb-3">
                                         <h3 className="text-base font-bold text-gray-800 flex items-center gap-1.5">
-                                            <Calendar size={18} className="text-slate-700" />
+                                            <Calendar size={18} className="text-indigo-600" />
                                             Task Timeline
                                         </h3>
                                         <div className="flex items-center gap-2">
@@ -7454,9 +7450,9 @@ useEffect(() => {
                                                     });
 
                                                     return (
-                                                        <div key={project.id} className="border-l-4 border-slate-600 pl-3 py-2">
+                                                        <div key={project.id} className="border-l-4 border-indigo-600 pl-3 py-2">
                                                             <div className="flex items-center gap-2 mb-2">
-                                                                <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                                                                <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
                                                                 <h4 className="text-sm font-bold text-gray-800">{project.name}</h4>
                                                                 <span className={`px-2 py-0.5 rounded text-xs font-semibold border ${getStatusColor(project.status)}`}>
                                                                     {project.status}
@@ -7479,7 +7475,7 @@ useEffect(() => {
                                                                         return (
                                                                             <div key={task.id}>
                                                                                 <div
-                                                                                    className={`p-2 rounded border text-xs transition-colors cursor-pointer hover:bg-slate-50 ${
+                                                                                    className={`p-2 rounded border text-xs transition-colors cursor-pointer hover:bg-indigo-50 ${
                                                                                         task.status === 'completed' 
                                                                                             ? 'bg-green-50 border-green-200' 
                                                                                             : task.priority === 'high'
@@ -7517,7 +7513,7 @@ useEffect(() => {
                                                                                                                 title="Expand/Collapse subtasks"
                                                                                                             >
                                                                                                                 <svg 
-                                                                                                                    className={`w-3 h-3 transition-transform text-slate-700 ${expandedTimelineTasks.has(task.id) ? 'rotate-180' : ''}`}
+                                                                                                                    className={`w-3 h-3 transition-transform text-indigo-600 ${expandedTimelineTasks.has(task.id) ? 'rotate-180' : ''}`}
                                                                                                                     fill="none" 
                                                                                                                     stroke="currentColor" 
                                                                                                                     viewBox="0 0 24 24"
@@ -7676,9 +7672,9 @@ useEffect(() => {
                                                     });
 
                                                     return (
-                                                        <div key={idx} className="border-l-4 border-slate-600 pl-3 py-2">
+                                                        <div key={idx} className="border-l-4 border-indigo-600 pl-3 py-2">
                                                             <div className="flex items-center gap-2 mb-2">
-                                                                <div className="w-2 h-2 rounded-full bg-slate-600"></div>
+                                                                <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
                                                                 <h4 className="text-sm font-bold text-gray-800">{priority.label}</h4>
                                                                 <span className="ml-auto text-xs text-gray-600">
                                                                     {priorityTasks.length}
@@ -7699,7 +7695,7 @@ useEffect(() => {
                                                                             <div
                                                                                 key={task.id}
                                                                                 onClick={() => setSelectedTask(task)}
-                                                                                className={`p-4 rounded-lg border-2 transition-colors cursor-pointer hover:bg-slate-50 ${
+                                                                                className={`p-4 rounded-lg border-2 transition-colors cursor-pointer hover:bg-indigo-50 ${
                                                                                     task.status === 'completed' 
                                                                                         ? 'bg-green-50 border-green-200' 
                                                                                         : task.priority === 'high'
@@ -7840,9 +7836,9 @@ useEffect(() => {
                                                             })
                                                         }));
                                                 })().map((group, idx) => (
-                                                    <div key={idx} className="border-l-4 border-slate-600 pl-6 py-4">
+                                                    <div key={idx} className="border-l-4 border-indigo-600 pl-6 py-4">
                                                         <div className="flex items-center gap-3 mb-4">
-                                                            <div className="w-3 h-3 rounded-full bg-slate-600"></div>
+                                                            <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
                                                             <h4 className="text-lg font-bold text-gray-800">{group.label}</h4>
                                                             <span className="ml-auto text-sm text-gray-600">
                                                                 {group.tasks.length} tasks
@@ -7860,7 +7856,7 @@ useEffect(() => {
                                                                     <div
                                                                         key={task.id}
                                                                         onClick={() => setSelectedTask(task)}
-                                                                        className={`p-4 rounded-lg border-2 transition-colors cursor-pointer hover:bg-slate-50 ${
+                                                                        className={`p-4 rounded-lg border-2 transition-colors cursor-pointer hover:bg-indigo-50 ${
                                                                             task.status === 'completed' 
                                                                                 ? 'bg-green-50 border-green-200' 
                                                                                 : task.priority === 'high'
@@ -8090,7 +8086,7 @@ useEffect(() => {
                                                     type="checkbox"
                                                     checked={newProject.isManagedOps}
                                                     onChange={(e) => setNewProject({...newProject, isManagedOps: e.target.checked})}
-                                                    className="rounded border-gray-300 text-slate-700 focus:ring-indigo-500"
+                                                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                                 />
                                                 Is Managed Ops
                                             </label>
@@ -8121,7 +8117,7 @@ useEffect(() => {
                                         </button>
                                         <button
                                             onClick={addOrUpdateProject}
-                                            className="px-4 py-1.5 text-sm bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-1 font-medium shadow-md"
+                                            className="px-4 py-1.5 text-sm bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded hover:from-indigo-700 hover:to-blue-700 flex items-center gap-1 font-medium shadow-md"
                                         >
                                             <Save size={14} />
                                             {editingProject ? 'Update' : 'Create'}
@@ -8226,7 +8222,7 @@ useEffect(() => {
                                         </button>
                                         <button
                                             onClick={addOrUpdateEntry}
-                                            className="px-4 py-1.5 text-sm bg-slate-700 text-white rounded hover:bg-slate-800 flex items-center gap-1 font-medium shadow-md"
+                                            className="px-4 py-1.5 text-sm bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded hover:from-indigo-700 hover:to-blue-700 flex items-center gap-1 font-medium shadow-md"
                                         >
                                             <Save size={14} />
                                             {editingEntry ? 'Update' : 'Add'}
@@ -8239,7 +8235,7 @@ useEffect(() => {
                         {showReminderModal && selectedTaskForReminder && (
                             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                                 <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full">
-                                    <div className="bg-slate-700 border-b border-gray-200 p-6 rounded-t-xl">
+                                    <div className="bg-gradient-to-r from-indigo-600 to-blue-600 border-b border-gray-200 p-6 rounded-t-xl">
                                         <div className="flex items-center justify-between">
                                             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
                                                 <Bell size={24} />
@@ -8259,7 +8255,7 @@ useEffect(() => {
                                     </div>
                                     
                                     <div className="p-6 space-y-6">
-                                        <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                                             <p className="text-sm font-semibold text-indigo-900 mb-1">Task</p>
                                             <p className="text-indigo-700">{selectedTaskForReminder.title}</p>
                                         </div>
@@ -8314,7 +8310,7 @@ useEffect(() => {
                                                 }
                                             }}
                                             disabled={!reminderTime}
-                                            className="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium"
+                                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed font-medium"
                                         >
                                             Set Reminder
                                         </button>
@@ -8324,7 +8320,7 @@ useEffect(() => {
                         )}
 
 {activeTab === 'emails' && (
-  <div className="min-h-screen bg-slate-800 p-4">
+  <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-4">
     <div className="max-w-7xl mx-auto">
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -8345,7 +8341,7 @@ useEffect(() => {
               }
               setEmails(prev => [...prev]);
             }}
-            className="px-3 py-1 bg-slate-600 text-white rounded hover:bg-slate-500 text-sm"
+            className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500 text-sm"
           >
             { (window.emailUI && window.emailUI.collapseAll) ? 'Expand all' : 'Collapse all' }
           </button>
@@ -8523,8 +8519,8 @@ useEffect(() => {
         };
       })()}
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 mt-4">
-        <div className="md:col-span-3 flex flex-col gap-3 md:gap-4">
+      <div className="grid grid-cols-12 gap-4 mt-4">
+        <div className="col-span-3 flex flex-col gap-4">
           <div
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -8536,16 +8532,16 @@ useEffect(() => {
                 if (f.name && (f.name.endsWith(".msg") || f.name.endsWith(".eml"))) handleFileUpload(f);
               });
             }}
-            onClick={() => emailFileInputRef.current?.click()}
+            onClick={() => fileInputRef.current?.click()}
             className={`border-2 border-dashed rounded-lg p-4 text-center transition-all cursor-pointer ${
-              dragOver ? 'border-slate-400 bg-slate-700/20' : 'border-gray-500 bg-gray-800/30'
+              dragOver ? 'border-indigo-400 bg-indigo-900/20' : 'border-gray-500 bg-gray-800/30'
             }`}
           >
             <p className="text-white font-semibold">{loading ? "Processing…" : "Drop .msg / .eml files here"}</p>
             <p className="text-gray-400 text-sm">or click to browse</p>
             <input
               type="file"
-              ref={emailFileInputRef}
+              ref={fileInputRef}
               accept=".msg,.eml"
               multiple
               style={{ display: 'none' }}
@@ -8572,7 +8568,7 @@ useEffect(() => {
             />
           </div>
 
-          <div className="bg-white/10 backdrop-blur-sm p-3 rounded-lg h-[40vh] md:h-[70vh] overflow-y-auto">
+          <div className="bg-white/10 backdrop-blur-sm p-3 rounded-lg h-[70vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-white font-semibold">📥 Inbox (Unassigned)</h2>
               <div className="text-sm text-gray-300">{emails.filter(e => !e.projectId).length}</div>
@@ -8597,7 +8593,7 @@ useEffect(() => {
                   draggable
                   onDragStart={(e)=>window.dragEmailStart(e,email.id)}
                   onClick={()=>setSelectedEmail(email)}
-                  className="p-3 mb-2 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-slate-700 transition flex items-start gap-2"
+                  className="p-3 mb-2 bg-gray-800 text-white rounded-lg cursor-pointer hover:bg-indigo-700 transition flex items-start gap-2"
                 >
                   <div title={`Priority: ${email.priority || 'Medium'}`} className="mt-1">
                     {(() => {
@@ -8616,7 +8612,7 @@ useEffect(() => {
 
                     <div className="mt-2 flex gap-1 flex-wrap">
                       {(email.tags || []).map((t, idx) => (
-                        <div key={idx} className="text-xs bg-slate-600/60 px-2 py-0.5 rounded text-white">{t}</div>
+                        <div key={idx} className="text-xs bg-indigo-600/60 px-2 py-0.5 rounded text-white">{t}</div>
                       ))}
                     </div>
                   </div>
@@ -8626,7 +8622,7 @@ useEffect(() => {
           </div>
         </div>
 
-        <div className="md:col-span-4 h-[50vh] md:h-[82vh] overflow-y-auto space-y-3 pr-1 md:pr-2">
+        <div className="col-span-4 h-[82vh] overflow-y-auto space-y-3 pr-2">
           <div className="flex items-center justify-between mb-2">
   <h2 className="text-white font-bold">📂 Projects</h2>
 </div>
@@ -8641,7 +8637,7 @@ useEffect(() => {
 
   <button
     onClick={() => setProjectSort(projectSort === "high" ? "low" : "high")}
-    className="px-2 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-500"
+    className="px-2 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-500"
   >
     {projectSort === "high" ? "Sort ↓" : "Sort ↑"}
   </button>
@@ -8680,7 +8676,7 @@ useEffect(() => {
               key={project.id}
               onDragOver={window.dragOverAllow}
               onDrop={(e)=>window.dropEmailToProject(e, project.id)}
-              className="bg-white/10 backdrop-blur-sm rounded p-3 border border-gray-600 hover:border-slate-400 transition"
+              className="bg-white/10 backdrop-blur-sm rounded p-3 border border-gray-600 hover:border-indigo-400 transition"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -8705,7 +8701,7 @@ useEffect(() => {
                     if (!confirm(`Assign all unassigned emails to "${project.name}"?`)) return;
                     setEmails(prev => prev.map(em => em.projectId ? em : {...em, projectId: project.id}));
                   }}
-                  className="text-xs px-2 py-1 bg-slate-600 text-white rounded hover:bg-slate-500"
+                  className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-500"
                 >
                   Assign all
                 </button>
@@ -8722,7 +8718,7 @@ useEffect(() => {
                         draggable
                         onDragStart={(e)=>window.dragEmailStart(e,email.id)}
                         onClick={()=>setSelectedEmail(email)}
-                        className="p-3 bg-gray-800 text-white rounded flex items-start justify-between hover:bg-slate-700 transition cursor-pointer"
+                        className="p-3 bg-gray-800 text-white rounded flex items-start justify-between hover:bg-indigo-700 transition cursor-pointer"
                       >
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
@@ -8744,7 +8740,7 @@ useEffect(() => {
 
                           <div className="mt-2 flex gap-1 flex-wrap">
                             {(email.tags || []).map((t, idx) => (
-                              <div key={idx} className="text-xs bg-slate-600/60 px-2 py-0.5 rounded text-white">{t}</div>
+                              <div key={idx} className="text-xs bg-indigo-600/60 px-2 py-0.5 rounded text-white">{t}</div>
                             ))}
                           </div>
                         </div>
@@ -8773,9 +8769,9 @@ useEffect(() => {
                     ));
                         })()}
                 </div>
-        <div className="md:col-span-5">
+        <div className="col-span-5">
           {selectedEmail ? (
-            <div className="bg-white/6 rounded-lg p-3 md:p-4 h-[50vh] md:h-[82vh] overflow-y-auto">
+            <div className="bg-white/6 rounded-lg p-4 h-[82vh] overflow-y-auto">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <h3 className="text-white text-2xl font-bold mb-1">{selectedEmail.subject}</h3>
@@ -8851,7 +8847,7 @@ useEffect(() => {
                                 setSelectedEmail(prev => ({...prev, tags: current}));
                               }
                             }}
-                            className={`text-xs px-2 py-0.5 rounded ${active ? 'bg-slate-600 text-white' : 'bg-white/10 text-gray-200'} hover:opacity-90`}
+                            className={`text-xs px-2 py-0.5 rounded ${active ? 'bg-indigo-600 text-white' : 'bg-white/10 text-gray-200'} hover:opacity-90`}
                           >
                             {tag}
                           </button>
@@ -8900,7 +8896,7 @@ useEffect(() => {
                         a.click();
                         URL.revokeObjectURL(url);
                       }}
-                      className="w-1/2 px-2 py-1 text-sm bg-slate-600 text-white rounded hover:bg-slate-500"
+                      className="w-1/2 px-2 py-1 text-sm bg-indigo-600 text-white rounded hover:bg-indigo-500"
                     >
                       Export
                     </button>
@@ -8913,7 +8909,7 @@ useEffect(() => {
               </div>
             </div>
           ) : (
-            <div className="h-[50vh] md:h-[82vh] flex items-center justify-center text-gray-400">
+            <div className="h-[82vh] flex items-center justify-center text-gray-400">
               Select an email to view details
             </div>
           )}
