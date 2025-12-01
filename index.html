@@ -5232,10 +5232,21 @@ const [projectNotes, setProjectNotes] = useState(() => {
     return saved ? JSON.parse(saved) : {};
 });
 
+// Daily Notes state
+const [dailyNotes, setDailyNotes] = useState(() => {
+    const saved = localStorage.getItem('daily_notes_data');
+    return saved ? JSON.parse(saved) : [];
+});
+
 // Save projectNotes to localStorage
 useEffect(() => {
     localStorage.setItem('projectNotes', JSON.stringify(projectNotes));
 }, [projectNotes]);
+
+// Save dailyNotes to localStorage
+useEffect(() => {
+    localStorage.setItem('daily_notes_data', JSON.stringify(dailyNotes));
+}, [dailyNotes]);
 
     const [emails, setEmails] = useState(() => {
     const saved = localStorage.getItem('emails_data');
@@ -5323,7 +5334,8 @@ useEffect(() => {
     todaysTasks,
     meetings,
     emails,
-    projectNotes,  // <-- ADD THIS LINE
+    projectNotes,
+    dailyNotes,  // <-- ADD THIS LINE
     updatedAt: new Date().toISOString()
 };
 
@@ -5439,6 +5451,7 @@ useEffect(() => {
     setMeetings(data.meetings || []); 
     setEmails(data.emails || []);
     setProjectNotes(data.projectNotes || {});  // <-- ADD THIS LINE
+    setDailyNotes(data.dailyNotes || []);  // <-- ADD THIS LINE
                         alert('Data loaded from cloud!');
                     }
                     
@@ -5523,6 +5536,7 @@ useEffect(() => {
     setMeetings(parsed.meetings || []);
     setEmails(parsed.emails || []); 
     setProjectNotes(parsed.projectNotes || {});  // <-- ADD THIS LINE
+    setDailyNotes(parsed.dailyNotes || []);  // <-- ADD THIS LINE
                             alert('Import successful.');
                         }
                     } catch (err) {
@@ -6801,6 +6815,7 @@ useEffect(() => {
                                         { id: 'todo', label: 'To-Do', shortLabel: "ToDo", icon: CheckSquare },
                                         { id: 'weekly-calendar', label: 'Calendar', shortLabel: "Cal", icon: Calendar },
                                         { id: 'todo-timeline', label: 'Timeline', shortLabel: "TL", icon: Calendar },
+                                        { id: 'daily-notes', label: 'Daily Notes', shortLabel: "Notes", icon: FileText },
                                         { id: 'emails', label: 'Emails', shortLabel: "Mail", icon: Mail }
                                     ].map(tab => {
                                         const Icon = tab.icon;
@@ -8931,6 +8946,153 @@ useEffect(() => {
             meetings={meetings} 
             setMeetings={setMeetings} 
         />
+    </div>
+)}
+
+{activeTab === 'daily-notes' && (
+    <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div>
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <FileText size={20} className="text-slate-600" />
+                    Daily Notes
+                </h2>
+                <p className="text-sm text-gray-500">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            </div>
+            <div className="flex gap-2">
+                <button
+                    onClick={() => {
+                        const newNote = {
+                            id: Date.now(),
+                            text: '',
+                            done: false,
+                            createdAt: new Date().toISOString(),
+                            type: 'task'
+                        };
+                        setDailyNotes([newNote, ...dailyNotes]);
+                    }}
+                    className="px-3 py-1.5 bg-slate-700 text-white rounded-lg text-sm font-medium hover:bg-slate-800 flex items-center gap-1"
+                >
+                    <Plus size={14} />
+                    Add Note
+                </button>
+                <button
+                    onClick={() => {
+                        if (window.confirm('Clear all completed notes?')) {
+                            setDailyNotes(dailyNotes.filter(n => !n.done));
+                        }
+                    }}
+                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
+                >
+                    Clear Done
+                </button>
+            </div>
+        </div>
+
+        {/* Quick Add Input */}
+        <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm">
+            <div className="flex gap-2">
+                <input
+                    type="text"
+                    placeholder="Quick add a note or task... (press Enter)"
+                    className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && e.target.value.trim()) {
+                            const newNote = {
+                                id: Date.now(),
+                                text: e.target.value.trim(),
+                                done: false,
+                                createdAt: new Date().toISOString(),
+                                type: 'task'
+                            };
+                            setDailyNotes([newNote, ...dailyNotes]);
+                            e.target.value = '';
+                        }
+                    }}
+                />
+            </div>
+        </div>
+
+        {/* Notes List */}
+        <div className="space-y-2">
+            {dailyNotes.length === 0 ? (
+                <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+                    <FileText size={40} className="mx-auto text-gray-300 mb-3" />
+                    <p className="text-gray-500">No notes yet. Add your first note above!</p>
+                </div>
+            ) : (
+                dailyNotes.map((note, index) => (
+                    <div 
+                        key={note.id} 
+                        className={`bg-white rounded-lg border p-3 shadow-sm transition-all ${
+                            note.done ? 'border-green-200 bg-green-50/50' : 'border-gray-200 hover:border-slate-300'
+                        }`}
+                    >
+                        <div className="flex items-start gap-3">
+                            <input
+                                type="checkbox"
+                                checked={note.done}
+                                onChange={() => {
+                                    setDailyNotes(dailyNotes.map(n => 
+                                        n.id === note.id ? {...n, done: !n.done} : n
+                                    ));
+                                }}
+                                className="mt-1 w-5 h-5 rounded border-gray-300 text-slate-600 focus:ring-slate-500 cursor-pointer"
+                            />
+                            <div className="flex-1">
+                                <textarea
+                                    value={note.text}
+                                    onChange={(e) => {
+                                        setDailyNotes(dailyNotes.map(n => 
+                                            n.id === note.id ? {...n, text: e.target.value} : n
+                                        ));
+                                    }}
+                                    placeholder="Write your note here..."
+                                    className={`w-full border-0 bg-transparent resize-none focus:ring-0 p-0 text-sm ${
+                                        note.done ? 'line-through text-gray-400' : 'text-gray-800'
+                                    }`}
+                                    rows={1}
+                                    style={{ minHeight: '24px' }}
+                                    onInput={(e) => {
+                                        e.target.style.height = 'auto';
+                                        e.target.style.height = e.target.scrollHeight + 'px';
+                                    }}
+                                />
+                                <div className="flex items-center gap-2 mt-2 text-xs text-gray-400">
+                                    <span>{new Date(note.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setDailyNotes(dailyNotes.filter(n => n.id !== note.id));
+                                }}
+                                className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    </div>
+                ))
+            )}
+        </div>
+
+        {/* Stats Footer */}
+        {dailyNotes.length > 0 && (
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-3 flex items-center justify-between">
+                <div className="flex gap-4 text-sm">
+                    <span className="text-gray-600">
+                        <span className="font-semibold text-slate-700">{dailyNotes.filter(n => !n.done).length}</span> pending
+                    </span>
+                    <span className="text-gray-600">
+                        <span className="font-semibold text-green-600">{dailyNotes.filter(n => n.done).length}</span> done
+                    </span>
+                </div>
+                <span className="text-xs text-gray-400">
+                    Total: {dailyNotes.length} notes
+                </span>
+            </div>
+        )}
     </div>
 )}
                         </div>
